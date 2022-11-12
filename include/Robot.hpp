@@ -6,15 +6,25 @@
 #define SIMULTANEOUS_CMAPD_ROBOT_HPP
 
 #include <TypeDefs.hpp>
+#include "Task.hpp"
+
+using SequenceOfReadyTasks = std::list<ReadyTask>;
 
 class Robot {
 public:
-    explicit Robot(LocationIndex start);
+    explicit Robot(CompressedCoord start, const DistanceMatrix &distanceMatrix);
 
-    LocationIndex getStart() const;
+    CompressedCoord getStart() const;
 
 private:
-    const LocationIndex start;
+    const CompressedCoord start;
+    SequenceOfReadyTasks readyTasks{};
+    const DistanceMatrix& distanceMatrix;
+
+    TimeStamp ttd = 0;
+
+    void updateTasksAndTTD(SequenceOfReadyTasks &&tasks);
+    void updateTTD();
 };
 
 

@@ -1,0 +1,12 @@
+//
+// Created by nicco on 12/11/2022.
+//
+
+#ifndef SIMULTANEOUS_CMAPD_SCMAPD_HPP
+#define SIMULTANEOUS_CMAPD_SCMAPD_HPP
+
+class SCMAPD {
+};
+
+
+#endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

@@ -1,18 +1,16 @@
-//
-// Created by nicco on 11/11/2022.
-//
-
 #ifndef SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
 #define SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
 
 #include <vector>
 #include <list>
+#include <queue>
 
-using Coord = unsigned int;
-using LocationIndex = unsigned int;
+using Coord = std::pair<unsigned int, unsigned int>;
+using CompressedCoord = unsigned int;
 using TimeStamp = unsigned int;
 
-using SequenceOfActions = std::list<LocationIndex>;
-using AssignmentsPerRobot = std::vector<SequenceOfActions>;
+using PickupDropoffTime = std::pair<TimeStamp, TimeStamp>;
+
+using DistanceMatrix = std::vector<std::vector<TimeStamp>>;
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
