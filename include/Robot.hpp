@@ -12,19 +12,18 @@ using SequenceOfReadyTasks = std::list<ReadyTask>;
 
 class Robot {
 public:
-    explicit Robot(CompressedCoord start, const DistanceMatrix &distanceMatrix);
-
-    CompressedCoord getStart() const;
+    explicit Robot(CompressedCoord start, unsigned int capacity = 1);
+    [[nodiscard]] CompressedCoord getStart() const;
 
 private:
     const CompressedCoord start;
-    SequenceOfReadyTasks readyTasks{};
-    const DistanceMatrix& distanceMatrix;
+    const unsigned int capacity;
 
+    SequenceOfReadyTasks readyTasks{};
     TimeStamp ttd = 0;
 
-    void updateTasksAndTTD(SequenceOfReadyTasks &&tasks);
-    void updateTTD();
+    void updateTasksAndTTD(SequenceOfReadyTasks &&tasks, const DistanceMatrix &distanceMatrix);
+    void updateTTD(const DistanceMatrix &distanceMatrix);
 };
 
 

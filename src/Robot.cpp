@@ -5,22 +5,22 @@
 #include <numeric>
 #include "Robot.hpp"
 
-Robot::Robot(CompressedCoord start, const DistanceMatrix &distanceMatrix) :
+Robot::Robot(CompressedCoord start, unsigned int capacity) :
     start{start},
-    distanceMatrix{distanceMatrix}
+    capacity{capacity}
     {}
 
 CompressedCoord Robot::getStart() const {
     return start;
 }
 
-void Robot::updateTasksAndTTD(SequenceOfReadyTasks &&tasks) {
+void Robot::updateTasksAndTTD(SequenceOfReadyTasks &&tasks, const DistanceMatrix &distanceMatrix) {
     readyTasks = std::move(tasks);
-    updateTTD();
+    updateTTD(distanceMatrix);
 }
 
-void Robot::updateTTD() {
-    auto cumulateDelay = [this](TimeStamp cumulatedDelay, const ReadyTask& readyTask) {
+void Robot::updateTTD(const DistanceMatrix &distanceMatrix) {
+    auto cumulateDelay = [&distanceMatrix](TimeStamp cumulatedDelay, const ReadyTask& readyTask) {
         const auto& task = readyTask.task;
 
         auto delay =
