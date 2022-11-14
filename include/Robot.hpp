@@ -24,6 +24,13 @@ private:
 
     void updateTasksAndTTD(SequenceOfReadyTasks &&tasks, const DistanceMatrix &distanceMatrix);
     void updateTTD(const DistanceMatrix &distanceMatrix);
+
+public:
+    [[nodiscard]] unsigned int getCapacity() const;
+
+    [[nodiscard]] const SequenceOfReadyTasks &getReadyTasks() const;
+
+    [[nodiscard]] TimeStamp getTtd() const;
 };
 
 

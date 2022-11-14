@@ -16,3 +16,7 @@ add_subdirectory(deps/cnpy)
 file(GLOB CNPY_INC "deps/cnpy/inc")
 target_include_directories(${EXE} PUBLIC ${CNPY_INC})
 target_link_libraries(${EXE} PRIVATE cnpy)
+
+find_package(ortools CONFIG REQUIRED)
+target_link_libraries(${EXE} PRIVATE ortools)
+target_include_directories(${EXE} PUBLIC ${ortools_INCLUDE_DIRS})

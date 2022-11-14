@@ -38,3 +38,15 @@ void Robot::updateTTD(const DistanceMatrix &distanceMatrix) {
         cumulateDelay
     );
 }
+
+unsigned int Robot::getCapacity() const {
+    return capacity;
+}
+
+const SequenceOfReadyTasks &Robot::getReadyTasks() const {
+    return readyTasks;
+}
+
+TimeStamp Robot::getTtd() const {
+    return ttd;
+}
