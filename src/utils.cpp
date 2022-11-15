@@ -19,3 +19,21 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
 
     return distanceMatrix;
 }
+
+PBS utils::buildPBS(
+        const std::filesystem::path &mapPath,
+        const std::filesystem::path &agentsPath,
+        int nAgents,
+        bool sipp,
+        int screen
+){
+    srand((int)time(0));
+
+    ///////////////////////////////////////////////////////////////////////////
+    // load the instance
+    Instance instance(mapPath, agentsPath, nAgents);
+
+    srand(0);
+    return PBS(instance, sipp, screen);
+}
+

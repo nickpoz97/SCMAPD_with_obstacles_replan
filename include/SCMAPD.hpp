@@ -15,21 +15,31 @@ enum class Heuristic{
     RMCA_R
 };
 
-struct comparePartialAssignment{
+using Assignment = std::vector<Robot>;
+
+struct ComparePartialAssignment{
     bool operator()(const Robot& a, const Robot& b);
+};
+
+struct CompareTotalHeap{
+    bool operator()(const Assignment & a, const Assignment & b);
 };
 
 template<Heuristic heuristic>
 class SCMAPD {
 public:
     SCMAPD(
-       DistanceMatrix && distanceMatrix,
-       std::vector<Robot> && robots
+        DistanceMatrix && distanceMatrix,
+        Assignment && robots,
+        std::unordered_set<Task> && tasks
     );
+
+    void solve();
 private:
     const DistanceMatrix distanceMatrix;
-    std::vector<Robot> assignment;
-    //std::unordered_set<Task> unassignedTasks;
+    Assignment assignment;
+    std::unordered_set<Task> unassignedTasks;
+    std::priority_queue<Assignment, std::vector<Assignment>, CompareTotalHeap> partialAssignmentsHeap;
 
     SequenceOfReadyTasks insert(const Task &task, const SequenceOfReadyTasks& taskSequence);
 };
