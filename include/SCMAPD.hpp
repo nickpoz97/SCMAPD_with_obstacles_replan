@@ -48,11 +48,11 @@ private:
     PartialAssignmentHeap partialAssignmentsHeap;
     PBS pbs;
 
-    SequenceOfReadyTasks insert(const Task &task, const SequenceOfReadyTasks& taskSequence);
-    static PartialAssignmentHeap buildPartialAssignmentHeap(const Assignment & robots,
-                                                     const std::unordered_set<Task> & tasks);
+    Waypoints insert(const Task &task, const Waypoints &waypoints);
+    static PartialAssignmentHeap buildPartialAssignmentHeap(const Assignment &robots,
+                                                            const std::unordered_set<Task> & tasks);
 };
 
-#include "../src/SCMAPD.hpp.i"
+#include "../src/SCMAPD.cpp"
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

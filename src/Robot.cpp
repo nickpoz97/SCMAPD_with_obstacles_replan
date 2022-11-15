@@ -14,39 +14,19 @@ CompressedCoord Robot::getStart() const {
     return start;
 }
 
-void Robot::updateTasksAndTTD(SequenceOfReadyTasks &&tasks, const DistanceMatrix &distanceMatrix) {
-    readyTasks = std::move(tasks);
-    updateTTD(distanceMatrix);
-}
-
-void Robot::updateTTD(const DistanceMatrix &distanceMatrix) {
-    auto cumulateDelay = [&distanceMatrix](TimeStamp cumulatedDelay, const ReadyTask& readyTask) {
-        const auto& task = readyTask.task;
-
-        auto delay =
-                readyTask.pickupDropoffTime.second -
-                task.getReleaseTime() -
-                distanceMatrix[task.getStartLoc()][task.getGoalLoc()];
-
-        return cumulatedDelay + delay;
-    };
-
-    ttd = std::accumulate(
-        readyTasks.cbegin(),
-        readyTasks.cend(),
-        0,
-        cumulateDelay
-    );
+void Robot::setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd) {
+    waypoints = std::move(newActions);
+    ttd = newTtd;
 }
 
 unsigned int Robot::getCapacity() const {
     return capacity;
 }
 
-const SequenceOfReadyTasks &Robot::getReadyTasks() const {
-    return readyTasks;
+const Waypoints &Robot::getWaypoints() const {
+    return waypoints;
 }
 
-TimeStamp Robot::getTtd() const {
+TimeStep Robot::getTtd() const {
     return ttd;
 }

@@ -9,24 +9,18 @@
 
 class Task {
 public:
-    Task(CompressedCoord startLoc, CompressedCoord goalLoc, TimeStamp releaseTime);
+    Task(CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep releaseTime);
 
-    CompressedCoord getStartLoc() const;
+    [[nodiscard]] CompressedCoord getStartLoc() const;
 
-    CompressedCoord getGoalLoc() const;
+    [[nodiscard]] CompressedCoord getGoalLoc() const;
 
-    TimeStamp getReleaseTime() const;
+    [[nodiscard]] TimeStep getReleaseTime() const;
 
 private:
     const CompressedCoord startLoc;
     const CompressedCoord  goalLoc;
-    const TimeStamp releaseTime;
+    const TimeStep releaseTime;
 };
-
-struct ReadyTask{
-    const Task& task;
-    PickupDropoffTime pickupDropoffTime;
-};
-
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP

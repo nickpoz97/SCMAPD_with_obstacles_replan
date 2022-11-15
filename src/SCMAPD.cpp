@@ -16,7 +16,7 @@ SCMAPD<heuristic>::SCMAPD(
     {}
 
 template<>
-SequenceOfReadyTasks SCMAPD<Heuristic::MCA>::insert(const Task &task, const SequenceOfReadyTasks &taskSequence) {
+Waypoints SCMAPD<Heuristic::MCA>::insert(const Task &task, const Waypoints &waypoints) {
     // todo complete this
     return {};
 }
@@ -34,7 +34,12 @@ SCMAPD<heuristic>::~SCMAPD() {
 template<Heuristic heuristic>
 PartialAssignmentHeap
 SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const std::unordered_set<Task> &tasks) {
-    return nullptr;
+    for(const auto& task : tasks){
+        Assignment partialAssignment{robots};
+        for (auto& i : partialAssignment){
+            i.setTasksAndTTD({task.getStartLoc(), task.getGoalLoc()}, 0);
+        }
+    }
 }
 
 bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {

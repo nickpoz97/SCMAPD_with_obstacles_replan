@@ -22,9 +22,9 @@ file(GLOB PBS_INC "deps/PBS/inc")
 target_include_directories(${EXE} PUBLIC ${PBS_INC})
 target_link_libraries(${EXE} PRIVATE pbs)
 
-find_package(ortools CONFIG REQUIRED)
-target_link_libraries(${EXE} PRIVATE ortools)
-target_include_directories(${EXE} PUBLIC ${ortools_INCLUDE_DIRS})
+#find_package(ortools CONFIG REQUIRED)
+#target_link_libraries(${EXE} PRIVATE ortools)
+#target_include_directories(${EXE} PUBLIC ${ortools_INCLUDE_DIRS})
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories( ${Boost_INCLUDE_DIRS} )

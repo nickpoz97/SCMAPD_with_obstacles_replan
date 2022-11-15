@@ -7,10 +7,10 @@
 
 using Coord = std::pair<unsigned int, unsigned int>;
 using CompressedCoord = unsigned int;
-using TimeStamp = unsigned int;
+using TimeStep = unsigned int;
 
-using PickupDropoffTime = std::pair<TimeStamp, TimeStamp>;
+using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
-using DistanceMatrix = std::vector<std::vector<TimeStamp>>;
+using DistanceMatrix = std::vector<std::vector<TimeStep>>;
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

@@ -85,7 +85,7 @@ namespace cnpy {
     template<> std::vector<char>& operator+=(std::vector<char>& lhs, const char* rhs);
 
 
-    template<typename T> void npy_save(std::string fname, const T* data, const std::vector<size_t> shape, std::string mode = "w") {
+    template<typename T> void npy_save(std::string fname, const T* data, const std::vector<size_t> shape, std::string mode = "waypoints") {
         FILE* fp = NULL;
         std::vector<size_t> true_data_shape; //if appending, the shape of existing + new data
 
@@ -130,7 +130,7 @@ namespace cnpy {
         fclose(fp);
     }
 
-    template<typename T> void npz_save(std::string zipname, std::string fname, const T* data, const std::vector<size_t>& shape, std::string mode = "w")
+    template<typename T> void npz_save(std::string zipname, std::string fname, const T* data, const std::vector<size_t>& shape, std::string mode = "waypoints")
     {
         //first, append a .npy to the fname
         fname += ".npy";
@@ -220,13 +220,13 @@ namespace cnpy {
         fclose(fp);
     }
 
-    template<typename T> void npy_save(std::string fname, const std::vector<T> data, std::string mode = "w") {
+    template<typename T> void npy_save(std::string fname, const std::vector<T> data, std::string mode = "waypoints") {
         std::vector<size_t> shape;
         shape.push_back(data.size());
         npy_save(fname, &data[0], shape, mode);
     }
 
-    template<typename T> void npz_save(std::string zipname, std::string fname, const std::vector<T> data, std::string mode = "w") {
+    template<typename T> void npz_save(std::string zipname, std::string fname, const std::vector<T> data, std::string mode = "waypoints") {
         std::vector<size_t> shape;
         shape.push_back(data.size());
         npz_save(zipname, fname, &data[0], shape, mode);

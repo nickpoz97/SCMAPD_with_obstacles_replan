@@ -2,7 +2,7 @@
 #include <cnpy.h>
 
 DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath) {
-    const cnpy::NpyArray distanceMatrixObj = cnpy::npy_load(distanceMatrixPath);
+    const cnpy::NpyArray distanceMatrixObj = cnpy::npy_load(distanceMatrixPath.generic_string());
 
     unsigned startCoordsSize = distanceMatrixObj.shape[0] * distanceMatrixObj.shape[1];
     unsigned endCoordsSize = distanceMatrixObj.shape[2] * distanceMatrixObj.shape[3];
@@ -31,7 +31,7 @@ PBS utils::buildPBS(
 
     ///////////////////////////////////////////////////////////////////////////
     // load the instance
-    Instance instance(mapPath, agentsPath, nAgents);
+    Instance instance(mapPath.generic_string(), agentsPath.generic_string(), nAgents);
 
     srand(0);
     return PBS(instance, sipp, screen);

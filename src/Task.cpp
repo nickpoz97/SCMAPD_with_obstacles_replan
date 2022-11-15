@@ -1,7 +1,7 @@
 #include "Task.hpp"
 
 
-Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, TimeStamp releaseTime) :
+Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep releaseTime) :
     startLoc{startLoc},
     goalLoc{goalLoc},
     releaseTime{releaseTime}
@@ -15,6 +15,6 @@ CompressedCoord Task::getGoalLoc() const {
     return goalLoc;
 }
 
-TimeStamp Task::getReleaseTime() const {
+TimeStep Task::getReleaseTime() const {
     return releaseTime;
 }
