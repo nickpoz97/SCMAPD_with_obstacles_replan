@@ -5,7 +5,7 @@ template<Heuristic heuristic>
 SCMAPD<heuristic>::SCMAPD(
         DistanceMatrix && distanceMatrix,
         Assignment && robots,
-        std::unordered_set<Task> && tasks
+        TaskSet && tasks
     ) :
     distanceMatrix(std::move(distanceMatrix)),
     assignment(std::move(robots)),
@@ -26,7 +26,7 @@ void SCMAPD<heuristic>::solve(const PBS &pbs) {
 
 template<Heuristic heuristic>
 PartialAssignmentHeap
-SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const std::unordered_set<Task> &tasks,
+SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
                                               const DistanceMatrix &distanceMatrix) {
     PartialAssignmentHeap partialAssignmentsHeap{};
 
@@ -35,9 +35,9 @@ SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const st
         for (auto& robot : partialAssignment){
             // no conflicts at the beginning (simplified expression)
             auto ttd =
-                distanceMatrix[robot.getStart()][task.getStartLoc()] -
-                task.getReleaseTime();
-            robot.setTasksAndTTD({task.getStartLoc(), task.getGoalLoc()}, ttd);
+                distanceMatrix[robot.getStart()][task.startLoc] -
+                task.releaseTime;
+            robot.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
         }
         partialAssignmentsHeap.push(std::move(partialAssignment));
     }

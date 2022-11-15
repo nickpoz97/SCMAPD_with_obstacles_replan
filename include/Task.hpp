@@ -5,36 +5,21 @@
 #ifndef SIMULTANEOUS_CMAPD_TASK_HPP
 #define SIMULTANEOUS_CMAPD_TASK_HPP
 
+#include <unordered_set>
 #include <TypeDefs.hpp>
 
-class Task {
-public:
-    Task(CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep releaseTime);
-
-    [[nodiscard]] CompressedCoord getStartLoc() const;
-
-    [[nodiscard]] CompressedCoord getGoalLoc() const;
-
-    [[nodiscard]] TimeStep getReleaseTime() const;
-
-private:
+struct Task {
     const CompressedCoord startLoc;
     const CompressedCoord  goalLoc;
     const TimeStep releaseTime;
+
+    friend bool operator==(const Task& t1, const Task& t2);
 };
 
 struct TaskHasher{
-    std::size_t operator()(const Task& task) const{
-        // https://stackoverflow.com/questions/38965931/hash-function-for-3-integers
-
-        auto a = task.getStartLoc();
-        auto b = task.getGoalLoc();
-        auto c = task.getReleaseTime();
-
-        auto Hab = ((a + b) * (a + b + 1) + b) / 2;
-
-        return ((Hab + c) * (Hab + c + 1) + c) / 2;
-    }
+    std::size_t operator()(const Task& task) const;
 };
+
+using TaskSet = std::unordered_set<Task, TaskHasher>;
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP
