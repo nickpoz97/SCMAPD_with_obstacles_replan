@@ -34,25 +34,20 @@ public:
     SCMAPD(
         DistanceMatrix && distanceMatrix,
         Assignment && robots,
-        std::unordered_set<Task> && tasks,
-        PBS&& pbs
+        std::unordered_set<Task> && tasks
     );
 
-    ~SCMAPD();
-
-    void solve();
+    void solve(const PBS &pbs);
 private:
     const DistanceMatrix distanceMatrix;
     Assignment assignment;
     std::unordered_set<Task> unassignedTasks;
     PartialAssignmentHeap partialAssignmentsHeap;
-    PBS pbs;
 
     Waypoints insert(const Task &task, const Waypoints &waypoints);
-    static PartialAssignmentHeap buildPartialAssignmentHeap(const Assignment &robots,
-                                                            const std::unordered_set<Task> & tasks);
+    static PartialAssignmentHeap
+    buildPartialAssignmentHeap(const Assignment &robots, const std::unordered_set<Task> &tasks,
+                               const DistanceMatrix &distanceMatrix);
 };
-
-#include "../src/SCMAPD.cpp"
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP
