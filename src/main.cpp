@@ -57,7 +57,5 @@ int main(int argc, char* argv[]){
 //    if (pbs.solution_found && vm.count("outputPaths"))
 //        pbs.savePaths(vm["outputPaths"].as<string>());
 
-    pbs.clearSearchEngines();
-
     return 0;
 }

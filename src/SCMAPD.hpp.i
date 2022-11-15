@@ -3,12 +3,16 @@
 
 
 template<Heuristic heuristic>
-SCMAPD<heuristic>::SCMAPD(DistanceMatrix && distanceMatrix,
-    std::vector<Robot> && robots,
-    std::unordered_set<Task> && tasks) :
+SCMAPD<heuristic>::SCMAPD(
+        DistanceMatrix && distanceMatrix,
+        Assignment && robots,
+        std::unordered_set<Task> && tasks,
+        PBS&& pbs
+    ) :
     distanceMatrix(std::move(distanceMatrix)),
     assignment(std::move(robots)),
-    unassignedTasks(std::move(tasks))
+    unassignedTasks(std::move(tasks)),
+    pbs{std::move(pbs)}
     {}
 
 template<>
@@ -20,6 +24,17 @@ SequenceOfReadyTasks SCMAPD<Heuristic::MCA>::insert(const Task &task, const Sequ
 template<Heuristic heuristic>
 void SCMAPD<heuristic>::solve() {
 
+}
+
+template<Heuristic heuristic>
+SCMAPD<heuristic>::~SCMAPD() {
+    pbs.clearSearchEngines();
+}
+
+template<Heuristic heuristic>
+PartialAssignmentHeap
+SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const std::unordered_set<Task> &tasks) {
+    return nullptr;
 }
 
 bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {

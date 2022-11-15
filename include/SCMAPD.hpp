@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <unordered_set>
 #include "Robot.hpp"
+#include "PBS.h"
 
 enum class Heuristic{
     MCA,
@@ -25,23 +26,31 @@ struct CompareTotalHeap{
     bool operator()(const Assignment & a, const Assignment & b);
 };
 
+using PartialAssignmentHeap = std::priority_queue<Assignment, std::vector<Assignment>, CompareTotalHeap>;
+
 template<Heuristic heuristic>
 class SCMAPD {
 public:
     SCMAPD(
         DistanceMatrix && distanceMatrix,
         Assignment && robots,
-        std::unordered_set<Task> && tasks
+        std::unordered_set<Task> && tasks,
+        PBS&& pbs
     );
+
+    ~SCMAPD();
 
     void solve();
 private:
     const DistanceMatrix distanceMatrix;
     Assignment assignment;
     std::unordered_set<Task> unassignedTasks;
-    std::priority_queue<Assignment, std::vector<Assignment>, CompareTotalHeap> partialAssignmentsHeap;
+    PartialAssignmentHeap partialAssignmentsHeap;
+    PBS pbs;
 
     SequenceOfReadyTasks insert(const Task &task, const SequenceOfReadyTasks& taskSequence);
+    static PartialAssignmentHeap buildPartialAssignmentHeap(const Assignment & robots,
+                                                     const std::unordered_set<Task> & tasks);
 };
 
 #include "../src/SCMAPD.hpp.i"
