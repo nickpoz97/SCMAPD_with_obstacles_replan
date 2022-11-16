@@ -20,6 +20,6 @@ struct TaskHasher{
     std::size_t operator()(const Task& task) const;
 };
 
-using TaskSet = std::unordered_set<Task, TaskHasher>;
+using TasksVector = std::vector<Task>;
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP

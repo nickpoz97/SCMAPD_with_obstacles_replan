@@ -1,30 +1,44 @@
 #include <filesystem>
+#include <boost/iterator/counting_iterator.hpp>
 #include <SCMAPD.hpp>
 
 SCMAPD::SCMAPD(
         DistanceMatrix && distanceMatrix,
-        Assignment && robots,
-        TaskSet && tasks
+        Assignment &&robots,
+        TasksVector && tasks
     ) :
-    distanceMatrix(std::move(distanceMatrix)),
-    assignment(std::move(robots)),
-    unassignedTasks(std::move(tasks)),
-    partialAssignmentsHeap(buildPartialAssignmentHeap(robots, tasks, distanceMatrix))
+        distanceMatrix(std::move(distanceMatrix)),
+        assignment(std::move(robots)),
+        tasks(std::move(tasks)),
+        unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
+        partialAssignmentsHeap(buildPartialAssignmentHeap(robots, tasks, distanceMatrix))
     {}
 
 PartialAssignmentHeap
-SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
-                                              const DistanceMatrix &distanceMatrix) {
+SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &tasks,
+                                   const DistanceMatrix &distanceMatrix) {
     PartialAssignmentHeap partialAssignmentsHeap{};
 
     for(const auto& task : tasks){
-        Assignment partialAssignment{robots};
-        for (auto& robot : partialAssignment){
+        // partial assignment for "task"
+        PartialAssignment partialAssignment;
+        partialAssignment.reserve(robots.size());
+
+        // add "task" to each robot
+        for (const auto& robotKV : robots){
+            auto robotStartPos = robotKV.first;
+
+            // robot in partial assignment heap
+            Robot robotCopy{robotKV.second};
+
             // no conflicts at the beginning (simplified expression)
             auto ttd =
-                distanceMatrix[robot.getStart()][task.startLoc] -
+                distanceMatrix[robotCopy.getStart()][task.startLoc] -
                 task.releaseTime;
-            robot.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
+
+            robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
+
+            partialAssignment.push_back(std::move(robotCopy));
         }
         partialAssignmentsHeap.push(std::move(partialAssignment));
     }
@@ -36,15 +50,19 @@ bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {
     return a.getTtd() > b.getTtd();
 }
 
-bool CompareTotalHeap::operator()(const Assignment &a, const Assignment &b) {
+bool CompareTotalHeap::operator()(const PartialAssignment &a, const PartialAssignment &b) {
     return a[0].getTtd() > b[0].getTtd();
 }
 
 template<Heuristic heuristic>
 void SCMAPD::solve(TimeStep cutOffTime) {
-    const Robot& partialAssignment = partialAssignmentsHeap.top()[0];
+    while(!tasks.empty()){
+        // top() refers to tasks, [0] to Robot (and so waypoints)
+        const Robot& partialAssignment = partialAssignmentsHeap.top()[0];
 
-    // todo continue
+        // todo continue
+
+    }
 }
 
 template<>

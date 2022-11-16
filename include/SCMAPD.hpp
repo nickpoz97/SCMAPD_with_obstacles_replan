@@ -12,24 +12,27 @@ enum class Heuristic{
     RMCA_R
 };
 
-using Assignment = std::vector<Robot>;
+// a fake heap
+using PartialAssignment = std::vector<Robot>;
+
+using Assignment = std::unordered_map<CompressedCoord, Robot>;
 
 struct ComparePartialAssignment{
     bool operator()(const Robot& a, const Robot& b);
 };
 
 struct CompareTotalHeap{
-    bool operator()(const Assignment & a, const Assignment & b);
+    bool operator()(const PartialAssignment & a, const PartialAssignment & b);
 };
 
-using PartialAssignmentHeap = std::priority_queue<Assignment, std::vector<Assignment>, CompareTotalHeap>;
+using PartialAssignmentHeap = std::priority_queue<PartialAssignment, std::vector<PartialAssignment>, CompareTotalHeap>;
 
 class SCMAPD {
 public:
     SCMAPD(
-        DistanceMatrix && distanceMatrix,
-        Assignment && robots,
-        TaskSet && tasks
+            DistanceMatrix && distanceMatrix,
+            Assignment &&robots,
+            TasksVector && tasks
     );
 
     template<Heuristic heuristic>
@@ -37,14 +40,15 @@ public:
 private:
     const DistanceMatrix distanceMatrix;
     Assignment assignment;
-    TaskSet unassignedTasks;
+    TasksVector tasks;
+    std::unordered_set<unsigned int> unassignedTasksIndices;
     PartialAssignmentHeap partialAssignmentsHeap;
 
     template<Heuristic heuristic>
     Waypoints insert(const Task &task, const Waypoints &waypoints);
 
     static PartialAssignmentHeap
-    buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
+    buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
 };
 
