@@ -1,7 +1,3 @@
-//
-// Created by nicco on 12/11/2022.
-//
-
 #ifndef SIMULTANEOUS_CMAPD_SCMAPD_HPP
 #define SIMULTANEOUS_CMAPD_SCMAPD_HPP
 
@@ -28,7 +24,6 @@ struct CompareTotalHeap{
 
 using PartialAssignmentHeap = std::priority_queue<Assignment, std::vector<Assignment>, CompareTotalHeap>;
 
-template<Heuristic heuristic>
 class SCMAPD {
 public:
     SCMAPD(
@@ -37,6 +32,7 @@ public:
         TaskSet && tasks
     );
 
+    template<Heuristic heuristic>
     void solve(const PBS &pbs);
 private:
     const DistanceMatrix distanceMatrix;
@@ -44,7 +40,9 @@ private:
     TaskSet unassignedTasks;
     PartialAssignmentHeap partialAssignmentsHeap;
 
+    template<Heuristic heuristic>
     Waypoints insert(const Task &task, const Waypoints &waypoints);
+
     static PartialAssignmentHeap
     buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
                                const DistanceMatrix &distanceMatrix);

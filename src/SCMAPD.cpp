@@ -1,8 +1,7 @@
 #include <filesystem>
-#include "SCMAPD.hpp"
+#include <SCMAPD.hpp>
 
-template<Heuristic heuristic>
-SCMAPD<heuristic>::SCMAPD(
+SCMAPD::SCMAPD(
         DistanceMatrix && distanceMatrix,
         Assignment && robots,
         TaskSet && tasks
@@ -13,20 +12,8 @@ SCMAPD<heuristic>::SCMAPD(
     partialAssignmentsHeap(buildPartialAssignmentHeap(robots, tasks, distanceMatrix))
     {}
 
-template<>
-Waypoints SCMAPD<Heuristic::MCA>::insert(const Task &task, const Waypoints &waypoints) {
-    // todo complete this
-    return {};
-}
-
-template<Heuristic heuristic>
-void SCMAPD<heuristic>::solve(const PBS &pbs) {
-
-}
-
-template<Heuristic heuristic>
 PartialAssignmentHeap
-SCMAPD<heuristic>::buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
+SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TaskSet &tasks,
                                               const DistanceMatrix &distanceMatrix) {
     PartialAssignmentHeap partialAssignmentsHeap{};
 
@@ -51,4 +38,15 @@ bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {
 
 bool CompareTotalHeap::operator()(const Assignment &a, const Assignment &b) {
     return a[0].getTtd() > b[0].getTtd();
+}
+
+template<>
+void SCMAPD::solve<Heuristic::MCA>(const PBS &pbs) {
+    // todo complete this
+}
+
+template<>
+Waypoints SCMAPD::insert<Heuristic::MCA>(const Task &task, const Waypoints &waypoints) {
+    // todo complete this
+    return {};
 }

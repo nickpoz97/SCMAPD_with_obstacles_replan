@@ -7,13 +7,12 @@
 
 int main(int argc, char* argv[]){
     Task t{5,3,1};
-    std::unordered_set<Task, TaskHasher> us{t};
 
-//    SCMAPD<Heuristic::MCA> scmapd{
-//        utils::loadDistanceMatrix("data/distance_matrix.npy"),
-//        {Robot{3}, Robot{10}, Robot{12}},
-//        std::unordered_set<Task, TaskHasher>{t}
-//    };
+    SCMAPD scmapd{
+        utils::loadDistanceMatrix("data/distance_matrix.npy"),
+        {Robot{3}, Robot{10}, Robot{12}},
+        std::unordered_set<Task, TaskHasher>{t}
+    };
 
 //    namespace po = boost::program_options;
 //    using std::string;

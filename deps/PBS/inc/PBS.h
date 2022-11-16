@@ -46,6 +46,8 @@ public:
 	void saveCT(const string &fileName) const; // write the CT to a file
     void savePaths(const string &fileName) const; // write the paths to a file
 	void clear(); // used for rapid random  restart
+
+    [[nodiscard]] unsigned int getPathLength(int agent) const;
 private:
 	conflict_selection conflict_seletion_rule;
 

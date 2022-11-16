@@ -1,6 +1,6 @@
 project(pbs)
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.23)
 
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "RELEASE")

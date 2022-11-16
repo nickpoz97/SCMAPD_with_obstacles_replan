@@ -807,3 +807,8 @@ bool PBS::hasHigherPriority(int low, int high) const // return true if agent low
     }
     return false;
 }
+
+unsigned int PBS::getPathLength(int agent) const {
+    // check if paths found for the selected agent
+    return paths.empty() ? 0 : (paths[agent] ? paths[agent]->size() : 0);
+}
