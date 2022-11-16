@@ -40,9 +40,11 @@ bool CompareTotalHeap::operator()(const Assignment &a, const Assignment &b) {
     return a[0].getTtd() > b[0].getTtd();
 }
 
-template<>
-void SCMAPD::solve<Heuristic::MCA>(const PBS &pbs) {
-    // todo complete this
+template<Heuristic heuristic>
+void SCMAPD::solve(TimeStep cutOffTime) {
+    const Robot& partialAssignment = partialAssignmentsHeap.top()[0];
+
+    // todo continue
 }
 
 template<>

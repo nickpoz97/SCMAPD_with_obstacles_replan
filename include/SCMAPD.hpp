@@ -33,7 +33,7 @@ public:
     );
 
     template<Heuristic heuristic>
-    void solve(const PBS &pbs);
+    void solve(TimeStep cutOffTime);
 private:
     const DistanceMatrix distanceMatrix;
     Assignment assignment;

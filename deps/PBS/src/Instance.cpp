@@ -287,3 +287,15 @@ list<int> Instance::getNeighbors(int curr) const
 	}
 	return neighbors;
 }
+
+Instance::Instance(std::string_view map_fname, vector<int> &&waypoints) :
+    map_fname(map_fname),
+    locations{std::move(waypoints)} {
+        num_of_agents = static_cast<int>(locations.size());
+
+        bool succ = loadMap();
+        if (!succ){
+                cerr << "Map file " << map_fname << " not found." << endl;
+                exit(-1);
+        };
+}

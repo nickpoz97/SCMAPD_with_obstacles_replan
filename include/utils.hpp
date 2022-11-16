@@ -7,13 +7,6 @@
 
 namespace utils{
     DistanceMatrix loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath);
-    PBS buildPBS(
-        const std::filesystem::path &mapPath,
-        const std::filesystem::path &agentsPath,
-        int nAgents,
-        bool sipp,
-        int screen
-    );
 }
 
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP
