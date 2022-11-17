@@ -3,15 +3,15 @@
 #include <SCMAPD.hpp>
 
 SCMAPD::SCMAPD(
-        DistanceMatrix && distanceMatrix,
+        DistanceMatrix && loadedDistanceMatrix,
         Assignment &&robots,
-        TasksVector && tasks
+        TasksVector && tasksVector
     ) :
-        distanceMatrix(std::move(distanceMatrix)),
+        distanceMatrix(std::move(loadedDistanceMatrix)),
         assignment(std::move(robots)),
-        tasks(std::move(tasks)),
+        tasks(std::move(tasksVector)),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        partialAssignmentsHeap(buildPartialAssignmentHeap(robots, tasks, distanceMatrix))
+        partialAssignmentsHeap(buildPartialAssignmentHeap(assignment, tasks, distanceMatrix))
     {}
 
 PartialAssignmentHeap
@@ -33,7 +33,7 @@ SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &
 
             // no conflicts at the beginning (simplified expression)
             auto ttd =
-                distanceMatrix[robotCopy.getStart()][task.startLoc] -
+                distanceMatrix[robotStartPos][task.startLoc] -
                 task.releaseTime;
 
             robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
@@ -70,3 +70,6 @@ Waypoints SCMAPD::insert<Heuristic::MCA>(const Task &task, const Waypoints &wayp
     // todo complete this
     return {};
 }
+
+template Waypoints SCMAPD::insert<Heuristic::HEUR>(const Task &task, const Waypoints &waypoints);
+template void SCMAPD::solve<Heuristic::HEUR>(TimeStep cutOffTime);

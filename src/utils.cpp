@@ -20,3 +20,83 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
     return distanceMatrix;
 }
 
+Assignment utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
+    std::ifstream fs (agentsFilePath, std::ios::in);
+    std::string line;
+
+    // nRows,nCols line
+    std::getline(fs, line);
+
+    std::string nRowsString;
+    std::string nColsString;
+
+    auto matrixSizeInfoStream = std::stringstream(line);
+    std::getline(matrixSizeInfoStream, nRowsString, horizontalSep);
+    std::getline(matrixSizeInfoStream, nColsString, horizontalSep);
+
+    //nRows = std::stoi(nRowsString);
+    nCols = std::stoi(nColsString);
+
+    // nAgents line
+    std::getline(fs, line);
+    size_t nAgents = std::stoi(line);
+
+    Assignment agents;
+    agents.reserve(nAgents);
+
+    for (size_t i = 0 ; i < nAgents; ++i){
+        std::getline(fs, line);
+
+        std::string xCoordString, yCoordString;
+        auto coordStream = std::stringstream(line);
+        std::getline(coordStream, yCoordString, horizontalSep);
+        std::getline(coordStream, xCoordString, horizontalSep);
+
+        CompressedCoord cc = from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
+
+        agents.emplace(cc, Robot{capacity});
+    }
+
+    return agents;
+}
+
+TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep){
+    std::ifstream fs (tasksFilePath, std::ios::in);
+    std::string line;
+
+    // nTasks line
+    std::getline(fs, line);
+    size_t nTasks = std::stoi(line);
+
+    TasksVector tasks;
+    tasks.reserve(nTasks);
+
+    for (int i = 0 ; i < nTasks ; ++i){
+        std::getline(fs, line);
+
+        std::stringstream taskString{line};
+        std::string value;
+
+        std::getline(taskString, value, horizontalSep);
+        int yBegin = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int xBegin = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int yEnd = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int xEnd = std::stoi(value);
+
+        unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
+
+        tasks.push_back({from2Dto1D(xBegin, yBegin, nCols), from2Dto1D(xEnd, yEnd, nCols), releaseTime});
+    }
+
+    return tasks;
+}
+
+CompressedCoord utils::from2Dto1D(unsigned x, unsigned y, size_t nCols) {
+    return y * static_cast<unsigned>(nCols) + x;
+}

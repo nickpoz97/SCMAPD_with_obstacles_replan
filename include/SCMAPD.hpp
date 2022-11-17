@@ -30,13 +30,12 @@ using PartialAssignmentHeap = std::priority_queue<PartialAssignment, std::vector
 class SCMAPD {
 public:
     SCMAPD(
-            DistanceMatrix && distanceMatrix,
+            DistanceMatrix && loadedDistanceMatrix,
             Assignment &&robots,
-            TasksVector && tasks
+            TasksVector && tasksVector
     );
 
-    template<Heuristic heuristic>
-    void solve(TimeStep cutOffTime);
+    template<Heuristic heuristic> void solve(TimeStep cutOffTime);
 private:
     const DistanceMatrix distanceMatrix;
     Assignment assignment;
@@ -44,8 +43,7 @@ private:
     std::unordered_set<unsigned int> unassignedTasksIndices;
     PartialAssignmentHeap partialAssignmentsHeap;
 
-    template<Heuristic heuristic>
-    Waypoints insert(const Task &task, const Waypoints &waypoints);
+    template<Heuristic heuristic> Waypoints insert(const Task &task, const Waypoints &waypoints);
 
     static PartialAssignmentHeap
     buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &tasks,

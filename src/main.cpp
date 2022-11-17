@@ -6,12 +6,12 @@
 #include "Instance.h"
 
 int main(int argc, char* argv[]){
-    Task t{5,3,1};
+    int nCols;
 
     SCMAPD scmapd{
         utils::loadDistanceMatrix("data/distance_matrix.npy"),
-        {Robot{3}, Robot{10}, Robot{12}},
-        std::unordered_set<Task, TaskHasher>{t}
+        utils::loadRobots("data/0.agents", nCols),
+        utils::loadTasks("data/0.tasks", nCols)
     };
 
 //    namespace po = boost::program_options;

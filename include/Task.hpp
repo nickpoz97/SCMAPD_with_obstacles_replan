@@ -10,14 +10,10 @@
 
 struct Task {
     const CompressedCoord startLoc;
-    const CompressedCoord  goalLoc;
+    const CompressedCoord goalLoc;
     const TimeStep releaseTime;
 
     friend bool operator==(const Task& t1, const Task& t2);
-};
-
-struct TaskHasher{
-    std::size_t operator()(const Task& task) const;
 };
 
 using TasksVector = std::vector<Task>;

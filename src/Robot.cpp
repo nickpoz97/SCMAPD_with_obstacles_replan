@@ -5,14 +5,9 @@
 #include <numeric>
 #include "Robot.hpp"
 
-Robot::Robot(CompressedCoord start, unsigned int capacity) :
-    start{start},
+Robot::Robot(unsigned int capacity) :
     capacity{capacity}
     {}
-
-CompressedCoord Robot::getStart() const {
-    return start;
-}
 
 void Robot::setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd) {
     waypoints = std::move(newActions);

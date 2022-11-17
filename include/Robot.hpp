@@ -12,8 +12,7 @@ using Waypoints = std::list<CompressedCoord>;
 
 class Robot {
 public:
-    explicit Robot(CompressedCoord start, unsigned int capacity = 1);
-    [[nodiscard]] CompressedCoord getStart() const;
+    explicit Robot(unsigned int capacity);
 
     [[nodiscard]] unsigned int getCapacity() const;
 
@@ -23,7 +22,6 @@ public:
 
     void setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd);
 private:
-    const CompressedCoord start;
     const unsigned int capacity;
 
     Waypoints waypoints{};
