@@ -20,7 +20,8 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
     return distanceMatrix;
 }
 
-Assignment utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
+RobotVector
+utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 
@@ -41,10 +42,10 @@ Assignment utils::loadRobots(const std::filesystem::path &agentsFilePath, int& n
     std::getline(fs, line);
     size_t nAgents = std::stoi(line);
 
-    Assignment agents;
+    RobotVector agents;
     agents.reserve(nAgents);
 
-    for (size_t i = 0 ; i < nAgents; ++i){
+    for (unsigned i = 0 ; i < nAgents; ++i){
         std::getline(fs, line);
 
         std::string xCoordString, yCoordString;
@@ -54,7 +55,7 @@ Assignment utils::loadRobots(const std::filesystem::path &agentsFilePath, int& n
 
         CompressedCoord cc = from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
-        agents.emplace(cc, Robot{capacity});
+        agents.emplace_back(cc, i, capacity);
     }
 
     return agents;
@@ -71,7 +72,7 @@ TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCo
     TasksVector tasks;
     tasks.reserve(nTasks);
 
-    for (int i = 0 ; i < nTasks ; ++i){
+    for (unsigned i = 0 ; i < nTasks ; ++i){
         std::getline(fs, line);
 
         std::stringstream taskString{line};
@@ -91,7 +92,7 @@ TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCo
 
         unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
 
-        tasks.push_back({from2Dto1D(xBegin, yBegin, nCols), from2Dto1D(xEnd, yEnd, nCols), releaseTime});
+        tasks.push_back({from2Dto1D(xBegin, yBegin, nCols), from2Dto1D(xEnd, yEnd, nCols), releaseTime, i});
     }
 
     return tasks;

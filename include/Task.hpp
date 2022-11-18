@@ -12,6 +12,7 @@ struct Task {
     const CompressedCoord startLoc;
     const CompressedCoord goalLoc;
     const TimeStep releaseTime;
+    const unsigned index;
 
     friend bool operator==(const Task& t1, const Task& t2);
 };

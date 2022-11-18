@@ -5,7 +5,9 @@
 #include <numeric>
 #include "Robot.hpp"
 
-Robot::Robot(unsigned int capacity) :
+Robot::Robot(CompressedCoord position, unsigned index, unsigned capacity) :
+    position{position},
+    index{index},
     capacity{capacity}
     {}
 
@@ -24,4 +26,20 @@ const Waypoints &Robot::getWaypoints() const {
 
 TimeStep Robot::getTtd() const {
     return ttd;
+}
+
+unsigned Robot::getIndex() const {
+    return index;
+}
+
+CompressedCoord Robot::getPosition() const {
+    return position;
+}
+
+Waypoints Robot::releaseWaypoints() {
+    return std::move(waypoints);
+}
+
+bool Robot::empty() const {
+    return waypoints.empty();
 }

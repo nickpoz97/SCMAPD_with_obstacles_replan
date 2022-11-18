@@ -6,23 +6,11 @@
 #include "Robot.hpp"
 #include "PBS.h"
 
-enum class Heuristic{
-    MCA,
-    RMCA_A,
-    RMCA_R
-};
+#include "PartialAssignment.hpp"
 
-// a fake heap
-using PartialAssignment = std::vector<Robot>;
-
-using Assignment = std::unordered_map<CompressedCoord, Robot>;
-
-struct ComparePartialAssignment{
-    bool operator()(const Robot& a, const Robot& b);
-};
-
+template<Heuristic heuristic>
 struct CompareTotalHeap{
-    bool operator()(const PartialAssignment & a, const PartialAssignment & b);
+    bool operator()(const PartialAssignment<heuristic> & a, const PartialAssignment<heuristic> & b);
 };
 
 using PartialAssignmentHeap = std::priority_queue<PartialAssignment, std::vector<PartialAssignment>, CompareTotalHeap>;

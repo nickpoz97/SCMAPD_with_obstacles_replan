@@ -38,7 +38,7 @@ SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &
 
             robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
 
-            partialAssignment.push_back(std::move(robotCopy));
+            partialAssignment.emplace_back(robotStartPos, std::move(robotCopy));
         }
         partialAssignmentsHeap.push(std::move(partialAssignment));
     }
@@ -51,14 +51,14 @@ bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {
 }
 
 bool CompareTotalHeap::operator()(const PartialAssignment &a, const PartialAssignment &b) {
-    return a[0].getTtd() > b[0].getTtd();
+    return a[0].second.getTtd() > b[0].second.getTtd();
 }
 
 template<Heuristic heuristic>
 void SCMAPD::solve(TimeStep cutOffTime) {
-    while(!tasks.empty()){
+    while(!unassignedTasksIndices.empty()){
         // top() refers to tasks, [0] to Robot (and so waypoints)
-        const Robot& partialAssignment = partialAssignmentsHeap.top()[0];
+        const Robot& partialAssignment = partialAssignmentsHeap.top()[0].second;
 
         // todo continue
 

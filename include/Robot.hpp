@@ -12,7 +12,8 @@ using Waypoints = std::list<CompressedCoord>;
 
 class Robot {
 public:
-    explicit Robot(unsigned int capacity);
+    explicit Robot(CompressedCoord position, unsigned index, unsigned capacity);
+    Robot(const Robot& robot) = default;
 
     [[nodiscard]] unsigned int getCapacity() const;
 
@@ -20,14 +21,24 @@ public:
 
     [[nodiscard]] TimeStep getTtd() const;
 
+    [[nodiscard]] unsigned getIndex() const;
+
+    [[nodiscard]] CompressedCoord getPosition() const;
+
+    bool empty() const;
+
     void setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd);
+
+    Waypoints releaseWaypoints();
 private:
-    const unsigned int capacity;
+    const CompressedCoord position;
+    const unsigned capacity;
+    const unsigned index;
 
     Waypoints waypoints{};
     TimeStep ttd = 0;
-
 };
 
+using RobotVector = std::vector<Robot>;
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP
