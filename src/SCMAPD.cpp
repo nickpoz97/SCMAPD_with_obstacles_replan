@@ -20,18 +20,18 @@ SCMAPD::buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector
     TotalHeap totalHeap{};
 
     for(const auto& task : tasks){
-        RobotsVector partialAssignments{};
+        std::unique_ptr<RobotsVector> partialAssignmentsPtr{new RobotsVector {}};
 
-        partialAssignments.reserve(robots.size());
+        partialAssignmentsPtr->reserve(robots.size());
 
         // add "task" to each robot
         for (const Robot& robot : robots){
             // robot in partial assignments heap
-            partialAssignments.push_back(
+            partialAssignmentsPtr->push_back(
                 initializePartialAssignment(distanceMatrix, task, robot)
             );
         }
-        totalHeap.emplace(task.index, std::move(partialAssignments));
+        totalHeap.emplace(task.index, partialAssignmentsPtr.release());
     }
 
     return totalHeap;
@@ -58,8 +58,10 @@ template<Heuristic heuristic>
 void SCMAPD::solve(TimeStep cutOffTime) {
     while(!unassignedTasksIndices.empty()){
         // top() refers to tasks, [0] to Robot (and so waypoints)
-        auto& [taskId, partialAssignments] = totalHeap.top();
-        Robot& candidateAssignment = partialAssignments[0];
+        auto& [taskId, partialAssignmentsPtr] = totalHeap.top();
+        totalHeap.pop();
+
+        Robot& candidateAssignment = partialAssignmentsPtr->at(0);
 
         // todo insert waypoints and update heaps
 

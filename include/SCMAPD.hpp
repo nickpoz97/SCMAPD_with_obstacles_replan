@@ -7,7 +7,7 @@
 #include "PBS.h"
 
 // taskId, robot
-using PartialAssignmentsVector = std::pair<unsigned, RobotsVector>;
+using PartialAssignmentsVector = std::pair<unsigned, std::unique_ptr<RobotsVector>>;
 
 // order each assignments by ttd
 struct ComparePartialAssignment{
