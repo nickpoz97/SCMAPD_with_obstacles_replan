@@ -16,6 +16,12 @@ void Robot::setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd) {
     ttd = newTtd;
 }
 
+void Robot::setTasksAndTTD(Robot& robot) {
+    setTasksAndTTD(std::move(robot.waypoints), robot.ttd);
+    robot.waypoints.clear();
+    robot.ttd = 0;
+}
+
 unsigned int Robot::getCapacity() const {
     return capacity;
 }
@@ -32,7 +38,7 @@ unsigned Robot::getIndex() const {
     return index;
 }
 
-CompressedCoord Robot::getPosition() const {
+CompressedCoord Robot::getStartPosition() const {
     return position;
 }
 

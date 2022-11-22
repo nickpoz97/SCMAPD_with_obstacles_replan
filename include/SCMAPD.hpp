@@ -6,36 +6,52 @@
 #include "Robot.hpp"
 #include "PBS.h"
 
-#include "PartialAssignment.hpp"
+// taskId, robot
+using PartialAssignmentsVector = std::pair<unsigned, RobotsVector>;
 
-template<Heuristic heuristic>
-struct CompareTotalHeap{
-    bool operator()(const PartialAssignment<heuristic> & a, const PartialAssignment<heuristic> & b);
+// order each assignments by ttd
+struct ComparePartialAssignment{
+    bool operator()(const Robot & a, const Robot & b);
 };
 
-using PartialAssignmentHeap = std::priority_queue<PartialAssignment, std::vector<PartialAssignment>, CompareTotalHeap>;
+// order by the assignments wrt the task having lower ttd
+struct CompareTotalHeap{
+    bool operator()(const PartialAssignmentsVector & a, const PartialAssignmentsVector & b);
+};
+
+// heap of assignments that differ by tasks
+using TotalHeap = std::priority_queue<PartialAssignmentsVector, std::vector<PartialAssignmentsVector>, CompareTotalHeap>;
+
+enum class Heuristic{
+    MCA,
+    RMCA_A,
+    RMCA_R
+};
 
 class SCMAPD {
 public:
     SCMAPD(
             DistanceMatrix && loadedDistanceMatrix,
-            Assignment &&robots,
+            RobotsVector &&robots,
             TasksVector && tasksVector
     );
 
     template<Heuristic heuristic> void solve(TimeStep cutOffTime);
 private:
     const DistanceMatrix distanceMatrix;
-    Assignment assignment;
+    RobotsVector assignments;
     TasksVector tasks;
     std::unordered_set<unsigned int> unassignedTasksIndices;
-    PartialAssignmentHeap partialAssignmentsHeap;
+    TotalHeap totalHeap;
 
     template<Heuristic heuristic> Waypoints insert(const Task &task, const Waypoints &waypoints);
 
-    static PartialAssignmentHeap
-    buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &tasks,
+    static TotalHeap
+    buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
+
+    static Robot
+    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot);
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

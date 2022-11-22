@@ -23,11 +23,13 @@ public:
 
     [[nodiscard]] unsigned getIndex() const;
 
-    [[nodiscard]] CompressedCoord getPosition() const;
+    [[nodiscard]] CompressedCoord getStartPosition() const;
 
-    bool empty() const;
+    [[nodiscard]] bool empty() const;
 
     void setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd);
+
+    void setTasksAndTTD(Robot &robot);
 
     Waypoints releaseWaypoints();
 private:
@@ -39,6 +41,6 @@ private:
     TimeStep ttd = 0;
 };
 
-using RobotVector = std::vector<Robot>;
+using RobotsVector = std::vector<Robot>;
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP

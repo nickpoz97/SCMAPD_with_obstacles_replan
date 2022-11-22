@@ -4,64 +4,67 @@
 
 SCMAPD::SCMAPD(
         DistanceMatrix && loadedDistanceMatrix,
-        Assignment &&robots,
+        RobotsVector &&robots,
         TasksVector && tasksVector
     ) :
         distanceMatrix(std::move(loadedDistanceMatrix)),
-        assignment(std::move(robots)),
+        assignments(std::move(robots)),
         tasks(std::move(tasksVector)),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        partialAssignmentsHeap(buildPartialAssignmentHeap(assignment, tasks, distanceMatrix))
+        totalHeap(buildPartialAssignmentHeap(assignments, tasks, distanceMatrix))
     {}
 
-PartialAssignmentHeap
-SCMAPD::buildPartialAssignmentHeap(const Assignment &robots, const TasksVector &tasks,
+TotalHeap
+SCMAPD::buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector &tasks,
                                    const DistanceMatrix &distanceMatrix) {
-    PartialAssignmentHeap partialAssignmentsHeap{};
+    TotalHeap totalHeap{};
 
     for(const auto& task : tasks){
-        // partial assignment for "task"
-        PartialAssignment partialAssignment;
-        partialAssignment.reserve(robots.size());
+        RobotsVector partialAssignments{};
+
+        partialAssignments.reserve(robots.size());
 
         // add "task" to each robot
-        for (const auto& robotKV : robots){
-            auto robotStartPos = robotKV.first;
-
-            // robot in partial assignment heap
-            Robot robotCopy{robotKV.second};
-
-            // no conflicts at the beginning (simplified expression)
-            auto ttd =
-                distanceMatrix[robotStartPos][task.startLoc] -
-                task.releaseTime;
-
-            robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
-
-            partialAssignment.emplace_back(robotStartPos, std::move(robotCopy));
+        for (const Robot& robot : robots){
+            // robot in partial assignments heap
+            partialAssignments.push_back(
+                initializePartialAssignment(distanceMatrix, task, robot)
+            );
         }
-        partialAssignmentsHeap.push(std::move(partialAssignment));
+        totalHeap.emplace(task.index, std::move(partialAssignments));
     }
 
-    return partialAssignmentsHeap;
+    return totalHeap;
 }
 
-bool ComparePartialAssignment::operator()(const Robot& a, const Robot& b) {
+Robot
+SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot) {
+    Robot robotCopy{robot};
+
+    // no conflicts at the beginning (simplified expression)
+    auto ttd =
+        distanceMatrix[robot.getStartPosition()][task.startLoc] -
+        task.releaseTime;
+
+    robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
+    return robotCopy;
+}
+
+bool ComparePartialAssignment::operator()(const Robot & a, const Robot & b) {
     return a.getTtd() > b.getTtd();
-}
-
-bool CompareTotalHeap::operator()(const PartialAssignment &a, const PartialAssignment &b) {
-    return a[0].second.getTtd() > b[0].second.getTtd();
 }
 
 template<Heuristic heuristic>
 void SCMAPD::solve(TimeStep cutOffTime) {
     while(!unassignedTasksIndices.empty()){
         // top() refers to tasks, [0] to Robot (and so waypoints)
-        const Robot& partialAssignment = partialAssignmentsHeap.top()[0].second;
+        auto& [taskId, partialAssignments] = totalHeap.top();
+        Robot& candidateAssignment = partialAssignments[0];
 
-        // todo continue
+        // todo insert waypoints and update heaps
 
+        assignments[candidateAssignment.getIndex()].setTasksAndTTD(candidateAssignment);
+        unassignedTasksIndices.erase(taskId);
     }
 }
 
@@ -73,3 +76,7 @@ Waypoints SCMAPD::insert<Heuristic::MCA>(const Task &task, const Waypoints &wayp
 
 template Waypoints SCMAPD::insert<Heuristic::HEUR>(const Task &task, const Waypoints &waypoints);
 template void SCMAPD::solve<Heuristic::HEUR>(TimeStep cutOffTime);
+
+bool CompareTotalHeap::operator()(const PartialAssignmentsVector & a, const PartialAssignmentsVector & b) {
+    return a.second[0].getTtd() > b.second[0].getTtd();
+}
