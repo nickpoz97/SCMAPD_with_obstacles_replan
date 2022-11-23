@@ -3,24 +3,26 @@
 
 #include <filesystem>
 #include <unordered_set>
+#include <list>
 #include "Robot.hpp"
 #include "PBS.h"
 
-// taskId, robot
-using PartialAssignmentsVector = std::pair<unsigned, std::shared_ptr<RobotsVector>>;
+using RobotSmartPtr = std::unique_ptr<Robot>;
 
-// order each assignments by ttd
-struct ComparePartialAssignment{
-    bool operator()(const Robot & a, const Robot & b);
+// order each assignment by ttd
+auto comparePartialAssignment = [](const RobotSmartPtr & a, const RobotSmartPtr & b){
+    return a->getTtd() > b->getTtd();
 };
 
-// order by the assignments wrt the task having lower ttd
-struct CompareTotalHeap{
-    bool operator()(const PartialAssignmentsVector & a, const PartialAssignmentsVector & b);
+// taskId, robot
+using PartialAssignments = std::pair<unsigned, std::vector<RobotSmartPtr>>;
+
+auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
+    return a.second[0] < b.second[0];
 };
 
 // heap of assignments that differ by tasks
-using TotalHeap = std::priority_queue<PartialAssignmentsVector, std::vector<PartialAssignmentsVector>, CompareTotalHeap>;
+using TotalHeap = std::list<PartialAssignments>;
 
 enum class Heuristic{
     MCA,
@@ -50,10 +52,10 @@ private:
     buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
 
-    static Robot
+    static std::unique_ptr<Robot>
     initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot);
 
-    PartialAssignmentsVector extractTop();
+    RobotSmartPtr extractTop();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

@@ -20,50 +20,54 @@ SCMAPD::buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector
     TotalHeap totalHeap{};
 
     for(const auto& task : tasks){
-        std::shared_ptr<RobotsVector> partialAssignmentsPtr{new RobotsVector {}};
-
-        partialAssignmentsPtr->reserve(robots.size());
+        std::vector<RobotSmartPtr> pa;
+        pa.reserve(robots.size());
 
         // add "task" to each robot
         for (const Robot& robot : robots){
             // robot in partial assignments heap
-            partialAssignmentsPtr->push_back(
+            pa.emplace_back(
                 initializePartialAssignment(distanceMatrix, task, robot)
             );
         }
-        totalHeap.emplace(task.index, partialAssignmentsPtr);
+        std::sort(
+            pa.begin(),
+            pa.end(),
+            comparePartialAssignment
+        );
+        totalHeap.push_back({task.index, std::move(pa)});
     }
-
+    totalHeap.sort(compareTotalHeap);
     return totalHeap;
 }
 
-Robot
+std::unique_ptr<Robot>
 SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot) {
-    Robot robotCopy{robot};
+    std::unique_ptr<Robot> robotCopyPtr{new Robot{robot}};
 
     // no conflicts at the beginning (simplified expression)
     auto ttd =
         distanceMatrix[robot.getStartPosition()][task.startLoc] -
         task.releaseTime;
 
-    robotCopy.setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
-    return robotCopy;
-}
-
-bool ComparePartialAssignment::operator()(const Robot & a, const Robot & b) {
-    return a.getTtd() > b.getTtd();
+    robotCopyPtr->setTasksAndTTD({task.startLoc, task.goalLoc}, ttd);
+    return robotCopyPtr;
 }
 
 template<Heuristic heuristic>
 void SCMAPD::solve(TimeStep cutOffTime) {
-    for(auto candidateAssignmentsPtr = extractTop().second; !unassignedTasksIndices.empty(); candidateAssignmentsPtr = extractTop().second){
-        Robot& candidateAssignment = candidateAssignmentsPtr->at(0);
-        assignments[candidateAssignment.getIndex()].setTasksAndTTD(candidateAssignment);
+    // extractTop takes care of tasks indices removal
+    for(auto candidateAssignmentPtr = extractTop(); !unassignedTasksIndices.empty(); candidateAssignmentPtr = extractTop()){
+        auto robotIndex = candidateAssignmentPtr->getIndex();
+        assignments[robotIndex].setTasksAndTTD(*candidateAssignmentPtr);
 
-        for (auto [taskId, partialAssignmentPointer] : totalHeap){
-
+        for (auto& [taskId, partialAssignments] : totalHeap){
+            insert<heuristic>(
+                tasks[taskId],
+                partialAssignments[robotIndex]->getWaypoints()
+            );
+            // todo insert waypoints and update heaps
         }
-        // todo insert waypoints and update heaps
     }
 }
 
@@ -73,19 +77,17 @@ Waypoints SCMAPD::insert<Heuristic::MCA>(const Task &task, const Waypoints &wayp
     return {};
 }
 
-PartialAssignmentsVector SCMAPD::extractTop() {
+RobotSmartPtr SCMAPD::extractTop() {
     // top() refers to tasks, [0] to Robot (and so waypoints) (pair<unsigned, ptr>)
-    // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn' t throw SIGSEG
-    auto top{totalHeap.top()};
-    totalHeap.pop();
-    unassignedTasksIndices.erase(top.first);
+    // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
+    auto& [taskId, partialAssignments] = totalHeap.front();
+    RobotSmartPtr candidateAssignment{partialAssignments.at(0).release()};
 
-    return top;
+    totalHeap.pop_front();
+    unassignedTasksIndices.erase(taskId);
+
+    return candidateAssignment;
 }
 
 template Waypoints SCMAPD::insert<Heuristic::HEUR>(const Task &task, const Waypoints &waypoints);
 template void SCMAPD::solve<Heuristic::HEUR>(TimeStep cutOffTime);
-
-bool CompareTotalHeap::operator()(const PartialAssignmentsVector & a, const PartialAssignmentsVector & b) {
-    return a.second->at(0).getTtd() > b.second->at(0).getTtd();
-}

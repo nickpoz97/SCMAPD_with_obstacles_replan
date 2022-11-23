@@ -28,8 +28,10 @@ public:
     [[nodiscard]] bool empty() const;
 
     void setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd);
+    void setTasksAndTTD(const Waypoints &newActions, TimeStep newTtd);
 
-    void setTasksAndTTD(Robot &robot);
+    void setTasksAndTTD(Robot &&robot);
+    void setTasksAndTTD(const Robot &robot);
 
     Waypoints releaseWaypoints();
 private:

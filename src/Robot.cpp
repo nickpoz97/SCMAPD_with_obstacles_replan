@@ -16,7 +16,7 @@ void Robot::setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd) {
     ttd = newTtd;
 }
 
-void Robot::setTasksAndTTD(Robot& robot) {
+void Robot::setTasksAndTTD(Robot &&robot) {
     setTasksAndTTD(std::move(robot.waypoints), robot.ttd);
     robot.waypoints.clear();
     robot.ttd = 0;
@@ -48,4 +48,13 @@ Waypoints Robot::releaseWaypoints() {
 
 bool Robot::empty() const {
     return waypoints.empty();
+}
+
+void Robot::setTasksAndTTD(const Waypoints &newActions, TimeStep newTtd) {
+    waypoints = newActions;
+    ttd = newTtd;
+}
+
+void Robot::setTasksAndTTD(const Robot &robot) {
+    setTasksAndTTD(robot.getWaypoints(), robot.getTtd());
 }
