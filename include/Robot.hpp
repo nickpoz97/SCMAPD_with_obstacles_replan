@@ -6,9 +6,10 @@
 #define SIMULTANEOUS_CMAPD_ROBOT_HPP
 
 #include <TypeDefs.hpp>
+#include <forward_list>
 #include "Task.hpp"
 
-using Waypoints = std::list<CompressedCoord>;
+using Waypoints = std::forward_list<CompressedCoord>;
 
 class Robot {
 public:
@@ -27,15 +28,14 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    void setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd);
-    void setTasksAndTTD(const Waypoints &newActions, TimeStep newTtd);
+    void setTasksAndTTD(Waypoints &&newWaypoints, TimeStep newTtd);
+    void setTasksAndTTD(const Waypoints &newWaypoints, TimeStep newTtd);
 
     void setTasksAndTTD(Robot &&robot);
     void setTasksAndTTD(const Robot &robot);
 
-    Waypoints releaseWaypoints();
 private:
-    const CompressedCoord position;
+    const CompressedCoord startPosition;
     const unsigned capacity;
     const unsigned index;
 

@@ -6,13 +6,13 @@
 #include "Robot.hpp"
 
 Robot::Robot(CompressedCoord position, unsigned index, unsigned capacity) :
-    position{position},
-    index{index},
-    capacity{capacity}
+        startPosition{position},
+        index{index},
+        capacity{capacity}
     {}
 
-void Robot::setTasksAndTTD(Waypoints &&newActions, TimeStep newTtd) {
-    waypoints = std::move(newActions);
+void Robot::setTasksAndTTD(Waypoints &&newWaypoints, TimeStep newTtd) {
+    waypoints = std::move(newWaypoints);
     ttd = newTtd;
 }
 
@@ -39,19 +39,15 @@ unsigned Robot::getIndex() const {
 }
 
 CompressedCoord Robot::getStartPosition() const {
-    return position;
-}
-
-Waypoints Robot::releaseWaypoints() {
-    return std::move(waypoints);
+    return startPosition;
 }
 
 bool Robot::empty() const {
     return waypoints.empty();
 }
 
-void Robot::setTasksAndTTD(const Waypoints &newActions, TimeStep newTtd) {
-    waypoints = newActions;
+void Robot::setTasksAndTTD(const Waypoints &newWaypoints, TimeStep newTtd) {
+    waypoints = newWaypoints;
     ttd = newTtd;
 }
 

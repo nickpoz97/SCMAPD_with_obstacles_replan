@@ -5,7 +5,6 @@
 #ifndef SIMULTANEOUS_CMAPD_TASK_HPP
 #define SIMULTANEOUS_CMAPD_TASK_HPP
 
-#include <unordered_set>
 #include <TypeDefs.hpp>
 
 struct Task {

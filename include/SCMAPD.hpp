@@ -6,16 +6,17 @@
 #include <list>
 #include "Robot.hpp"
 #include "PBS.h"
+#include "PartialAssignment.hpp"
 
-using RobotSmartPtr = std::unique_ptr<Robot>;
+using PASmartPtr = std::unique_ptr<PartialAssignment>;
 
 // order each assignment by ttd
-auto comparePartialAssignment = [](const RobotSmartPtr & a, const RobotSmartPtr & b){
+auto comparePartialAssignment = [](const PASmartPtr & a, const PASmartPtr & b){
     return a->getTtd() > b->getTtd();
 };
 
 // taskId, robot
-using PartialAssignments = std::pair<unsigned, std::vector<RobotSmartPtr>>;
+using PartialAssignments = std::pair<unsigned, std::vector<PASmartPtr>>;
 
 auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
     return a.second[0] < b.second[0];
@@ -46,16 +47,18 @@ private:
     std::unordered_set<unsigned int> unassignedTasksIndices;
     TotalHeap totalHeap;
 
-    template<Heuristic heuristic> Waypoints insert(const Task &task, const Waypoints &waypoints);
+    // updates pa waypoints and ttd using heuristic
+    template<Heuristic heuristic>
+    void insert(const Task &task, const Waypoints &waypoints, PartialAssignment *partialAssignmentPtr);
 
     static TotalHeap
     buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
 
-    static std::unique_ptr<Robot>
+    static PASmartPtr
     initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot);
 
-    RobotSmartPtr extractTop();
+    PASmartPtr extractTop();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP
