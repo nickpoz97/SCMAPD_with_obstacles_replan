@@ -4,7 +4,6 @@
 #include <TypeDefs.hpp>
 #include <filesystem>
 #include <SCMAPD.hpp>
-#include "PartialAssignment.hpp"
 
 namespace utils{
     DistanceMatrix loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath);

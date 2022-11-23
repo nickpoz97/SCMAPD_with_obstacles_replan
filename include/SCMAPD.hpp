@@ -7,7 +7,7 @@
 #include "PBS.h"
 
 // taskId, robot
-using PartialAssignmentsVector = std::pair<unsigned, std::unique_ptr<RobotsVector>>;
+using PartialAssignmentsVector = std::pair<unsigned, std::shared_ptr<RobotsVector>>;
 
 // order each assignments by ttd
 struct ComparePartialAssignment{
@@ -52,6 +52,8 @@ private:
 
     static Robot
     initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot);
+
+    PartialAssignmentsVector extractTop();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP
