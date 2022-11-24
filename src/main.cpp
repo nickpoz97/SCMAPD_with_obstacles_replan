@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
         utils::loadTasks("data/0.tasks", nCols)
     };
 
-    scmapd.solve<Heuristic::HEUR>(10);
+    scmapd.solve(Heuristic::HEUR, 10);
 
 //    namespace po = boost::program_options;
 //    using std::string;

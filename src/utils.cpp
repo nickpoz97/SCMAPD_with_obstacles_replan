@@ -20,7 +20,7 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
     return distanceMatrix;
 }
 
-RobotsVector
+std::vector<Robot>
 utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
@@ -42,7 +42,7 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char 
     std::getline(fs, line);
     size_t nAgents = std::stoi(line);
 
-    RobotsVector agents;
+    std::vector<Robot> agents;
     agents.reserve(nAgents);
 
     for (unsigned i = 0 ; i < nAgents; ++i){

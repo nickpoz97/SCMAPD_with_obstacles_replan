@@ -50,22 +50,22 @@ SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const 
         distanceMatrix[robot.getStartPosition()][task.startLoc] -
         task.releaseTime;
 
-    robotCopyPtr->setTasksAndTTD(
-        {{task.startLoc, Demand::START} , {task.goalLoc, Demand::GOAL}},
-        ttd
+    robotCopyPtr->setTasks(
+            {{task.startLoc, Demand::START, task.index},
+             {task.goalLoc,  Demand::GOAL,  task.index}},
+            ttd
     );
     return robotCopyPtr;
 }
 
-template<Heuristic heuristic>
-void SCMAPD::solve(TimeStep cutOffTime) {
+void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
     for(auto candidateAssignmentPtr = extractTop(); !unassignedTasksIndices.empty(); candidateAssignmentPtr = extractTop()){
         auto robotIndex = candidateAssignmentPtr->getIndex();
-        assignments[robotIndex].setTasksAndTTD(*candidateAssignmentPtr);
+        assignments[robotIndex].setTasks(*candidateAssignmentPtr);
 
         for (auto& [taskId, partialAssignments] : totalHeap){
-            partialAssignments[robotIndex]->insert(tasks[taskId]);
+            partialAssignments[robotIndex]->insert(tasks[taskId], heuristic);
             updatePAsHeapTop(partialAssignments);
         }
         // should be same complexity as using priority_queue
@@ -88,5 +88,3 @@ RobotSmartPtr SCMAPD::extractTop() {
 void SCMAPD::updatePAsHeapTop(std::vector<RobotSmartPtr>& partialAssignments) {
     // todo complete this
 }
-
-template void SCMAPD::solve<Heuristic::HEUR>(TimeStep cutOffTime);

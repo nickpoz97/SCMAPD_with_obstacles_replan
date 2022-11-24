@@ -12,13 +12,13 @@ Robot::Robot(CompressedCoord position, unsigned index, unsigned capacity) :
         capacity{capacity}
     {}
 
-void Robot::setTasksAndTTD(WaypointsList &&newWaypoints, TimeStep newTtd) {
+void Robot::setTasks(WaypointsList &&newWaypoints, TimeStep newTtd) {
     waypoints = std::move(newWaypoints);
     ttd = newTtd;
 }
 
-void Robot::setTasksAndTTD(Robot &&robot) {
-    setTasksAndTTD(std::move(robot.waypoints), robot.ttd);
+void Robot::setTasks(Robot &&robot) {
+    setTasks(std::move(robot.waypoints), robot.ttd);
     robot.waypoints.clear();
     robot.ttd = 0;
 }
@@ -47,13 +47,13 @@ bool Robot::empty() const {
     return waypoints.empty();
 }
 
-void Robot::setTasksAndTTD(const WaypointsList &newWaypoints, TimeStep newTtd) {
+void Robot::setTasks(const WaypointsList &newWaypoints, TimeStep newTtd) {
     waypoints = newWaypoints;
     ttd = newTtd;
 }
 
-void Robot::setTasksAndTTD(const Robot &robot) {
-    setTasksAndTTD(robot.getWaypoints(), robot.getTtd());
+void Robot::setTasks(const Robot &robot) {
+    setTasks(robot.getWaypoints(), robot.getTtd());
 }
 
 void Robot::insert(const Task &task, Heuristic heuristic) {
@@ -71,8 +71,8 @@ void Robot::insert(const Task &task, Heuristic heuristic) {
         }
     }
 
-    waypoints.insert(bestStartWaypoint, {task.startLoc, Demand::START});
-    waypoints.insert(bestGoalWaypoint, {task.goalLoc, Demand::GOAL});
+    waypoints.insert(bestStartWaypoint, {task.startLoc, Demand::START, task.index});
+    waypoints.insert(bestGoalWaypoint, {task.goalLoc, Demand::GOAL, task.index});
 }
 
 void Robot::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
@@ -83,15 +83,15 @@ void Robot::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
 
 void Robot::insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
                                 WaypointsList::iterator &waypointGoal) {
-    waypoints.insert(waypointStart, {task.startLoc, Demand::START});
-    waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL});
+    waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index});
+    waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index});
 }
 
 bool Robot::checkCapacityConstraint() {
     unsigned actualWeight = 0;
 
     for(const auto& waypoint : waypoints){
-        actualWeight += static_cast<unsigned>(waypoint.second);
+        actualWeight += static_cast<unsigned>(waypoint.demand);
         if(actualWeight > getCapacity()){
             return false;
         }
@@ -102,4 +102,19 @@ bool Robot::checkCapacityConstraint() {
 TimeStep Robot::updateBestWaypoints(TimeStep bestTTD, WaypointsList::iterator &bestStart, WaypointsList::iterator &bestEnd) {
     // todo finish this
     return bestTTD;
+}
+
+TimeStep Robot::computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
+    int i = 0;
+    TimeStep cumulatedTTD = 0;
+
+    for(const auto& wp: waypoints){
+        const Task& task = tasks[wp.taskIndex];
+        if(wp.demand == Demand::GOAL){
+            cumulatedTTD += i - task.releaseTime - distanceMatrix[task.startLoc][task.goalLoc];
+        }
+        ++i;
+    }
+
+    return cumulatedTTD;
 }

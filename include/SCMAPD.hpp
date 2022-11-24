@@ -14,7 +14,7 @@ auto comparePartialAssignment = [](const RobotSmartPtr & a, const RobotSmartPtr 
     return a->getTtd() > b->getTtd();
 };
 
-// taskId, robot
+// taskIndex, robot
 using PartialAssignments = std::pair<unsigned, std::vector<RobotSmartPtr>>;
 
 auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
@@ -32,7 +32,7 @@ public:
             TasksVector && tasksVector
     );
 
-    template<Heuristic heuristic> void solve(TimeStep cutOffTime);
+    void solve(Heuristic heuristic, TimeStep cutOffTime);
 private:
     const DistanceMatrix distanceMatrix;
     std::vector<Robot> assignments;

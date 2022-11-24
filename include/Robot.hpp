@@ -26,11 +26,12 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    void setTasksAndTTD(WaypointsList &&newWaypoints, TimeStep newTtd);
-    void setTasksAndTTD(const WaypointsList &newWaypoints, TimeStep newTtd);
+    // todo setTasks must not need newTtd
+    void setTasks(WaypointsList &&newWaypoints, TimeStep newTtd);
+    void setTasks(const WaypointsList &newWaypoints, TimeStep newTtd);
 
-    void setTasksAndTTD(Robot &&robot);
-    void setTasksAndTTD(const Robot &robot);
+    void setTasks(Robot &&robot);
+    void setTasks(const Robot &robot);
 
     void insert(const Task& task, Heuristic heuristic);
 private:
@@ -50,6 +51,8 @@ private:
                                   WaypointsList::iterator &waypointGoal);
 
     TimeStep updateBestWaypoints(TimeStep bestTTD, WaypointsList::iterator &bestStart, WaypointsList::iterator &bestEnd);
+
+    TimeStep computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP
