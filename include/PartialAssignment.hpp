@@ -6,12 +6,24 @@
 
 class PartialAssignment : public Robot{
 public:
-    const std::forward_list<unsigned int> &getTasksIndices() const;
     void setTasksAndTTD(Waypoints &&newWaypoints, TimeStep newTtd,  std::forward_list<unsigned>&& newTaskIndices);
     void setTasksAndTTD(const Waypoints &newWaypoints, TimeStep newTtd, const std::forward_list<unsigned>& newTaskIndices);
+    void insert(const Task& task);
 private:
     // index of task associated to each waypoint
-    std::forward_list<unsigned> tasksIndices;
+    std::list<unsigned> demands;
+
+    void insertTaskWaypoints(const Task &task, std::list<CompressedCoord>::iterator &waypointStart,
+                             std::list<CompressedCoord>::iterator &waypointGoal,
+                             std::list<unsigned int>::iterator &demandsStart,
+                             std::list<unsigned int>::iterator &demandsGoal);
+
+    bool checkCapacityConstraint();
+
+    void restorePreviousWaypoints(std::list<CompressedCoord>::iterator &waypointStart,
+                                  std::list<CompressedCoord>::iterator &waypointGoal,
+                                  std::list<unsigned int>::iterator &demandsStart,
+                                  std::list<unsigned int>::iterator &demandsGoal);
 };
 
 

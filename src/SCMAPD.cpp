@@ -64,18 +64,17 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         for (auto& [taskId, partialAssignments] : totalHeap){
             insert<heuristic>(
                     tasks[taskId],
-                    partialAssignments[robotIndex]->getWaypoints(),
-                    candidateAssignmentPtr.get());
+                    partialAssignments[robotIndex].get());
             // todo update heaps
         }
+        // should be same complexity as using priority_queue
+        totalHeap.sort(compareTotalHeap);
     }
-
-    totalHeap.sort(compareTotalHeap);
 }
 
 template<>
 void
-SCMAPD::insert<Heuristic::MCA>(const Task &task, const Waypoints &waypoints, PartialAssignment *partialAssignmentPtr) {
+SCMAPD::insert<Heuristic::MCA>(const Task &task, PartialAssignment *partialAssignmentPtr) {
     // todo complete this
 }
 
@@ -92,5 +91,5 @@ PASmartPtr SCMAPD::extractTop() {
 }
 
 template void
-SCMAPD::insert<Heuristic::HEUR>(const Task &task, const Waypoints &waypoints, PartialAssignment *partialAssignmentPtr);
+SCMAPD::insert<Heuristic::HEUR>(const Task &task, PartialAssignment *partialAssignmentPtr);
 template void SCMAPD::solve<Heuristic::HEUR>(TimeStep cutOffTime);

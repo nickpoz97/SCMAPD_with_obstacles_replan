@@ -49,7 +49,7 @@ private:
 
     // updates pa waypoints and ttd using heuristic
     template<Heuristic heuristic>
-    void insert(const Task &task, const Waypoints &waypoints, PartialAssignment *partialAssignmentPtr);
+    void insert(const Task &task, PartialAssignment *partialAssignmentPtr);
 
     static TotalHeap
     buildPartialAssignmentHeap(const RobotsVector &robots, const TasksVector &tasks,
