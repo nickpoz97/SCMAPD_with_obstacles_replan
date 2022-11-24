@@ -13,4 +13,17 @@ using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
 using DistanceMatrix = std::vector<std::vector<TimeStep>>;
 
+enum class Demand{
+    START = 1,
+    GOAL = -1
+};
+
+enum class Heuristic{
+    MCA,
+    RMCA_A,
+    RMCA_R
+};
+
+using WaypointsList = std::list<std::pair<CompressedCoord, Demand>>;
+
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

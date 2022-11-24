@@ -9,8 +9,6 @@
 #include <list>
 #include "Task.hpp"
 
-using Waypoints = std::list<CompressedCoord>;
-
 class Robot {
 public:
     explicit Robot(CompressedCoord position, unsigned index, unsigned capacity);
@@ -18,7 +16,7 @@ public:
 
     [[nodiscard]] unsigned int getCapacity() const;
 
-    [[nodiscard]] const Waypoints &getWaypoints() const;
+    [[nodiscard]] const WaypointsList &getWaypoints() const;
 
     [[nodiscard]] TimeStep getTtd() const;
 
@@ -28,22 +26,30 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    void setTasksAndTTD(Waypoints &&newWaypoints, TimeStep newTtd);
-    void setTasksAndTTD(const Waypoints &newWaypoints, TimeStep newTtd);
+    void setTasksAndTTD(WaypointsList &&newWaypoints, TimeStep newTtd);
+    void setTasksAndTTD(const WaypointsList &newWaypoints, TimeStep newTtd);
 
     void setTasksAndTTD(Robot &&robot);
     void setTasksAndTTD(const Robot &robot);
 
+    void insert(const Task& task, Heuristic heuristic);
 private:
     const CompressedCoord startPosition;
     const unsigned capacity;
     const unsigned index;
 
-protected:
-    Waypoints waypoints{};
+    WaypointsList waypoints{};
     TimeStep ttd = 0;
-};
 
-using RobotsVector = std::vector<Robot>;
+    void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
+                             WaypointsList::iterator &waypointGoal);
+
+    bool checkCapacityConstraint();
+
+    void restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
+                                  WaypointsList::iterator &waypointGoal);
+
+    TimeStep updateBestWaypoints(TimeStep bestTTD, WaypointsList::iterator &bestStart, WaypointsList::iterator &bestEnd);
+};
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP
