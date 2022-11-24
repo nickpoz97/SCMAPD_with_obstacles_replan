@@ -19,7 +19,7 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Robot> &robots, const Tasks
                                    const DistanceMatrix &distanceMatrix) {
     TotalHeap totalHeap{};
 
-    for(const auto& task : tasks){
+    for(const auto& t : tasks){
         std::vector<RobotSmartPtr> pa;
         pa.reserve(robots.size());
 
@@ -27,7 +27,7 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Robot> &robots, const Tasks
         for (const Robot& robot : robots){
             // robot in partial assignments heap
             pa.emplace_back(
-                initializePartialAssignment(distanceMatrix, task, robot)
+                    initializePartialAssignment(distanceMatrix, t, robot, tasks)
             );
         }
         std::sort(
@@ -35,26 +35,21 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Robot> &robots, const Tasks
             pa.end(),
             comparePartialAssignment
         );
-        totalHeap.push_back({task.index, std::move(pa)});
+        totalHeap.push_back({t.index, std::move(pa)});
     }
     totalHeap.sort(compareTotalHeap);
     return totalHeap;
 }
 
 RobotSmartPtr
-SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot) {
+SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot,
+                                    const TasksVector &taskVector) {
     RobotSmartPtr robotCopyPtr{new Robot{robot}};
-
-    // no conflicts at the beginning (simplified expression)
-    auto ttd =
-        distanceMatrix[robot.getStartPosition()][task.startLoc] -
-        task.releaseTime;
 
     robotCopyPtr->setTasks(
             {{task.startLoc, Demand::START, task.index},
              {task.goalLoc,  Demand::GOAL,  task.index}},
-            ttd
-    );
+            taskVector, distanceMatrix);
     return robotCopyPtr;
 }
 
@@ -62,10 +57,10 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
     for(auto candidateAssignmentPtr = extractTop(); !unassignedTasksIndices.empty(); candidateAssignmentPtr = extractTop()){
         auto robotIndex = candidateAssignmentPtr->getIndex();
-        assignments[robotIndex].setTasks(*candidateAssignmentPtr);
+        assignments[robotIndex].setTasks(*candidateAssignmentPtr, tasks, distanceMatrix);
 
         for (auto& [taskId, partialAssignments] : totalHeap){
-            partialAssignments[robotIndex]->insert(tasks[taskId], heuristic);
+            partialAssignments[robotIndex]->insert(tasks[taskId], heuristic, distanceMatrix, tasks);
             updatePAsHeapTop(partialAssignments);
         }
         // should be same complexity as using priority_queue

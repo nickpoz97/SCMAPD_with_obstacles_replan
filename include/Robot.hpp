@@ -27,13 +27,13 @@ public:
     [[nodiscard]] bool empty() const;
 
     // todo setTasks must not need newTtd
-    void setTasks(WaypointsList &&newWaypoints, TimeStep newTtd);
-    void setTasks(const WaypointsList &newWaypoints, TimeStep newTtd);
+    void setTasks(WaypointsList &&newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix);
+    void setTasks(const WaypointsList &newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix);
 
-    void setTasks(Robot &&robot);
-    void setTasks(const Robot &robot);
+    void setTasks(Robot &&robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix);
+    void setTasks(const Robot &robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix);
 
-    void insert(const Task& task, Heuristic heuristic);
+    void insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks);
 private:
     const CompressedCoord startPosition;
     const unsigned capacity;
@@ -50,9 +50,15 @@ private:
     void restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
                                   WaypointsList::iterator &waypointGoal);
 
-    TimeStep updateBestWaypoints(TimeStep bestTTD, WaypointsList::iterator &bestStart, WaypointsList::iterator &bestEnd);
+    TimeStep updateBestWaypoints(
+        TimeStep bestTTD,
+        WaypointsList::iterator &bestStart,
+        WaypointsList::iterator &bestEnd,
+        const DistanceMatrix &distanceMatrix,
+        const TasksVector &tasks
+    );
 
-    TimeStep computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
+    [[nodiscard]] TimeStep computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP

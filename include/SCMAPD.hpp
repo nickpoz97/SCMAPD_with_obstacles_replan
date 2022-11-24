@@ -45,7 +45,8 @@ private:
                                const DistanceMatrix &distanceMatrix);
 
     static RobotSmartPtr
-    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot);
+    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot,
+                                const TasksVector &taskVector);
 
     RobotSmartPtr extractTop();
 
