@@ -40,6 +40,7 @@ private:
     const unsigned index;
 
     WaypointsList waypoints{};
+    std::vector<CompressedCoord> path{};
     TimeStep ttd = 0;
 
     void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
@@ -50,15 +51,11 @@ private:
     void restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
                                   WaypointsList::iterator &waypointGoal);
 
-    TimeStep updateBestWaypoints(
-        TimeStep bestTTD,
-        WaypointsList::iterator &bestStart,
-        WaypointsList::iterator &bestEnd,
-        const DistanceMatrix &distanceMatrix,
-        const TasksVector &tasks
-    );
+    [[nodiscard]] TimeStep computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
 
-    [[nodiscard]] TimeStep computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
+    [[nodiscard]] TimeStep computeApproxTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const;
+
+    void updatePath();
 };
 
 #endif //SIMULTANEOUS_CMAPD_ROBOT_HPP

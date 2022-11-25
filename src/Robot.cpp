@@ -14,7 +14,8 @@ Robot::Robot(CompressedCoord position, unsigned index, unsigned capacity) :
 
 void Robot::setTasks(WaypointsList &&newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = std::move(newWaypoints);
-    ttd = computeTTD(tasks, distanceMatrix);
+    updatePath();
+    ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
 void Robot::setTasks(Robot &&robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
@@ -49,25 +50,31 @@ bool Robot::empty() const {
 
 void Robot::setTasks(const WaypointsList &newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = newWaypoints;
-    ttd = computeTTD(tasks, distanceMatrix);
+    updatePath();
+    ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
 void Robot::setTasks(const Robot &robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
     setTasks(robot.getWaypoints(), tasks, distanceMatrix);
-    ttd = computeTTD(tasks, distanceMatrix);
 }
 
 void
 Robot::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks) {
     WaypointsList::iterator bestStartWaypoint, bestGoalWaypoint;
-    TimeStep bestTTD = std::numeric_limits<TimeStep>::max();
+    TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
 
     // search for best position for task start and goal
     for(auto waypointStart = waypoints.begin(); waypointStart != waypoints.end() ; ++waypointStart){
         for (auto waypointGoal = std::next(waypointStart); waypointGoal != waypoints.end(); ++waypointGoal){
             insertTaskWaypoints(task, waypointStart, waypointGoal);
             if(checkCapacityConstraint()){
-                bestTTD = updateBestWaypoints(bestTTD, bestStartWaypoint, bestGoalWaypoint, distanceMatrix, tasks);
+                // todo add heuristic choices
+                auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix);
+                if(newApproxTtd < bestApproxTTD){
+                    bestApproxTTD = newApproxTtd;
+                    bestStartWaypoint = waypointStart;
+                    bestGoalWaypoint = waypointGoal;
+                }
             }
             restorePreviousWaypoints(waypointStart, waypointGoal);
         }
@@ -75,6 +82,9 @@ Robot::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &dista
 
     waypoints.insert(bestStartWaypoint, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalWaypoint, {task.goalLoc, Demand::GOAL, task.index});
+
+    updatePath();
+    ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
 void Robot::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
@@ -101,22 +111,41 @@ bool Robot::checkCapacityConstraint() {
     return true;
 }
 
-TimeStep Robot::updateBestWaypoints(TimeStep bestTTD, WaypointsList::iterator &bestStart, WaypointsList::iterator &bestEnd,
-                                    const DistanceMatrix &distanceMatrix, const TasksVector &tasks) {
-    // todo finish this
+TimeStep Robot::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
+    TimeStep cumulatedTTD = 0;
+    auto wpIt = waypoints.cbegin();
+
+    // i is the timestep
+    for(int i = 0 ; i < path.size() ; ++i){
+        // reached waypoint
+        if(path[i] == wpIt->position){
+            if(wpIt->demand == Demand::GOAL){
+                const Task& task = tasks[wpIt->taskIndex];
+                cumulatedTTD += i - task.releaseTime - distanceMatrix[task.startLoc][task.goalLoc];
+            }
+            std::next(wpIt);
+        }
+    }
+
+    return cumulatedTTD;
 }
 
-TimeStep Robot::computeTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
-    int i = 0;
+TimeStep Robot::computeApproxTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
     TimeStep cumulatedTTD = 0;
+    auto previousPos = startPosition;
 
     for(const auto& wp: waypoints){
         const Task& task = tasks[wp.taskIndex];
         if(wp.demand == Demand::GOAL){
-            cumulatedTTD += i - task.releaseTime - distanceMatrix[task.startLoc][task.goalLoc];
+            // simplified expression
+            cumulatedTTD += distanceMatrix[previousPos][task.startLoc] - task.releaseTime;
+            previousPos = task.goalLoc;
         }
-        ++i;
     }
 
     return cumulatedTTD;
+}
+
+void Robot::updatePath() {
+    // todo complete this
 }
