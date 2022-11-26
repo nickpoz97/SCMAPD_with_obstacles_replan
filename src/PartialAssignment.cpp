@@ -4,63 +4,41 @@
 
 #include <numeric>
 #include <limits>
-#include "Robot.hpp"
+#include "PartialAssignment.hpp"
 
-Robot::Robot(CompressedCoord position, unsigned index, unsigned capacity) :
-        startPosition{position},
-        index{index},
-        capacity{capacity}
-    {}
-
-void Robot::setTasks(WaypointsList &&newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void PartialAssignment::setTasks(WaypointsList &&newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = std::move(newWaypoints);
     updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
-void Robot::setTasks(Robot &&robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
-    setTasks(std::move(robot.waypoints), tasks, distanceMatrix);
-    robot.waypoints.clear();
-    robot.ttd = 0;
+void PartialAssignment::setTasks(PartialAssignment &&pa, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+    setTasks(std::move(pa.waypoints), tasks, distanceMatrix);
+    pa.waypoints.clear();
+    pa.ttd = 0;
 }
 
-unsigned int Robot::getCapacity() const {
-    return capacity;
-}
-
-const WaypointsList &Robot::getWaypoints() const {
+const WaypointsList &PartialAssignment::getWaypoints() const {
     return waypoints;
 }
 
-TimeStep Robot::getTtd() const {
-    return ttd;
-}
-
-unsigned Robot::getIndex() const {
-    return index;
-}
-
-CompressedCoord Robot::getStartPosition() const {
-    return startPosition;
-}
-
-bool Robot::empty() const {
+bool PartialAssignment::empty() const {
     return waypoints.empty();
 }
 
-void Robot::setTasks(const WaypointsList &newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void PartialAssignment::setTasks(const WaypointsList &newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = newWaypoints;
     updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
-void Robot::setTasks(const Robot &robot, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
-    setTasks(robot.getWaypoints(), tasks, distanceMatrix);
+void PartialAssignment::setTasks(const PartialAssignment &pa, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+    setTasks(pa.getWaypoints(), tasks, distanceMatrix);
 }
 
 void
-Robot::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks) {
-    WaypointsList::iterator bestStartWaypoint, bestGoalWaypoint;
+PartialAssignment::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks) {
+    WaypointsList::iterator bestStartIt, bestGoalIt;
     TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
 
     // search for best position for task start and goal
@@ -72,34 +50,34 @@ Robot::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &dista
                 auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix);
                 if(newApproxTtd < bestApproxTTD){
                     bestApproxTTD = newApproxTtd;
-                    bestStartWaypoint = waypointStart;
-                    bestGoalWaypoint = waypointGoal;
+                    bestStartIt = waypointStart;
+                    bestGoalIt = waypointGoal;
                 }
             }
             restorePreviousWaypoints(waypointStart, waypointGoal);
         }
     }
 
-    waypoints.insert(bestStartWaypoint, {task.startLoc, Demand::START, task.index});
-    waypoints.insert(bestGoalWaypoint, {task.goalLoc, Demand::GOAL, task.index});
+    waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
+    waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
 
     updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
-void Robot::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
-                                     WaypointsList::iterator &waypointGoal) {
+void PartialAssignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
+                                                 WaypointsList::iterator &waypointGoal) {
     waypoints.erase(waypointStart);
     waypoints.erase(waypointGoal);
 }
 
-void Robot::insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
-                                WaypointsList::iterator &waypointGoal) {
+void PartialAssignment::insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
+                                            WaypointsList::iterator &waypointGoal) {
     waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index});
     waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index});
 }
 
-bool Robot::checkCapacityConstraint() {
+bool PartialAssignment::checkCapacityConstraint() {
     unsigned actualWeight = 0;
 
     for(const auto& waypoint : waypoints){
@@ -111,7 +89,7 @@ bool Robot::checkCapacityConstraint() {
     return true;
 }
 
-TimeStep Robot::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
+TimeStep PartialAssignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
     TimeStep cumulatedTTD = 0;
     auto wpIt = waypoints.cbegin();
 
@@ -130,7 +108,7 @@ TimeStep Robot::computeRealTTD(const std::vector<Task> &tasks, const DistanceMat
     return cumulatedTTD;
 }
 
-TimeStep Robot::computeApproxTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
+TimeStep PartialAssignment::computeApproxTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
     TimeStep cumulatedTTD = 0;
     auto previousPos = startPosition;
 
@@ -146,6 +124,10 @@ TimeStep Robot::computeApproxTTD(const std::vector<Task> &tasks, const DistanceM
     return cumulatedTTD;
 }
 
-void Robot::updatePath() {
+void PartialAssignment::updatePath() {
     // todo complete this
+}
+
+bool operator<(const PartialAssignment &a, const PartialAssignment &b) {
+    return a.getTtd() < b.getTtd();
 }

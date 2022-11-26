@@ -4,21 +4,22 @@
 #include <filesystem>
 #include <unordered_set>
 #include <list>
-#include "Robot.hpp"
+#include "PartialAssignment.hpp"
 #include "PBS.h"
+#include "Assignment.hpp"
 
-using RobotSmartPtr = std::unique_ptr<Robot>;
+using PASmartPtr = std::unique_ptr<PartialAssignment>;
 
 // order each assignment by ttd
-auto comparePartialAssignment = [](const RobotSmartPtr & a, const RobotSmartPtr & b){
-    return a->getTtd() > b->getTtd();
+auto comparePartialAssignment = [](const PASmartPtr & a, const PASmartPtr & b){
+    return *a < *b;
 };
 
 // taskIndex, robot
-using PartialAssignments = std::pair<unsigned, std::vector<RobotSmartPtr>>;
+using PartialAssignments = std::pair<unsigned, std::vector<PASmartPtr>>;
 
 auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
-    return a.second[0] < b.second[0];
+    return *(a.second[0]) < *(b.second[0]);
 };
 
 // heap of assignments that differ by tasks
@@ -28,29 +29,29 @@ class SCMAPD {
 public:
     SCMAPD(
             DistanceMatrix && loadedDistanceMatrix,
-            std::vector<Robot> &&robots,
+            std::vector<Assignment> &&robots,
             TasksVector && tasksVector
     );
 
     void solve(Heuristic heuristic, TimeStep cutOffTime);
 private:
     const DistanceMatrix distanceMatrix;
-    std::vector<Robot> assignments;
+    std::vector<Assignment> assignments;
     TasksVector tasks;
     std::unordered_set<unsigned int> unassignedTasksIndices;
     TotalHeap totalHeap;
 
     static TotalHeap
-    buildPartialAssignmentHeap(const std::vector<Robot> &robots, const TasksVector &tasks,
+    buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
 
-    static RobotSmartPtr
-    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot,
+    static PASmartPtr
+    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
                                 const TasksVector &taskVector);
 
-    RobotSmartPtr extractTop();
+    PASmartPtr extractTop();
 
-    void updatePAsHeapTop(vector<RobotSmartPtr>& partialAssignments);
+    void updatePAsHeapTop(vector<PASmartPtr>& partialAssignments);
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

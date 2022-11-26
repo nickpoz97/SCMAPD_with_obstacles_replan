@@ -1,5 +1,6 @@
 #include <utils.hpp>
 #include <cnpy.h>
+#include "Assignment.hpp"
 
 DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath) {
     const cnpy::NpyArray distanceMatrixObj = cnpy::npy_load(distanceMatrixPath.generic_string());
@@ -20,7 +21,7 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
     return distanceMatrix;
 }
 
-std::vector<Robot>
+std::vector<Assignment>
 utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
@@ -42,7 +43,7 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char 
     std::getline(fs, line);
     size_t nAgents = std::stoi(line);
 
-    std::vector<Robot> agents;
+    std::vector<Assignment> agents;
     agents.reserve(nAgents);
 
     for (unsigned i = 0 ; i < nAgents; ++i){

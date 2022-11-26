@@ -1,10 +1,11 @@
 #include <filesystem>
 #include <boost/iterator/counting_iterator.hpp>
 #include <SCMAPD.hpp>
+#include "Assignment.hpp"
 
 SCMAPD::SCMAPD(
         DistanceMatrix && loadedDistanceMatrix,
-        std::vector<Robot> &&robots,
+        std::vector<Assignment> &&robots,
         TasksVector && tasksVector
     ) :
         distanceMatrix(std::move(loadedDistanceMatrix)),
@@ -15,16 +16,16 @@ SCMAPD::SCMAPD(
     {}
 
 TotalHeap
-SCMAPD::buildPartialAssignmentHeap(const std::vector<Robot> &robots, const TasksVector &tasks,
+SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
                                    const DistanceMatrix &distanceMatrix) {
     TotalHeap totalHeap{};
 
     for(const auto& t : tasks){
-        std::vector<RobotSmartPtr> pa;
+        std::vector<PASmartPtr> pa;
         pa.reserve(robots.size());
 
         // add "task" to each robot
-        for (const Robot& robot : robots){
+        for (const auto& robot : robots){
             // robot in partial assignments heap
             pa.emplace_back(
                     initializePartialAssignment(distanceMatrix, t, robot, tasks)
@@ -41,10 +42,10 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Robot> &robots, const Tasks
     return totalHeap;
 }
 
-RobotSmartPtr
-SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Robot &robot,
+PASmartPtr
+SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
                                     const TasksVector &taskVector) {
-    RobotSmartPtr robotCopyPtr{new Robot{robot}};
+    PASmartPtr robotCopyPtr{new Assignment{robot}};
 
     robotCopyPtr->setTasks(
             {{task.startLoc, Demand::START, task.index},
@@ -68,11 +69,11 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
     }
 }
 
-RobotSmartPtr SCMAPD::extractTop() {
-    // top() refers to tasks, [0] to Robot (and so waypoints) (pair<unsigned, ptr>)
+PASmartPtr SCMAPD::extractTop() {
+    // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<unsigned, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
     auto& [taskId, partialAssignments] = totalHeap.front();
-    RobotSmartPtr candidateAssignment{partialAssignments.at(0).release()};
+    PASmartPtr candidateAssignment{partialAssignments.at(0).release()};
 
     totalHeap.pop_front();
     unassignedTasksIndices.erase(taskId);
@@ -80,6 +81,6 @@ RobotSmartPtr SCMAPD::extractTop() {
     return candidateAssignment;
 }
 
-void SCMAPD::updatePAsHeapTop(std::vector<RobotSmartPtr>& partialAssignments) {
+void SCMAPD::updatePAsHeapTop(std::vector<PASmartPtr>& partialAssignments) {
     // todo complete this
 }

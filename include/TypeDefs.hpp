@@ -31,5 +31,6 @@ struct Waypoint{
 };
 
 using WaypointsList = std::list<Waypoint>;
+using Path = std::vector<CompressedCoord>;
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

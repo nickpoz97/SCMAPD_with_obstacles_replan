@@ -4,10 +4,11 @@
 #include <TypeDefs.hpp>
 #include <filesystem>
 #include <SCMAPD.hpp>
+#include "Assignment.hpp"
 
 namespace utils{
     DistanceMatrix loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath);
-    std::vector<Robot> loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep= ',', unsigned int capacity= 1);
+    std::vector<Assignment> loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep= ',', unsigned int capacity= 1);
     TasksVector loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep=',');
     CompressedCoord from2Dto1D(unsigned int x, unsigned int y, size_t nCols);
 }
