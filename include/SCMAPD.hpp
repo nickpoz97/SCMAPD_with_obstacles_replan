@@ -4,22 +4,15 @@
 #include <filesystem>
 #include <unordered_set>
 #include <list>
+#include <vector>
 #include "PartialAssignment.hpp"
-#include "PBS.h"
 #include "Assignment.hpp"
 
-using PASmartPtr = std::unique_ptr<PartialAssignment>;
-
-// order each assignment by ttd
-auto comparePartialAssignment = [](const PASmartPtr & a, const PASmartPtr & b){
-    return *a < *b;
-};
-
 // taskIndex, robot
-using PartialAssignments = std::pair<unsigned, std::vector<PASmartPtr>>;
+using PartialAssignments = std::pair<unsigned, std::vector<PartialAssignment>>;
 
-auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
-    return *(a.second[0]) < *(b.second[0]);
+inline auto compareTotalHeap = [](const PartialAssignments & a, const PartialAssignments & b){
+    return (a.second[0]) < (b.second[0]);
 };
 
 // heap of assignments that differ by tasks
@@ -45,13 +38,13 @@ private:
     buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
                                const DistanceMatrix &distanceMatrix);
 
-    static PASmartPtr
+    static PartialAssignment
     initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
                                 const TasksVector &taskVector);
 
-    PASmartPtr extractTop();
+    PartialAssignment extractTop();
 
-    void updatePAsHeapTop(vector<PASmartPtr>& partialAssignments);
+    void updatePAsHeapTop(const std::vector<PartialAssignment> &partialAssignments);
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

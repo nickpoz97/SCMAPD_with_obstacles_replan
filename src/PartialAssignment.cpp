@@ -127,7 +127,3 @@ TimeStep PartialAssignment::computeApproxTTD(const std::vector<Task> &tasks, con
 void PartialAssignment::updatePath() {
     // todo complete this
 }
-
-bool operator<(const PartialAssignment &a, const PartialAssignment &b) {
-    return a.getTtd() < b.getTtd();
-}

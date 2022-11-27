@@ -28,3 +28,16 @@ unsigned Assignment::getIndex() const {
 CompressedCoord Assignment::getStartPosition() const {
     return startPosition;
 }
+
+bool operator<(const Assignment& a, const Assignment& b){
+    return a.getTtd() < b.getTtd();
+}
+
+void Assignment::update(Assignment&& assignment) {
+    path = std::move(assignment.path);
+    ttd = assignment.ttd;
+}
+
+const Path &Assignment::getPath() const {
+    return path;
+}

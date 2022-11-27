@@ -12,6 +12,7 @@
 
 class PartialAssignment : public Assignment {
 public:
+    PartialAssignment(const Assignment& assignment) : Assignment{assignment} {};
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 
     [[nodiscard]] bool empty() const;
@@ -24,10 +25,7 @@ public:
     void setTasks(const PartialAssignment &pa, const TasksVector &tasks, const DistanceMatrix &distanceMatrix);
 
     void insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks);
-
-    friend bool operator<(const PartialAssignment & a, const PartialAssignment & b);
 private:
-
     WaypointsList waypoints{};
 
     void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,

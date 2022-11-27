@@ -16,8 +16,6 @@ class Assignment {
 public:
     explicit Assignment(CompressedCoord startPosition, unsigned index, unsigned capacity);
 
-    Assignment(const Assignment &robot) = default;
-
     [[nodiscard]] unsigned int getCapacity() const;
 
     [[nodiscard]] TimeStep getTtd() const;
@@ -26,10 +24,16 @@ public:
 
     [[nodiscard]] CompressedCoord getStartPosition() const;
 
+    [[nodiscard]] const Path &getPath() const;
+
+    friend bool operator<(const Assignment& a, const Assignment& b);
+
+    void update(Assignment&& assignment);
+
 protected:
-    const CompressedCoord startPosition;
-    const unsigned capacity;
-    const unsigned index;
+    CompressedCoord startPosition;
+    unsigned capacity;
+    unsigned index;
     Path path{};
     TimeStep ttd = 0;
 };

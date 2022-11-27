@@ -2,8 +2,6 @@
 #include <string>
 #include "SCMAPD.hpp"
 #include "utils.hpp"
-#include "PBS.h"
-#include "Instance.h"
 
 int main(int argc, char* argv[]){
     int nCols;

@@ -1,5 +1,6 @@
 #include <utils.hpp>
 #include <cnpy.h>
+#include <fstream>
 #include "Assignment.hpp"
 
 DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMatrixPath) {
