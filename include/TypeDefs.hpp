@@ -24,13 +24,6 @@ enum class Heuristic{
     RMCA_R
 };
 
-struct Waypoint{
-    CompressedCoord position;
-    Demand demand;
-    unsigned taskIndex;
-};
-
-using WaypointsList = std::list<Waypoint>;
 using Path = std::vector<CompressedCoord>;
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
 #include "SCMAPD.hpp"
@@ -13,16 +12,16 @@ SCMAPD::SCMAPD(
         assignments(std::move(robots)),
         tasks(std::move(tasksVector)),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        totalHeap(buildPartialAssignmentHeap(assignments, tasks, distanceMatrix))
+        bigH(buildPartialAssignmentHeap(assignments, tasks, distanceMatrix))
     {}
 
-TotalHeap
+BigH
 SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
                                    const DistanceMatrix &distanceMatrix) {
-    TotalHeap totalHeap{};
+    BigH totalHeap{};
 
     for(const auto& t : tasks){
-        std::vector<PartialAssignment> pa;
+        std::vector<Assignment> pa;
         pa.reserve(robots.size());
 
         // add "task" to each robot
@@ -38,14 +37,14 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const 
         );
         totalHeap.push_back({t.index, std::move(pa)});
     }
-    totalHeap.sort(compareTotalHeap);
+    totalHeap.sort(compareSmallH);
     return totalHeap;
 }
 
-PartialAssignment
+Assignment
 SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
                                     const TasksVector &taskVector) {
-    PartialAssignment robotCopy{Assignment{robot}};
+    Assignment robotCopy{Assignment{robot}};
 
     robotCopy.setTasks(
             {{task.startLoc, Demand::START, task.index},
@@ -60,27 +59,26 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
         auto robotIndex = candidateAssignment.getIndex();
         assignments[robotIndex].update(std::move(candidateAssignment));
 
-        for (auto& [taskId, partialAssignments] : totalHeap){
+        for (auto& [taskId, partialAssignments] : bigH){
             partialAssignments[robotIndex].insert(tasks[taskId], heuristic, distanceMatrix, tasks);
-            updatePAsHeapTop(partialAssignments);
+            updateSmallHTop(partialAssignments);
         }
-        // should be same complexity as using priority_queue
-        totalHeap.sort(compareTotalHeap);
+        bigH.sort(compareSmallH);
     }
 }
 
-PartialAssignment SCMAPD::extractTop() {
+Assignment SCMAPD::extractTop() {
     // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<unsigned, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
-    auto& [taskId, partialAssignments] = totalHeap.front();
+    auto& [taskId, partialAssignments] = bigH.front();
     auto candidateAssignment{std::move(partialAssignments.at(0))};
 
-    totalHeap.pop_front();
+    bigH.pop_front();
     unassignedTasksIndices.erase(taskId);
 
     return candidateAssignment;
 }
 
-void SCMAPD::updatePAsHeapTop(const std::vector<PartialAssignment> &partialAssignments) {
+void SCMAPD::updateSmallHTop(const std::vector<Assignment> &partialAssignments) {
     // todo complete this
 }

@@ -14,6 +14,7 @@ struct Task {
     const unsigned index;
 
     friend bool operator==(const Task& t1, const Task& t2);
+    [[nodiscard]] TimeStep getIdealGoalTime(const DistanceMatrix& dm) const;
 };
 
 using TasksVector = std::vector<Task>;
