@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <numeric>
+#include <cassert>
 #include "Assignment.hpp"
 
 Assignment::Assignment(CompressedCoord startPosition, unsigned index, unsigned capacity) :
@@ -116,12 +117,17 @@ bool Assignment::checkCapacityConstraint() {
     return true;
 }
 
-TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
+TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix, WaypointsList::const_iterator lastWaypoint) const{
+    assert(lastWaypointIndex < waypoints.size());
+
     TimeStep cumulatedTTD = 0;
     auto wpIt = waypoints.cbegin();
+    unsigned wpIndex = 0;
+
+    Path path; // todo compute path IMPORTANT!!!
 
     // i is the timestep
-    for(int i = 0 ; i < waypoints.size() ; ++i){
+    for(int i = 0 ; i < path.size() || wpIt == lastWaypoint; ++i){
         // reached waypoint
         if(path[i] == wpIt->position){
             if(wpIt->demand == Demand::GOAL){
@@ -132,18 +138,10 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
         }
     }
 
-    TimeStep t = 0;
-    for(const auto& wp: waypoints){
-        t += wp.path.size();
-        if(wp.demand == Demand::GOAL){
-            const Task& task = tasks[wpIt->taskIndex];
-            cumulatedTTD += t - task.getIdealGoalTime(distanceMatrix);
-        }
-    }
-
     return cumulatedTTD;
 }
 
+// todo this has to be changed
 TimeStep Assignment::computeApproxTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const{
     TimeStep cumulatedTTD = 0;
     auto previousPos = startPosition;
@@ -178,4 +176,8 @@ constexpr unsigned Assignment::computeHeuristic(Heuristic heur, TimeStep newtOk,
 
 bool operator<(const Assignment& a, const Assignment& b){
     return a.sortKey < b.sortKey;
+}
+
+TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
+    return computeRealTTD(tasks, distanceMatrix, waypoints.cend());
 }
