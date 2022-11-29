@@ -9,7 +9,7 @@
 
 #include "ambient/AmbientMapInstance.h"
 
-#include <fmt/format.h>
+#include "fmt/format.h"
 
 #include <filesystem>
 #include <fstream>
