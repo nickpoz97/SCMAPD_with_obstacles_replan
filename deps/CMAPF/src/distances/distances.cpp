@@ -7,13 +7,14 @@
  * @copyright 2022 Jacopo Zagoli, Davide Furlani
  */
 
-#include "distances.h"
+#include "distances/distances.h"
 
 #include <cmath>
 
 #include "Point.h"
 #include "ambient/AmbientMapInstance.h"
 #include "custom_types.h"
+#include "cnpy.h"
 
 namespace cmapd {
 
@@ -41,6 +42,25 @@ h_table_t compute_h_table(const AmbientMapInstance& map_instance, auto distance_
         }
     }
     return hTable;
+}
+
+h_table_t load_h_table(const std::filesystem::path & matrixPath, int nCols){
+    const cnpy::NpyArray distanceMatrixObj = cnpy::npy_load(matrixPath.generic_string());
+
+    unsigned startCoordsSize = distanceMatrixObj.shape[0] * distanceMatrixObj.shape[1];
+    unsigned endCoordsSize = distanceMatrixObj.shape[2] * distanceMatrixObj.shape[3];
+
+    // distance matrix is considered double
+    const auto* data = distanceMatrixObj.data<double>();
+    h_table_t distanceMatrix;
+
+    for (int i = 0 ; i < startCoordsSize ; ++i){
+        for (int j = 0 ; j < endCoordsSize ; ++j){
+            distanceMatrix[{i / nCols, i % nCols}][{j / nCols, j % nCols}] = static_cast<int>(data[i*startCoordsSize + j]);
+        }
+    }
+
+    return distanceMatrix;
 }
 
 /// Explicit template instantiation for usage in other translation units.

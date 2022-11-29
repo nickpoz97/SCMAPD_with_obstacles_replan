@@ -32,6 +32,8 @@ namespace cmapd {
  */
 int manhattan_distance(Point first, Point second);
 
+[[nodiscard]] h_table_t load_h_table(const std::filesystem::path & matrixPath, int nCols);
+
 namespace multi_a_star {
 /**
  * This function is used by the A* algorithm to compute an estimated distance of a Point from a

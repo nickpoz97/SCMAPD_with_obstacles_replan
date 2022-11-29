@@ -25,7 +25,13 @@ CPMAddPackage(
         GIT_TAG 9.1.0
         EXCLUDE_FROM_ALL TRUE)
 
+set(CNPY_ROOT deps/cnpy)
+set(CNPY_INCLUDE ${CNPY_ROOT}/include)
+
+add_subdirectory(${CNPY_ROOT})
 target_include_directories(cmapf PRIVATE include)
+target_include_directories(cmapf PUBLIC ${CNPY_INCLUDE})
 target_link_libraries(cmapf PRIVATE fmt::fmt)
+target_link_libraries(cmapf PUBLIC cnpy)
 
 
