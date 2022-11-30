@@ -1,5 +1,4 @@
 #include <utils.hpp>
-#include <cnpy.h>
 #include <fstream>
 #include "Assignment.hpp"
 #include "DistanceMatrix.hpp"
@@ -24,7 +23,7 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int nCols, char h
         std::getline(coordStream, yCoordString, horizontalSep);
         std::getline(coordStream, xCoordString, horizontalSep);
 
-        CompressedCoord cc = from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
+        CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
         agents.emplace_back(cc, i, capacity);
     }
@@ -63,7 +62,7 @@ std::vector<Task> utils::loadTasks(const std::filesystem::path &tasksFilePath, i
 
         unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
 
-        tasks.push_back({from2Dto1D(xBegin, yBegin, nCols), from2Dto1D(xEnd, yEnd, nCols), releaseTime, i});
+        tasks.push_back({DistanceMatrix::from2Dto1D(xBegin, yBegin, nCols), DistanceMatrix::from2Dto1D(xEnd, yEnd, nCols), releaseTime, i});
     }
 
     return tasks;

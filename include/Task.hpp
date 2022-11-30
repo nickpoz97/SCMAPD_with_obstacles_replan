@@ -5,7 +5,8 @@
 #ifndef SIMULTANEOUS_CMAPD_TASK_HPP
 #define SIMULTANEOUS_CMAPD_TASK_HPP
 
-#include <TypeDefs.hpp>
+#include "TypeDefs.hpp"
+#include "DistanceMatrix.hpp"
 
 struct Task {
     const CompressedCoord startLoc;
