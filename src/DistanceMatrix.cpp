@@ -1,7 +1,3 @@
-//
-// Created by nicco on 30/11/2022.
-//
-
 #include "Assignment.hpp"
 #include <fstream>
 #include <cnpy.h>
@@ -37,4 +33,8 @@ DistanceMatrix::computeCumulatedValue(cmapd::Point x, int label, const cmapd::pa
         h_value += getDistance(goal_sequence[j - 1], goal_sequence[j]);
     }
     return h_value;
+}
+
+CompressedCoord DistanceMatrix::from2Dto2D(cmapd::Point point, size_t nCols) {
+    return point.row * nCols + point.col;
 }

@@ -13,8 +13,6 @@ struct Waypoint{
     CompressedCoord position;
     Demand demand;
     unsigned taskIndex;
-
-    [[nodiscard]] cmapd::Point toPoint(int nCols) const;
 };
 
 using WaypointsList = std::list<Waypoint>;
