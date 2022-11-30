@@ -6,8 +6,6 @@
 #include "ambient/AmbientMap.h"
 
 int main(int argc, char* argv[]){
-
-
     int nCols;
 
     SCMAPD scmapd{

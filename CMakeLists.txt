@@ -7,14 +7,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(EXE cmapd)
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-set(INCLUDE_DIRS include include/CMAPF )
+set(INCLUDE_DIRS include include/CMAPF)
 
 add_subdirectory(deps)
 set(CNPY_INCLUDE_DIR "deps/cnpy/include")
 
 add_executable(${EXE} ${SOURCES})
 target_include_directories(${EXE} PUBLIC ${INCLUDE_DIRS} ${CNPY_INCLUDE_DIR})
-target_link_libraries(${EXE} PRIVATE cnpy)
+target_link_libraries(${EXE} PRIVATE cnpy fmt::fmt)
 
 set(HEURISTIC MCA CACHE STRING "Choose the insertion heuristic")
 message(Using heuristic ${HEURISTIC})

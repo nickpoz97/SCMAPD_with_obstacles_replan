@@ -5,7 +5,6 @@
 #include <list>
 #include <queue>
 
-using Coord = std::pair<unsigned int, unsigned int>;
 using CompressedCoord = unsigned int;
 using TimeStep = unsigned int;
 

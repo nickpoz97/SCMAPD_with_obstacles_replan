@@ -19,5 +19,3 @@ CPMAddPackage(
         EXCLUDE_FROM_ALL TRUE)
 
 add_subdirectory(cnpy)
-
-

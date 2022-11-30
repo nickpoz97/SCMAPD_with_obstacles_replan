@@ -31,22 +31,14 @@ class AmbientMapInstance final : public AmbientMap {
     h_table_t m_h_table;
 
   public:
-    /**
-     * Constructor of an already generated ambient map instance: takes two paths, one to
-     * auto-generated file containing the instance info and the other to the map file use to
-     * generate the previous one
-     * @throw runtime_error if any of the required files do not exist
-     */
-    explicit AmbientMapInstance(const std::filesystem::path& path_to_map_instance,
-                                const std::filesystem::path& path_to_map);
-    /**
-     * Constructor of ambient map instance: takes a map, a reference to a vector of agents
-     * [std::vector<Point>] and a reference to a vector of tasks [std::vector<std::pair<Point,
-     * Point>>]
-     */
-    explicit AmbientMapInstance(const AmbientMap& map,
-                                const std::vector<Point>& a,
-                                const std::vector<std::pair<Point, Point>>& t);
+    // given map, agents, tasks and h_table it build a runtime instance
+    explicit AmbientMapInstance(
+        const AmbientMap& map,
+        std::vector<Point> a,
+        std::vector<std::pair<Point, Point>>  t,
+        h_table_t  h
+    );
+
     /**
      * Method that return the number of agents in the map
      * @returns the number of agents in the map

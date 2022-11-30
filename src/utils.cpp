@@ -63,7 +63,7 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char 
     return agents;
 }
 
-TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep){
+std::vector<Task> utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep){
     std::ifstream fs (tasksFilePath, std::ios::in);
     std::string line;
 
@@ -71,7 +71,7 @@ TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCo
     std::getline(fs, line);
     size_t nTasks = std::stoi(line);
 
-    TasksVector tasks;
+    std::vector<Task> tasks;
     tasks.reserve(nTasks);
 
     for (unsigned i = 0 ; i < nTasks ; ++i){
@@ -102,4 +102,33 @@ TasksVector utils::loadTasks(const std::filesystem::path &tasksFilePath, int nCo
 
 CompressedCoord utils::from2Dto1D(unsigned x, unsigned y, size_t nCols) {
     return y * static_cast<unsigned>(nCols) + x;
+}
+
+namespace cmapd{
+
+std::vector<std::pair<Point, Point>> taskToPointVec(const std::vector<Task>& v, size_t nCols){
+    std::vector<std::pair<Point, Point>> newV{};
+    newV.reserve(v.size());
+
+    for (const Task& t : v){
+        newV.emplace_back(
+            Point(t.startLoc / nCols, t.startLoc % nCols),
+            Point(t.goalLoc / nCols, t.goalLoc % nCols)
+        );
+    }
+
+    return newV;
+}
+
+std::vector<Point> robotToPointVec(const std::vector<Assignment>& v, size_t nCols){
+    std::vector<Point> newV;
+    newV.reserve(v.size());
+
+    for(const auto& a : v){
+        newV.emplace_back(a.getStartPosition() / nCols, a.getStartPosition() % nCols);
+    }
+
+    return newV;
+}
+
 }

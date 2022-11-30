@@ -34,13 +34,13 @@ void Assignment::update(Assignment&& assignment) {
     ttd = assignment.ttd;
 }
 
-void Assignment::setTasks(WaypointsList &&newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void Assignment::setTasks(WaypointsList &&newWaypoints, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = std::move(newWaypoints);
     updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
-void Assignment::setTasks(Assignment &&pa, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void Assignment::setTasks(Assignment &&pa, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     setTasks(std::move(pa.waypoints), tasks, distanceMatrix);
     pa.waypoints.clear();
     pa.ttd = 0;
@@ -54,18 +54,18 @@ bool Assignment::empty() const {
     return waypoints.empty();
 }
 
-void Assignment::setTasks(const WaypointsList &newWaypoints, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void Assignment::setTasks(const WaypointsList &newWaypoints, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = newWaypoints;
     updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
-void Assignment::setTasks(const Assignment &pa, const TasksVector &tasks, const DistanceMatrix &distanceMatrix) {
+void Assignment::setTasks(const Assignment &pa, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     setTasks(pa.getWaypoints(), tasks, distanceMatrix);
 }
 
 void
-Assignment::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const TasksVector &tasks) {
+Assignment::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks) {
     WaypointsList::iterator bestStartIt, bestGoalIt;
     TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
 

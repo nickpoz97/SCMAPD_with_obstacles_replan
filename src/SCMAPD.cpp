@@ -6,17 +6,17 @@
 SCMAPD::SCMAPD(
         DistanceMatrix && loadedDistanceMatrix,
         std::vector<Assignment> &&robots,
-        TasksVector && tasksVector
+        std::vector<Task> && std::vector<Task>
     ) :
         distanceMatrix(std::move(loadedDistanceMatrix)),
         assignments(std::move(robots)),
-        tasks(std::move(tasksVector)),
+        tasks(std::move(std::vector<Task>)),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
         bigH(buildPartialAssignmentHeap(assignments, tasks, distanceMatrix))
     {}
 
 BigH
-SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
+SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const std::vector<Task> &tasks,
                                    const DistanceMatrix &distanceMatrix) {
     BigH totalHeap{};
 
@@ -43,7 +43,7 @@ SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const 
 
 Assignment
 SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
-                                    const TasksVector &taskVector) {
+                                    const std::vector<Task> &taskVector) {
     Assignment robotCopy{Assignment{robot}};
 
     robotCopy.setTasks(

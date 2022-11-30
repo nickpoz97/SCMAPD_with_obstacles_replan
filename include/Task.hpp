@@ -17,6 +17,4 @@ struct Task {
     [[nodiscard]] TimeStep getIdealGoalTime(const DistanceMatrix& dm) const;
 };
 
-using TasksVector = std::vector<Task>;
-
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP
