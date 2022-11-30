@@ -10,8 +10,6 @@ using TimeStep = unsigned int;
 
 using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
-using DistanceMatrix = std::vector<std::vector<TimeStep>>;
-
 enum class Demand{
     START = 1,
     GOAL = -1

@@ -10,6 +10,7 @@
 #include "a_star/multi_a_star.h"
 
 #include <set>
+#include <algorithm>
 
 #include "Constraint.h"
 #include "Point.h"

@@ -35,7 +35,7 @@ class Node {
    /// The estimated cost of visiting the goals from the current Node.
    int m_h;
    /// A reference to the h-table, useful for generating other nodes.
-   h_table_t m_h_table;
+   DistanceMatrix m_h_table;
    /// Goal to visit.
    path_t m_goal_sequence;
 
@@ -46,7 +46,7 @@ class Node {
     * @param h_table A reference to the h-table for the current map.
     * @param goal_sequence The goals to visit.
     */
-   explicit Node(Point loc, const h_table_t& h_table, const path_t& goal_sequence);
+   explicit Node(Point loc, const DistanceMatrix &h_table, const path_t& goal_sequence);
    /**
     * Constructor for a Node with a parent.
     * @param loc Position on the map.
@@ -56,7 +56,7 @@ class Node {
     */
    explicit Node(Point loc,
                  const Node& parent,
-                 const h_table_t& h_table,
+                 const DistanceMatrix &h_table,
                  const path_t& goal_sequence);
    /**
     * This method returns all children in valid positions of a Node with all the parameters set.

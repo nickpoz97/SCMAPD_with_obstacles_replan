@@ -16,7 +16,7 @@
 
 #include "Point.h"
 #include "ambient/AmbientMap.h"
-#include "custom_types.h"
+#include "DistanceMatrix.hpp"
 
 namespace cmapd {
 /**
@@ -28,15 +28,15 @@ class AmbientMapInstance final : public AmbientMap {
   private:
     std::vector<Point> m_agents;
     std::vector<std::pair<Point, Point>> m_tasks;
-    h_table_t m_h_table;
+    DistanceMatrix m_h_table;
 
   public:
     // given map, agents, tasks and h_table it build a runtime instance
     explicit AmbientMapInstance(
         const AmbientMap& map,
         std::vector<Point> a,
-        std::vector<std::pair<Point, Point>>  t,
-        h_table_t  h
+        std::vector<std::pair<Point, Point>> t,
+        DistanceMatrix&& distanceMatrix
     );
 
     /**

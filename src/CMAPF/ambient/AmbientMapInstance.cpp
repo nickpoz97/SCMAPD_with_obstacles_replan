@@ -9,15 +9,11 @@
 
 #include "ambient/AmbientMapInstance.h"
 
-#include "fmt/format.h"
-
 #include <filesystem>
-#include <fstream>
 #include <utility>
 #include <vector>
 
 #include "Point.h"
-#include "distances/distances.h"
 
 namespace cmapd {
 
@@ -25,8 +21,8 @@ AmbientMapInstance::AmbientMapInstance(
     const AmbientMap &map,
     std::vector<Point> a,
     std::vector<std::pair<Point, Point>> t,
-    h_table_t  h
-) : AmbientMap(map), m_agents(std::move(a)), m_tasks(std::move(t)), m_h_table(std::move(h)){
+    DistanceMatrix&& distanceMatrix
+) : AmbientMap(map), m_agents(std::move(a)), m_tasks(std::move(t)), m_h_table(std::move(distanceMatrix)){
 
     for (auto agent : m_agents) {
         m_grid[agent.row][agent.col] = 'a';
@@ -71,7 +67,7 @@ std::string AmbientMapInstance::to_string() const {
 
 std::vector<std::pair<Point, Point>> AmbientMapInstance::tasks() const { return m_tasks; }
 const std::vector<Point>& AmbientMapInstance::agents() const { return m_agents; }
-const h_table_t& AmbientMapInstance::h_table() const { return m_h_table; }
+const DistanceMatrix& AmbientMapInstance::h_table() const { return m_h_table; }
 std::ostream& operator<<(std::ostream& os, const AmbientMapInstance& instance) {
     os << instance.to_string();
     return os;

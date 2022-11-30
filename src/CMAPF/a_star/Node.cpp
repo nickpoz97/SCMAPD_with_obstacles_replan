@@ -12,28 +12,28 @@
 #include "Point.h"
 #include "ambient/AmbientMapInstance.h"
 #include "custom_types.h"
-#include "distances/distances.h"
 
 namespace cmapd::multi_a_star {
 
-Node::Node(const Point loc, const h_table_t& h_table, const path_t& goal_sequence)
+Node::Node(Point loc, const DistanceMatrix& h_table, const path_t& goal_sequence)
     : m_location{loc},
       m_path{{loc}},
       m_label{0},
       m_g{0},
-      m_h{cmapd::multi_a_star::compute_h_value(loc, m_label, h_table, goal_sequence)},
+      // todo fix this
+      m_h{static_cast<int>(h_table.computeCumulatedValue(loc, m_label, goal_sequence))},
       m_h_table{h_table},
       m_goal_sequence{goal_sequence} {}
 
-Node::Node(const Point loc,
+Node::Node(Point loc,
            const Node& parent,
-           const h_table_t& h_table,
+           const DistanceMatrix &h_table,
            const path_t& goal_sequence)
     : m_location{loc},
       m_path{parent.get_path()},
       m_label{parent.m_label},
       m_g{parent.m_g + 1},
-      m_h{cmapd::multi_a_star::compute_h_value(loc, parent.m_label, h_table, goal_sequence)},
+      m_h{static_cast<int>(h_table.computeCumulatedValue(loc, parent.m_label, goal_sequence))},
       m_h_table{h_table},
       m_goal_sequence{goal_sequence} {
     m_path.push_back(m_location);

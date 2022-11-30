@@ -10,7 +10,7 @@
 
 #include <optional>
 #include <stdexcept>
-
+#include <algorithm>
 #include "a_star/Node.h"
 
 namespace cmapd::multi_a_star {
