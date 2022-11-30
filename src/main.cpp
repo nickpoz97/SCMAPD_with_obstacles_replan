@@ -4,9 +4,14 @@
 #include "SCMAPD.hpp"
 #include "utils.hpp"
 #include "ambient/AmbientMap.h"
+#include "ambient/AmbientMapInstance.h"
 
 int main(int argc, char* argv[]){
-    int nCols;
+    cmapd::AmbientMap map("grid.txt");
+    const auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
+    const auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
+
+    cmapd::AmbientMapInstance instance(map, )
 
     SCMAPD scmapd{
         utils::loadDistanceMatrix("data/distance_matrix.npy"),

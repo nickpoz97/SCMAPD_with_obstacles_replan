@@ -23,22 +23,9 @@ DistanceMatrix utils::loadDistanceMatrix(const std::filesystem::path &distanceMa
 }
 
 std::vector<Assignment>
-utils::loadRobots(const std::filesystem::path &agentsFilePath, int& nCols, char horizontalSep, unsigned int capacity){
+utils::loadRobots(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, unsigned int capacity){
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
-
-    // nRows,nCols line
-    std::getline(fs, line);
-
-    std::string nRowsString;
-    std::string nColsString;
-
-    auto matrixSizeInfoStream = std::stringstream(line);
-    std::getline(matrixSizeInfoStream, nRowsString, horizontalSep);
-    std::getline(matrixSizeInfoStream, nColsString, horizontalSep);
-
-    //nRows = std::stoi(nRowsString);
-    nCols = std::stoi(nColsString);
 
     // nAgents line
     std::getline(fs, line);
