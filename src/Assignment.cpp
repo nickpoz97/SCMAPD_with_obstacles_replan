@@ -6,8 +6,11 @@
 #include <numeric>
 #include <cassert>
 #include "Assignment.hpp"
+#include "CmapdSolution.h"
+#include "pbs.h"
+#include "cbs.h"
 
-Assignment::Assignment(CompressedCoord startPosition, unsigned index, unsigned capacity) :
+Assignment::Assignment(Coord startPosition, unsigned index, unsigned capacity) :
         startPosition{startPosition},
         index{index},
         capacity{capacity}
@@ -25,7 +28,7 @@ unsigned Assignment::getIndex() const {
     return index;
 }
 
-CompressedCoord Assignment::getStartPosition() const {
+Coord Assignment::getStartPosition() const {
     return startPosition;
 }
 
@@ -36,7 +39,6 @@ void Assignment::update(Assignment&& assignment) {
 
 void Assignment::setTasks(WaypointsList &&newWaypoints, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = std::move(newWaypoints);
-    updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
@@ -56,7 +58,6 @@ bool Assignment::empty() const {
 
 void Assignment::setTasks(const WaypointsList &newWaypoints, const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
     waypoints = newWaypoints;
-    updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
@@ -89,7 +90,6 @@ Assignment::insert(const Task &task, Heuristic heuristic, const DistanceMatrix &
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
 
-    updatePath();
     ttd = computeRealTTD(tasks, distanceMatrix);
 }
 
@@ -118,7 +118,7 @@ bool Assignment::checkCapacityConstraint() {
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix, WaypointsList::const_iterator lastWaypoint) const{
-    assert(lastWaypointIndex < waypoints.size());
+    assert(lastWaypoint != waypoints.end());
 
     TimeStep cumulatedTTD = 0;
     auto wpIt = waypoints.cbegin();
@@ -150,28 +150,12 @@ TimeStep Assignment::computeApproxTTD(const std::vector<Task> &tasks, const Dist
         const Task& task = tasks[wp.taskIndex];
         if(wp.demand == Demand::GOAL){
             // simplified expression
-            cumulatedTTD += distanceMatrix[previousPos][task.startLoc] - task.releaseTime;
+            cumulatedTTD += distanceMatrix.getDistance(previousPos, task.startLoc) - task.releaseTime;
             previousPos = task.goalLoc;
         }
     }
 
     return cumulatedTTD;
-}
-
-void Assignment::updatePath() {
-    // todo complete this
-}
-
-constexpr unsigned Assignment::computeHeuristic(Heuristic heur, TimeStep newtOk, TimeStep oldtOk) {
-    auto fMCA = [newtOk, oldtOk](){
-        return newtOk - oldtOk;
-    };
-
-    auto fRMCAa = [newtOk, oldtOk](){
-        return newtOk - oldtOk;
-    };
-
-
 }
 
 bool operator<(const Assignment& a, const Assignment& b){
@@ -181,3 +165,27 @@ bool operator<(const Assignment& a, const Assignment& b){
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
     return computeRealTTD(tasks, distanceMatrix, waypoints.cend());
 }
+
+const Path &Assignment::getPath() const {
+    return path;
+}
+
+Path Assignment::computePathAndTTD(const std::vector<Assignment> &assignments,
+                                   const cmapd::AmbientMapInstance &ambientMapInstance, bool usePbs) const {
+    std::vector<Path> goalSequences{};
+    for (auto & a: assignments){
+        if(a.index != index) {
+            goalSequences.emplace_back(a.waypoints.cbegin(), a.waypoints.cend());
+        }
+        else{
+            goalSequences.emplace_back(this->waypoints.cbegin(), this->waypoints.cend());
+        }
+    }
+
+    cmapd::CmapdSolution sol = usePbs ?
+                               cmapd::pbs::pbs(ambientMapInstance, goalSequences) :
+                               cmapd::cbs::cbs(ambientMapInstance, goalSequences);
+
+    return sol.paths[index];
+}
+

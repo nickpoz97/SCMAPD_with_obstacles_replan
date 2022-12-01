@@ -10,7 +10,7 @@ DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data, unsigned int nCols) :
     endCoordsSize{static_cast<unsigned int>(rawDistanceMatrix.shape[2] * rawDistanceMatrix.shape[3])}
     {}
 
-unsigned DistanceMatrix::getDistance(cmapd::Point from, cmapd::Point to) const {
+unsigned DistanceMatrix::getDistance(Coord from, Coord to) const {
     return getDistance(
             from2Dto1D(from.col, from.row, nCols), from2Dto1D(to.col, to.row, nCols)
     );

@@ -11,9 +11,4 @@ namespace utils{
     std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep=',');
 }
 
-namespace cmapd{
-    std::vector<std::pair<Point, Point>> taskToPointVec(const std::vector<Task>& v, size_t nCols);
-    std::vector<Point> robotToPointVec(const std::vector<Assignment>& v, size_t nCols);
-}
-
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP

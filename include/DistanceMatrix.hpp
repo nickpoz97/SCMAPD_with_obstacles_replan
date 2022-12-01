@@ -16,7 +16,7 @@ class DistanceMatrix {
 public:
     DistanceMatrix(cnpy::NpyArray&& data, unsigned nCols);
     [[nodiscard]] unsigned getDistance(CompressedCoord from, CompressedCoord to) const;
-    [[nodiscard]] unsigned getDistance(cmapd::Point from, cmapd::Point to) const;
+    [[nodiscard]] unsigned getDistance(Coord from, Coord to) const;
 
     static CompressedCoord from2Dto1D(unsigned int col, unsigned int row, size_t nCols);
     static CompressedCoord from2Dto2D(cmapd::Point point, size_t nCols);

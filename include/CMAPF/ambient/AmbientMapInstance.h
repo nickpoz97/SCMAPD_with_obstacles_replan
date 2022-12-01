@@ -74,7 +74,7 @@ class AmbientMapInstance final : public AmbientMap {
      * Method that returns the m_h_table of the instance.
      * @return the m_h_table
      */
-    [[nodiscard]] const h_table_t& h_table() const;
+    [[nodiscard]] const DistanceMatrix& h_table() const;
     /**
      * Stream operator
      * @param os output stream

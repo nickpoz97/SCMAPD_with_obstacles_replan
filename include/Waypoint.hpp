@@ -10,9 +10,11 @@
 #include <Task.hpp>
 
 struct Waypoint{
-    CompressedCoord position;
+    Coord position;
     Demand demand;
     unsigned taskIndex;
+
+    inline operator Coord() const {return position;}
 };
 
 using WaypointsList = std::list<Waypoint>;

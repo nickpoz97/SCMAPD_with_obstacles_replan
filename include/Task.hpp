@@ -9,8 +9,8 @@
 #include "DistanceMatrix.hpp"
 
 struct Task {
-    const CompressedCoord startLoc;
-    const CompressedCoord goalLoc;
+    const Coord startLoc;
+    const Coord goalLoc;
     const TimeStep releaseTime;
     const unsigned index;
 

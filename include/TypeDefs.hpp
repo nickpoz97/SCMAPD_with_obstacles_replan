@@ -5,6 +5,10 @@
 #include <list>
 #include <queue>
 
+#include "Point.h"
+#include "custom_types.h"
+
+using Coord = cmapd::Point;
 using CompressedCoord = unsigned int;
 using TimeStep = unsigned int;
 
@@ -21,6 +25,6 @@ enum class Heuristic{
     RMCA_R
 };
 
-using Path = std::vector<CompressedCoord>;
+using Path = cmapd::path_t;
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

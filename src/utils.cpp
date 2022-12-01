@@ -23,9 +23,10 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int nCols, char h
         std::getline(coordStream, yCoordString, horizontalSep);
         std::getline(coordStream, xCoordString, horizontalSep);
 
-        CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
+        //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
-        agents.emplace_back(cc, i, capacity);
+        Coord position{std::stoi(xCoordString), std::stoi(yCoordString)};
+        agents.emplace_back(position, i, capacity);
     }
 
     return agents;
@@ -62,37 +63,9 @@ std::vector<Task> utils::loadTasks(const std::filesystem::path &tasksFilePath, i
 
         unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
 
-        tasks.push_back({DistanceMatrix::from2Dto1D(xBegin, yBegin, nCols), DistanceMatrix::from2Dto1D(xEnd, yEnd, nCols), releaseTime, i});
+
+        tasks.push_back({{xBegin, yBegin}, {xEnd, yEnd}, releaseTime, i});
     }
 
     return tasks;
-}
-
-namespace cmapd{
-
-std::vector<std::pair<Point, Point>> taskToPointVec(const std::vector<Task>& v, size_t nCols){
-    std::vector<std::pair<Point, Point>> newV{};
-    newV.reserve(v.size());
-
-    for (const Task& t : v){
-        newV.emplace_back(
-            Point(t.startLoc / nCols, t.startLoc % nCols),
-            Point(t.goalLoc / nCols, t.goalLoc % nCols)
-        );
-    }
-
-    return newV;
-}
-
-std::vector<Point> robotToPointVec(const std::vector<Assignment>& v, size_t nCols){
-    std::vector<Point> newV;
-    newV.reserve(v.size());
-
-    for(const auto& a : v){
-        newV.emplace_back(a.getStartPosition() / nCols, a.getStartPosition() % nCols);
-    }
-
-    return newV;
-}
-
 }
