@@ -9,9 +9,9 @@
 #pragma once
 #include <vector>
 
-#include "CmapdSolution.h"
 #include "ambient/AmbientMapInstance.h"
 #include "custom_types.h"
+#include "Constraint.h"
 
 namespace cmapd::pbs {
 
@@ -23,4 +23,13 @@ namespace cmapd::pbs {
  * @throws runtime_error if no solution is found.
  */
 CmapdSolution pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences);
+
+// note: constraints are updated, so it is an in-out parameter
+std::pair<path_t, std::vector<Constraint>> pbs(
+            const AmbientMapInstance& instance,
+            std::vector<Constraint>&& constraints,
+            int aIndex,
+            const WaypointsList& waypoints
+);
+
 }  // namespace cmapd::pbs

@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include "CmapdSolution.h"
 #include "Constraint.h"
 #include "Point.h"
 #include "a_star/multi_a_star.h"
@@ -53,4 +52,38 @@ CmapdSolution pbs(const AmbientMapInstance& instance, const std::vector<path_t>&
 
     return {paths, makespan, cost};
 }
+
+std::pair<path_t, std::vector<Constraint>> pbs(
+        const AmbientMapInstance& instance,
+        std::vector<Constraint>&& constraints,
+        int aIndex,
+        const WaypointsList& waypoints
+        ){
+    Path waypointsCoords{};
+    waypointsCoords.reserve(waypoints.size());
+    for(const auto& w : waypoints){
+        waypointsCoords.push_back(w);
+    }
+
+    path_t path{multi_a_star::multi_a_star(aIndex, instance.agents().at(aIndex), waypointsCoords, instance, constraints)};
+
+    // Adding constraints for other agents
+    for (int timestep = 0; timestep < path.size(); ++timestep) {
+        Point point{path.at(timestep)};
+        for (int other_agent = aIndex + 1; other_agent < instance.num_agents(); ++other_agent) {
+            for (moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+                 const auto& move : moves) {
+                Point from_where{point + move};
+                if (instance.is_valid(from_where)) {
+                    // if this is the last timestep, final should equal to true
+                    constraints.emplace_back(Constraint{
+                            other_agent, timestep, from_where, point, timestep == path.size() - 1});
+                }
+            }
+        }
+    }
+
+    return {path, constraints};
+}
+
 }  // namespace cmapd::pbs

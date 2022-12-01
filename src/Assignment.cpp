@@ -1,14 +1,8 @@
-//
-// Created by nicco on 26/11/2022.
-//
-
 #include <limits>
 #include <numeric>
 #include <cassert>
 #include "Assignment.hpp"
-#include "CmapdSolution.h"
 #include "pbs.h"
-#include "cbs.h"
 
 Assignment::Assignment(Coord startPosition, unsigned index, unsigned capacity) :
         startPosition{startPosition},
@@ -170,22 +164,29 @@ const Path &Assignment::getPath() const {
     return path;
 }
 
-Path Assignment::computePathAndTTD(const std::vector<Assignment> &assignments,
-                                   const cmapd::AmbientMapInstance &ambientMapInstance, bool usePbs) const {
-    std::vector<Path> goalSequences{};
-    for (auto & a: assignments){
-        if(a.index != index) {
-            goalSequences.emplace_back(a.waypoints.cbegin(), a.waypoints.cend());
-        }
-        else{
-            goalSequences.emplace_back(this->waypoints.cbegin(), this->waypoints.cend());
+std::pair<Path, std::vector<cmapd::Constraint>> Assignment::computePath(
+        const cmapd::AmbientMapInstance& ambientMapInstance,
+        const WaypointsList &waypointsList,
+        std::vector<cmapd::Constraint>&& constraintsVector
+        ) {
+    return cmapd::pbs::pbs(ambientMapInstance, std::move(constraintsVector), static_cast<int>(index), waypoints);
+}
+
+void
+Assignment::internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const DistanceMatrix &distanceMatrix,
+                           const std::vector<Task> &tasks) const {
+    std::tie(path, constraints) = computePath(ambientMapInstance, waypoints, std::move(constraints));
+    // reset ttd
+    ttd = 0;
+
+    auto wpIt = waypoints.cbegin();
+    for(int i = 0 ; i < path.size() ; ++i){
+        if(path[i] == wpIt->position){
+            if(wpIt->demand == Demand::GOAL){
+                ttd += i - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
+            }
+            wpIt = std::next(wpIt);
         }
     }
-
-    cmapd::CmapdSolution sol = usePbs ?
-                               cmapd::pbs::pbs(ambientMapInstance, goalSequences) :
-                               cmapd::cbs::cbs(ambientMapInstance, goalSequences);
-
-    return sol.paths[index];
 }
 

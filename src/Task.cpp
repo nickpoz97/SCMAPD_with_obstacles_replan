@@ -7,5 +7,5 @@ bool operator==(const Task &t1, const Task &t2) {
 }
 
 TimeStep Task::getIdealGoalTime(const DistanceMatrix &dm) const {
-    return releaseTime + dm[startLoc][goalLoc];
+    return releaseTime + dm.getDistance(startLoc, goalLoc);
 }

@@ -1,7 +1,3 @@
-//
-// Created by nicco on 11/11/2022.
-//
-
 #ifndef SIMULTANEOUS_CMAPD_TASK_HPP
 #define SIMULTANEOUS_CMAPD_TASK_HPP
 
