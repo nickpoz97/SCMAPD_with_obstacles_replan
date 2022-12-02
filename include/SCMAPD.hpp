@@ -20,26 +20,26 @@ using BigH = std::list<SmallH>;
 class SCMAPD {
 public:
     SCMAPD(
-            DistanceMatrix && loadedDistanceMatrix,
-            std::vector<Assignment> &&robots,
-            TasksVector && tasksVector
+        cmapd::AmbientMapInstance&& ambientMapInstance,
+        std::vector<Assignment> &&robots,
+        std::vector<Task> && tasksVector
     );
 
     void solve(Heuristic heuristic, TimeStep cutOffTime);
 private:
-    const DistanceMatrix distanceMatrix;
+    cmapd::AmbientMapInstance&& ambientMapInstance;
     std::vector<Assignment> assignments;
-    TasksVector tasks;
+    std::vector<Task> tasks;
     std::unordered_set<unsigned int> unassignedTasksIndices;
     BigH bigH;
 
     static BigH
-    buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const TasksVector &tasks,
+    buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const std::vector<Task> &tasks,
                                const DistanceMatrix &distanceMatrix);
 
     static Assignment
     initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
-                                const TasksVector &taskVector);
+                                const std::vector<Task> &taskVector);
 
     Assignment extractTop();
 

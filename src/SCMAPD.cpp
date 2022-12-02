@@ -4,15 +4,15 @@
 #include "Assignment.hpp"
 
 SCMAPD::SCMAPD(
-        DistanceMatrix && loadedDistanceMatrix,
+        cmapd::AmbientMapInstance&& ambientMapInstance,
         std::vector<Assignment> &&robots,
-        std::vector<Task> && std::vector<Task>
+        std::vector<Task> && tasksVector
     ) :
-        distanceMatrix(std::move(loadedDistanceMatrix)),
+        ambientMapInstance(std::move(ambientMapInstance)),
         assignments(std::move(robots)),
-        tasks(std::move(std::vector<Task>)),
+        tasks(tasksVector),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        bigH(buildPartialAssignmentHeap(assignments, tasks, distanceMatrix))
+        bigH(buildPartialAssignmentHeap(assignments, tasks, ambientMapInstance.h_table()))
     {}
 
 BigH
@@ -60,7 +60,7 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
         assignments[robotIndex].update(std::move(candidateAssignment));
 
         for (auto& [taskId, partialAssignments] : bigH){
-            partialAssignments[robotIndex].insert(tasks[taskId], heuristic, distanceMatrix, tasks);
+            partialAssignments[robotIndex].insert(tasks[taskId], distanceMatrix, tasks, heuristic);
             updateSmallHTop(partialAssignments);
         }
         bigH.sort(compareSmallH);
