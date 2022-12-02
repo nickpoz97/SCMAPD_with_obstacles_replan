@@ -58,7 +58,7 @@ private:
     std::vector<cmapd::Constraint> constraints;
     WaypointsList waypoints{};
     Path path{};
-    unsigned sortKey = 0;
+    TimeStep mca = 0;
 
     void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
                              WaypointsList::iterator &waypointGoal);

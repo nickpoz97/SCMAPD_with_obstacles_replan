@@ -67,11 +67,15 @@ Assignment::insert(const Task &task, const cmapd::AmbientMapInstance &ambientMap
             restorePreviousWaypoints(waypointStart, waypointGoal);
         }
     }
+    auto oldTTD = ttd;
 
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
 
-    ttd = computeRealTTD(tasks, ambientMapInstance.h_table());
+    mca = ttd - oldTTD;
+    internalUpdate(ambientMapInstance, tasks);
+
+    updateHeapTop
 }
 
 void Assignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
@@ -120,7 +124,6 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
     return cumulatedTTD;
 }
 
-// todo this has to be changed
 TimeStep Assignment::computeApproxTTD(
     const std::vector<Task> &tasks,
     const DistanceMatrix &distanceMatrix,
@@ -148,7 +151,7 @@ TimeStep Assignment::computeApproxTTD(
 }
 
 bool operator<(const Assignment& a, const Assignment& b){
-    return a.sortKey < b.sortKey;
+    return a.mca < b.mca;
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
