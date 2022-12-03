@@ -14,8 +14,8 @@ unsigned int Assignment::getCapacity() const {
     return capacity;
 }
 
-TimeStep Assignment::getTtd() const {
-    return ttd;
+TimeStep Assignment::getMCA() const {
+    return newTTD - oldTTD;
 }
 
 unsigned Assignment::getIndex() const {
@@ -67,15 +67,9 @@ Assignment::insert(const Task &task, const cmapd::AmbientMapInstance &ambientMap
             restorePreviousWaypoints(waypointStart, waypointGoal);
         }
     }
-    auto oldTTD = ttd;
-
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
-
-    mca = ttd - oldTTD;
     internalUpdate(ambientMapInstance, tasks);
-
-    updateHeapTop
 }
 
 void Assignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
@@ -171,9 +165,10 @@ std::pair<Path, std::vector<cmapd::Constraint>> Assignment::computePath(
 
 void
 Assignment::internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks) {
+    oldTTD = newTTD;
     std::tie(path, constraints) = computePath(ambientMapInstance, std::move(constraints));
     // reset ttd
-    ttd = computeRealTTD(tasks, ambientMapInstance.h_table());
+    newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }
 
 std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex) {
@@ -183,5 +178,18 @@ std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const
         }
     }
     return {};
+}
+
+void Assignment::recomputePath(
+        const std::vector<cmapd::Constraint>& newConstraints,
+        const cmapd::AmbientMapInstance &ambientMapInstance,
+        const std::vector<Task> &tasks
+    ) {
+    constraints = newConstraints;
+    internalUpdate(ambientMapInstance, tasks);
+}
+
+const std::vector<cmapd::Constraint> &Assignment::getConstraints() const {
+    return constraints;
 }
 

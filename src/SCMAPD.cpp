@@ -60,8 +60,9 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
         assignments[robotIndex].update(std::move(candidateAssignment));
 
         for (auto& [taskId, partialAssignments] : bigH){
-            partialAssignments[robotIndex].insert(tasks[taskId], distanceMatrix, tasks, heuristic);
-            updateSmallHTop(partialAssignments);
+            auto& pa = partialAssignments[robotIndex];
+            pa.insert(tasks[taskId], ambientMapInstance, tasks, heuristic);
+            updateSmallHTop(robotIndex, 0, partialAssignments);
         }
         bigH.sort(compareSmallH);
     }
@@ -79,6 +80,11 @@ Assignment SCMAPD::extractTop() {
     return candidateAssignment;
 }
 
-void SCMAPD::updateSmallHTop(const std::vector<Assignment> &partialAssignments) {
-    // todo complete this
+void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
+    const Assignment& a = assignments[assignmentIndex];
+
+    for (int i = 0 ; i < v ; ++i) {
+        partialAssignments[i].recomputePath(a.getConstraints(), ambientMapInstance, tasks);
+        // todo update heere and use while not constraints
+    }
 }

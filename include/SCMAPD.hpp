@@ -43,7 +43,7 @@ private:
 
     Assignment extractTop();
 
-    void updateSmallHTop(const std::vector<Assignment> &partialAssignments);
+    void updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments);
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

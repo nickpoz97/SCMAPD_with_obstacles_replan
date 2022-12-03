@@ -17,7 +17,7 @@ public:
 
     [[nodiscard]] unsigned int getCapacity() const;
 
-    [[nodiscard]] TimeStep getTtd() const;
+    [[nodiscard]] TimeStep getMCA() const;
 
     [[nodiscard]] unsigned getIndex() const;
 
@@ -28,6 +28,8 @@ public:
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 
     [[nodiscard]] bool empty() const;
+
+    const std::vector<cmapd::Constraint> &getConstraints() const;
 
     void setTasks(WaypointsList &&newWaypoints, const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance);
 
@@ -49,16 +51,21 @@ public:
             std::vector<cmapd::Constraint> &&constraintsVector
     ) const;
 
+    void recomputePath(const std::vector<cmapd::Constraint>& newConstraints,
+                       const cmapd::AmbientMapInstance &ambientMapInstance,
+                       const std::vector<Task> &tasks
+    );
 private:
     Coord startPosition;
     unsigned index;
     unsigned capacity;
 
-    TimeStep ttd = 0;
+    TimeStep oldTTD = 0;
+    TimeStep newTTD = 0;
+
     std::vector<cmapd::Constraint> constraints;
     WaypointsList waypoints{};
     Path path{};
-    TimeStep mca = 0;
 
     void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
                              WaypointsList::iterator &waypointGoal);
@@ -83,7 +90,7 @@ private:
         WaypointsList::const_iterator goalWaypoint
     ) const;
 
-    // this should be called when waypoints are changed
+    // this should be called when waypoints and/or constraints are changed
     void internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks);
 
     // first index has been added to reduce search time
