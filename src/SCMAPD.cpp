@@ -84,7 +84,16 @@ void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment>
     const Assignment& a = assignments[assignmentIndex];
 
     for (int i = 0 ; i < v ; ++i) {
-        partialAssignments[i].recomputePath(a.getConstraints(), ambientMapInstance, tasks);
-        // todo update heere and use while not constraints
+        auto& targetPA = partialAssignments[i];
+        if(Assignment::hasConflicts(a, targetPA)) {
+            targetPA.recomputePath(a.getConstraints(), ambientMapInstance, tasks);
+            // restart
+            if(v > 0){
+                Assignment& minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
+                Assignment& firstPA = *partialAssignments.begin();
+                std::swap(minPA, firstPA);
+                i = 0;
+            }
+        }
     }
 }

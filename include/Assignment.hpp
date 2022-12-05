@@ -55,6 +55,10 @@ public:
                        const cmapd::AmbientMapInstance &ambientMapInstance,
                        const std::vector<Task> &tasks
     );
+
+    static bool hasConflicts(const Assignment& a, const Assignment& b);
+
+    static bool checkConflict(const Path& a, const Path& b, int i);
 private:
     Coord startPosition;
     unsigned index;

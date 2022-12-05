@@ -1,6 +1,8 @@
 #include <limits>
 #include <numeric>
 #include <cassert>
+#include <algorithm>
+
 #include "Assignment.hpp"
 #include "pbs.h"
 
@@ -145,7 +147,7 @@ TimeStep Assignment::computeApproxTTD(
 }
 
 bool operator<(const Assignment& a, const Assignment& b){
-    return a.mca < b.mca;
+    return a.getMCA() < b.getMCA();
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
@@ -185,6 +187,7 @@ void Assignment::recomputePath(
         const cmapd::AmbientMapInstance &ambientMapInstance,
         const std::vector<Task> &tasks
     ) {
+    // todo check this
     constraints = newConstraints;
     internalUpdate(ambientMapInstance, tasks);
 }
@@ -193,3 +196,19 @@ const std::vector<cmapd::Constraint> &Assignment::getConstraints() const {
     return constraints;
 }
 
+bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
+    const auto& pathA = a.getPath();
+    const auto& pathB = b.getPath();
+
+    for (int i = 0 ; i < std::min(pathA.size(), pathB.size()); ++i){
+        if(checkConflict(pathA, pathB, i)) { return true; }
+    }
+    return false;
+}
+
+bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
+    bool edgeConflict = (i > 0) && a[i - 1] == b[i] && a[i] == b[i - 1];
+    bool nodeConflict = a[i] == b[i];
+
+    return edgeConflict || nodeConflict;
+}
