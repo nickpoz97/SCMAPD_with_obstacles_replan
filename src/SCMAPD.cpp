@@ -12,7 +12,8 @@ SCMAPD::SCMAPD(
         assignments(std::move(robots)),
         tasks(tasksVector),
         unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        bigH(buildPartialAssignmentHeap(assignments, tasks, ambientMapInstance.h_table()))
+        bigH(buildPartialAssignmentHeap(assignments, tasks, ambientMapInstance.h_table())),
+        actualConstraints(assignments.size())
     {}
 
 BigH

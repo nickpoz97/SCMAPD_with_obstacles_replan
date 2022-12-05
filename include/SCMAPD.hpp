@@ -17,6 +17,8 @@ inline auto compareSmallH = [](const SmallH & a, const SmallH & b){
 // heap of assignments that differ by tasks
 using BigH = std::list<SmallH>;
 
+using ConstraintsPerAgent = std::vector<std::vector<Constraint>>;
+
 class SCMAPD {
 public:
     SCMAPD(
@@ -32,6 +34,8 @@ private:
     std::vector<Task> tasks;
     std::unordered_set<unsigned int> unassignedTasksIndices;
     BigH bigH;
+
+    ConstraintsPerAgent actualConstraints;
 
     static BigH
     buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const std::vector<Task> &tasks,

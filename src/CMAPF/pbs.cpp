@@ -18,7 +18,7 @@
 
 namespace cmapd::pbs {
 
-CmapdSolution pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences) {
+std::vector<path_t> pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences) {
     std::vector<Constraint> constraints{};
     std::vector<path_t> paths{};
 
@@ -50,12 +50,12 @@ CmapdSolution pbs(const AmbientMapInstance& instance, const std::vector<path_t>&
         cost += static_cast<int>(p.size());
     }
 
-    return {paths, makespan, cost};
+    return paths;
 }
 
 std::pair<path_t, std::vector<Constraint>> pbs(
         const AmbientMapInstance& instance,
-        std::vector<Constraint>&& constraints,
+        const std::vector<Constraint> &constraints,
         int aIndex,
         const WaypointsList& waypoints
         ){
@@ -67,6 +67,8 @@ std::pair<path_t, std::vector<Constraint>> pbs(
 
     path_t path{multi_a_star::multi_a_star(aIndex, instance.agents().at(aIndex), waypointsCoords, instance, constraints)};
 
+    std::vector<Constraint> newConstraints{};
+
     // Adding constraints for other agents
     for (int timestep = 0; timestep < path.size(); ++timestep) {
         Point point{path.at(timestep)};
@@ -76,14 +78,14 @@ std::pair<path_t, std::vector<Constraint>> pbs(
                 Point from_where{point + move};
                 if (instance.is_valid(from_where)) {
                     // if this is the last timestep, final should equal to true
-                    constraints.emplace_back(Constraint{
+                    newConstraints.emplace_back(Constraint{
                             other_agent, timestep, from_where, point, timestep == path.size() - 1});
                 }
             }
         }
     }
 
-    return {path, constraints};
+    return {path, newConstraints};
 }
 
 }  // namespace cmapd::pbs

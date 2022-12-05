@@ -30,7 +30,7 @@ Coord Assignment::getStartPosition() const {
 
 void Assignment::setTasks(WaypointsList &&newWaypoints, const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance) {
     waypoints = std::move(newWaypoints);
-    internalUpdate(ambientMapInstance, tasks);
+    internalUpdate(ambientMapInstance, tasks, <#initializer#>);
 }
 
 const WaypointsList &Assignment::getWaypoints() const {
@@ -43,7 +43,7 @@ bool Assignment::empty() const {
 
 void Assignment::setTasks(WaypointsList &&newWaypoints, const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance) {
     waypoints = newWaypoints;
-    internalUpdate(ambientMapInstance, tasks);
+    internalUpdate(ambientMapInstance, tasks, <#initializer#>);
 }
 
 void
@@ -71,7 +71,7 @@ Assignment::insert(const Task &task, const cmapd::AmbientMapInstance &ambientMap
     }
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
-    internalUpdate(ambientMapInstance, tasks);
+    internalUpdate(ambientMapInstance, tasks, <#initializer#>);
 }
 
 void Assignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
@@ -160,17 +160,37 @@ const Path &Assignment::getPath() const {
 
 std::pair<Path, std::vector<cmapd::Constraint>> Assignment::computePath(
         const cmapd::AmbientMapInstance& ambientMapInstance,
-        std::vector<cmapd::Constraint>&& constraintsVector
+        const std::vector<cmapd::Constraint> &outerConstraints
         ) const {
-    return cmapd::pbs::pbs(ambientMapInstance, std::move(constraintsVector), static_cast<int>(index), waypoints);
+    return cmapd::pbs::pbs(ambientMapInstance, outerConstraints, static_cast<int>(index), waypoints);
 }
 
 void
-Assignment::internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks) {
+Assignment::internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
+                           const std::vector<Constraint> &outerConstraints) {
     oldTTD = newTTD;
-    std::tie(path, constraints) = computePath(ambientMapInstance, std::move(constraints));
+    std::vector<cmapd::Constraint> outerConstraints = getOuterConstraints(outerConstraints);
+
+    std::tie(path, constraints) = computePath(ambientMapInstance, outerConstraints);
     // reset ttd
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
+}
+
+std::vector<cmapd::Constraint>
+Assignment::getOuterConstraints(const std::vector<Assignment> &assignments) {
+    // reserve size
+    std::vector<cmapd::Constraint> outerConstraints{};
+    size_t reserveSize = 0;
+    for(const auto& a : assignments){
+        reserveSize += a.getConstraints().size();
+    }
+    // copy
+    auto outIt = outerConstraints.begin();
+    for(const auto& a : assignments){
+        const auto& aCon = a.getConstraints();
+        outIt = std::copy(aCon.begin(), aCon.end(), outIt);
+    }
+    return outerConstraints;
 }
 
 std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex) {
@@ -189,7 +209,7 @@ void Assignment::recomputePath(
     ) {
     // todo check this
     constraints = newConstraints;
-    internalUpdate(ambientMapInstance, tasks);
+    internalUpdate(ambientMapInstance, tasks, newConstraints);
 }
 
 const std::vector<cmapd::Constraint> &Assignment::getConstraints() const {

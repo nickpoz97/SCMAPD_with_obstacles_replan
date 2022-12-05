@@ -22,12 +22,12 @@ namespace cmapd::pbs {
  * @return a solution, if found.
  * @throws runtime_error if no solution is found.
  */
-CmapdSolution pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences);
+std::vector<path_t> pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences);
 
 // note: constraints are updated, so it is an in-out parameter
 std::pair<path_t, std::vector<Constraint>> pbs(
             const AmbientMapInstance& instance,
-            std::vector<Constraint>&& constraints,
+            const std::vector<Constraint> &constraints,
             int aIndex,
             const WaypointsList& waypoints
 );

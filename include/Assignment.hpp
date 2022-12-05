@@ -48,7 +48,7 @@ public:
 
     std::pair<Path, std::vector<cmapd::Constraint>> computePath(
             const cmapd::AmbientMapInstance &ambientMapInstance,
-            std::vector<cmapd::Constraint> &&constraintsVector
+            const std::vector<cmapd::Constraint> &outerConstraints
     ) const;
 
     void recomputePath(const std::vector<cmapd::Constraint>& newConstraints,
@@ -67,7 +67,7 @@ private:
     TimeStep oldTTD = 0;
     TimeStep newTTD = 0;
 
-    std::vector<cmapd::Constraint> constraints;
+    std::vector<cmapd::Constraint> constraints{};
     WaypointsList waypoints{};
     Path path{};
 
@@ -95,9 +95,11 @@ private:
     ) const;
 
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks);
+    void internalUpdate(const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
+                        const std::vector<Constraint> &outerConstraints);
 
     // first index has been added to reduce search time
     static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex = 0);
+
 };
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP
