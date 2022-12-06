@@ -29,15 +29,15 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    const std::vector<cmapd::Constraint> &getConstraints() const;
-
-    void setTasks(WaypointsList &&newWaypoints, const Status &status);
+    [[nodiscard]] const std::vector<cmapd::Constraint> &getConstraints() const;
 
     void
-    setTasks(WaypointsList &&newWaypoints, const Status &status);
+    setTasks(WaypointsList &&newWaypoints, const std::vector<cmapd::Constraint> &outerConstraints,
+             const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks);
 
     void
-    insert(int taskId, const Status &status, Heuristic heuristic);
+    insert(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks,
+           Heuristic heuristic);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
@@ -55,6 +55,10 @@ public:
     static bool hasConflicts(const Assignment& a, const Assignment& b);
 
     static bool checkConflict(const Path& a, const Path& b, int i);
+
+    // this should be called when waypoints and/or constraints are changed
+    void internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
+                        const cmapd::AmbientMapInstance &ambientMapInstance);
 private:
     Coord startPosition;
     unsigned index;
@@ -90,12 +94,10 @@ private:
         WaypointsList::const_iterator goalWaypoint
     ) const;
 
-    // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const Status &status);
-
     // first index has been added to reduce search time
     static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex = 0);
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> findBestPositions(int taskId, const Status &status);
+    std::pair<WaypointsList::iterator, WaypointsList::iterator>
+    findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 };
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

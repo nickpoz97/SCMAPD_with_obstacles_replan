@@ -1,4 +1,3 @@
-#include "Assignment.hpp"
 #include <fstream>
 #include <cnpy.h>
 #include "DistanceMatrix.hpp"

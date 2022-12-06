@@ -1,40 +1,37 @@
 #include <algorithm>
-#include <boost/iterator/counting_iterator.hpp>
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
 
-SCMAPD::SCMAPD(
-        cmapd::AmbientMapInstance&& ambientMapInstance,
-        std::vector<Assignment> &&robots,
-        std::vector<Task> && tasksVector
-    ) :
+SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
+               std::vector<Task> &&tasksVector, Heuristic heuristic) :
     status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
-    bigH(buildPartialAssignmentHeap(status))
+    heuristic(heuristic),
+    bigH(buildPartialAssignmentHeap(status, heuristic))
     {}
 
 BigH
-SCMAPD::buildPartialAssignmentHeap(const Status &status) {
+SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
     BigH totalHeap{};
 
     for(int ti = 0 ; ti < status.getTasks().size() ; ++ti){
-        std::vector<Assignment> pa;
+        std::vector<Assignment> pas;
         const auto& robots = status.getAssignments();
-        pa.reserve(robots.size());
+        pas.reserve(robots.size());
 
         // add "task" to each robot
         for (const auto& r : robots){
             // robot in partial assignments heap
-            pa.emplace_back(
+            pas.emplace_back(
                 initializePartialAssignment(status, ti, r)
             );
         }
         std::sort(
-            pa.begin(),
-            pa.end()
+            pas.begin(),
+            pas.end()
         );
-        totalHeap.push_back({ti, std::move(pa)});
+        totalHeap.push_back({ti, std::move(pas)});
     }
-    totalHeap.sort(compareSmallH);
+    sortBigH(totalHeap, heuristic);
     return totalHeap;
 }
 
@@ -46,7 +43,7 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
     robotCopy.setTasks(
             {{task.startLoc, Demand::START, task.index},
              {task.goalLoc,  Demand::GOAL,  task.index}},
-            status.getTasks());
+            status, <#initializer#>, <#initializer#>);
     return robotCopy;
 }
 
@@ -59,10 +56,10 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
 
         for (auto& [taskId, partialAssignments] : bigH){
             auto& pa = partialAssignments[robotIndex];
-            pa.insert(taskId, status, heuristic);
-            updateSmallHTop(robotIndex, 0, partialAssignments);
+            pa.insert(taskId, status, <#initializer#>, heuristic);
+            updateSmallHTop(robotIndex, heuristic == Heuristic::MCA ? 1 : 2, partialAssignments);
         }
-        bigH.sort(compareSmallH);
+        sortBigH(bigH, heuristic);
     }
 }
 
@@ -84,14 +81,42 @@ void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment>
     for (int i = 0 ; i < v ; ++i) {
         auto& targetPA = partialAssignments[i];
         if(Assignment::hasConflicts(a, targetPA)) {
-            targetPA.recomputePath(a.getConstraints(), status);
+            targetPA.internalUpdate(status.getOtherConstraints(i), status.getTasks(), status.getAmbientMapInstance());
             // restart
-            if(v > 0){
-                Assignment& minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
-                Assignment& firstPA = *partialAssignments.begin();
-                std::swap(minPA, firstPA);
-                i = 0;
-            }
+            Assignment &minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
+            Assignment &firstPA = *partialAssignments.begin();
+            std::swap(minPA, firstPA);
+            i = 0;
         }
+    }
+}
+
+void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
+    switch(heuristic){
+        case Heuristic::MCA:
+            bigH.sort(
+                [](const SmallH& a, const SmallH& b){return a.second[0] < b.second[0];}
+            );
+            break;
+        case Heuristic::RMCA_A:
+            bigH.sort(
+                [](const SmallH& a, const SmallH& b) {
+                    auto aVal = a.second[0].getMCA() - a.second[1].getMCA();
+                    auto bVal = b.second[0].getMCA() - b.second[1].getMCA();
+
+                    return aVal > bVal;
+                }
+            );
+            break;
+        case Heuristic::RMCA_R:
+            bigH.sort(
+                [](const SmallH& a, const SmallH& b) {
+                    auto aVal = a.second[0].getMCA() / a.second[1].getMCA();
+                    auto bVal = b.second[0].getMCA() / b.second[1].getMCA();
+
+                    return aVal > bVal;
+                }
+            );
+            break;
     }
 }

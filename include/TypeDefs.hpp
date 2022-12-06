@@ -5,7 +5,6 @@
 #include <list>
 #include <queue>
 
-#include "Point.h"
 #include "custom_types.h"
 
 using Coord = cmapd::Point;

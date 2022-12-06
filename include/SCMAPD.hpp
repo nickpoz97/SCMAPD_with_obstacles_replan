@@ -20,19 +20,17 @@ using BigH = std::list<SmallH>;
 
 class SCMAPD {
 public:
-    SCMAPD(
-        cmapd::AmbientMapInstance&& ambientMapInstance,
-        std::vector<Assignment> &&robots,
-        std::vector<Task> && tasksVector
-    );
+    SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
+           std::vector<Task> &&tasksVector, Heuristic heuristic);
 
     void solve(Heuristic heuristic, TimeStep cutOffTime);
 private:
     Status status;
+    Heuristic heuristic;
     BigH bigH;
 
     static BigH
-    buildPartialAssignmentHeap(const Status &status);
+    buildPartialAssignmentHeap(const Status &status, Heuristic heuristic);
 
     static Assignment
     initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot);
@@ -40,6 +38,8 @@ private:
     Assignment extractTop();
 
     void updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments);
+
+    static void sortBigH(BigH &bigH, Heuristic heuristic);
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

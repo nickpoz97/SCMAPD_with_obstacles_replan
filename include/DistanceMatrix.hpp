@@ -5,8 +5,6 @@
 #ifndef SIMULTANEOUS_CMAPD_DISTANCEMATRIX_HPP
 #define SIMULTANEOUS_CMAPD_DISTANCEMATRIX_HPP
 
-#include "Assignment.hpp"
-#include <SCMAPD.hpp>
 #include <filesystem>
 #include <cnpy.h>
 #include "TypeDefs.hpp"

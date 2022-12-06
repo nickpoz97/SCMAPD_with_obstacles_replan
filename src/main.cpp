@@ -13,11 +13,8 @@ int main(int argc, char* argv[]){
 
     cmapd::AmbientMapInstance instance(map, )
 
-    SCMAPD scmapd{
-        utils::loadDistanceMatrix("data/distance_matrix.npy"),
-        utils::loadRobots("data/0.agents", nCols),
-        utils::loadTasks("data/0.tasks", nCols)
-    };
+    SCMAPD scmapd{utils::loadDistanceMatrix("data/distance_matrix.npy"), utils::loadRobots("data/0.agents", nCols),
+                  utils::loadTasks("data/0.tasks", nCols), Heuristic::RMCA_A};
 
     scmapd.solve(Heuristic::HEUR, 10);
 

@@ -7,7 +7,6 @@
 
 #include "TypeDefs.hpp"
 #include "CMAPF/Point.h"
-#include <Task.hpp>
 
 struct Waypoint{
     Coord position;

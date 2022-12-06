@@ -16,6 +16,8 @@
 #include "ambient/AmbientMapInstance.h"
 #include "custom_types.h"
 
+#include "Waypoint.hpp"
+
 namespace cmapd::pbs {
 
 std::vector<path_t> pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences) {

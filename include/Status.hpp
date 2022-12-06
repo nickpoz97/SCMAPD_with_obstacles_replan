@@ -5,10 +5,12 @@
 #ifndef SIMULTANEOUS_CMAPD_STATUS_HPP
 #define SIMULTANEOUS_CMAPD_STATUS_HPP
 
+#include <unordered_set>
+
 #include "ambient/AmbientMapInstance.h"
 #include "Task.hpp"
-#include "Assignment.hpp"
 #include "Constraint.h"
+#include "Assignment.hpp"
 
 using ConstraintsPerAgent = std::vector<std::vector<cmapd::Constraint>>;
 
