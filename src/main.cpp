@@ -8,14 +8,21 @@
 
 int main(int argc, char* argv[]){
     cmapd::AmbientMap map("grid.txt");
-    const auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
-    const auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
 
-    cmapd::AmbientMapInstance instance(map, )
+    auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
+    auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
 
-    SCMAPD scmapd{utils::loadDistanceMatrix("data/distance_matrix.npy"), utils::loadRobots("data/0.agents", nCols),
-                  utils::loadTasks("data/0.tasks", nCols), Heuristic::RMCA_A};
+    auto rawMatrix = cnpy::npy_load("data/distance_matrix.npy");
+    auto nCols = rawMatrix.shape[1];
 
+    cmapd::AmbientMapInstance instance(
+        map,
+        {robots.begin(), robots.end()},
+        {tasks.begin(), tasks.end()},
+        {std::move(rawMatrix), static_cast<unsigned int>(nCols)}
+    );
+
+    SCMAPD scmapd{std::move(instance), std::move(robots), std::move(tasks), Heuristic::RMCA_A};
     scmapd.solve(Heuristic::HEUR, 10);
 
     namespace po = boost::program_options;

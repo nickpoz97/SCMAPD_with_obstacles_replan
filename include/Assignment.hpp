@@ -41,9 +41,9 @@ public:
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
-    inline operator Coord() const { return getStartPosition(); }
+    inline explicit operator Coord() const { return getStartPosition(); }
 
-    inline operator Path() const { return getPath(); }
+    inline explicit operator Path() const { return getPath(); }
 
     static bool hasConflicts(const Assignment& a, const Assignment& b);
 

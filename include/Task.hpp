@@ -12,6 +12,8 @@ struct Task {
 
     friend bool operator==(const Task& t1, const Task& t2);
     [[nodiscard]] TimeStep getIdealGoalTime(const DistanceMatrix& dm) const;
+
+    inline explicit operator std::pair<Coord ,Coord>() const { return {startLoc, goalLoc}; }
 };
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP
