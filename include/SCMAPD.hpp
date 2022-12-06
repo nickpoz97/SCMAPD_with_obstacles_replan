@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <list>
 #include <vector>
+#include "Status.hpp"
 #include "Assignment.hpp"
 
 // taskIndex, robot
@@ -17,8 +18,6 @@ inline auto compareSmallH = [](const SmallH & a, const SmallH & b){
 // heap of assignments that differ by tasks
 using BigH = std::list<SmallH>;
 
-using ConstraintsPerAgent = std::vector<std::vector<Constraint>>;
-
 class SCMAPD {
 public:
     SCMAPD(
@@ -29,21 +28,14 @@ public:
 
     void solve(Heuristic heuristic, TimeStep cutOffTime);
 private:
-    cmapd::AmbientMapInstance&& ambientMapInstance;
-    std::vector<Assignment> assignments;
-    std::vector<Task> tasks;
-    std::unordered_set<unsigned int> unassignedTasksIndices;
+    Status status;
     BigH bigH;
 
-    ConstraintsPerAgent actualConstraints;
-
     static BigH
-    buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const std::vector<Task> &tasks,
-                               const DistanceMatrix &distanceMatrix);
+    buildPartialAssignmentHeap(const Status &status);
 
     static Assignment
-    initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
-                                const std::vector<Task> &taskVector);
+    initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot);
 
     Assignment extractTop();
 

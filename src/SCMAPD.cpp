@@ -8,61 +8,58 @@ SCMAPD::SCMAPD(
         std::vector<Assignment> &&robots,
         std::vector<Task> && tasksVector
     ) :
-        ambientMapInstance(std::move(ambientMapInstance)),
-        assignments(std::move(robots)),
-        tasks(tasksVector),
-        unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-        bigH(buildPartialAssignmentHeap(assignments, tasks, ambientMapInstance.h_table())),
-        actualConstraints(assignments.size())
+    status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
+    bigH(buildPartialAssignmentHeap(status))
     {}
 
 BigH
-SCMAPD::buildPartialAssignmentHeap(const std::vector<Assignment> &robots, const std::vector<Task> &tasks,
-                                   const DistanceMatrix &distanceMatrix) {
+SCMAPD::buildPartialAssignmentHeap(const Status &status) {
     BigH totalHeap{};
 
-    for(const auto& t : tasks){
+    for(int ti = 0 ; ti < status.getTasks().size() ; ++ti){
         std::vector<Assignment> pa;
+        const auto& robots = status.getAssignments();
         pa.reserve(robots.size());
 
         // add "task" to each robot
-        for (const auto& robot : robots){
+        for (const auto& r : robots){
             // robot in partial assignments heap
             pa.emplace_back(
-                    initializePartialAssignment(distanceMatrix, t, robot, tasks)
+                initializePartialAssignment(status, ti, r)
             );
         }
         std::sort(
             pa.begin(),
             pa.end()
         );
-        totalHeap.push_back({t.index, std::move(pa)});
+        totalHeap.push_back({ti, std::move(pa)});
     }
     totalHeap.sort(compareSmallH);
     return totalHeap;
 }
 
 Assignment
-SCMAPD::initializePartialAssignment(const DistanceMatrix &distanceMatrix, const Task &task, const Assignment &robot,
-                                    const std::vector<Task> &taskVector) {
+SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot) {
     Assignment robotCopy{Assignment{robot}};
+    const auto& task = status.getTask(taskIndex);
 
     robotCopy.setTasks(
             {{task.startLoc, Demand::START, task.index},
              {task.goalLoc,  Demand::GOAL,  task.index}},
-            taskVector, distanceMatrix);
+            status.getTasks());
     return robotCopy;
 }
 
 void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
-    for(auto candidateAssignment = extractTop(); !unassignedTasksIndices.empty(); candidateAssignment = extractTop()){
+    for(auto candidateAssignment = extractTop(); !status.getUnassignedTasksIndices().empty(); candidateAssignment = extractTop()){
         auto robotIndex = candidateAssignment.getIndex();
-        assignments[robotIndex].update(std::move(candidateAssignment));
+        // todo check this
+        status.getAssignment(robotIndex) = std::move(candidateAssignment);
 
         for (auto& [taskId, partialAssignments] : bigH){
             auto& pa = partialAssignments[robotIndex];
-            pa.insert(tasks[taskId], ambientMapInstance, tasks, heuristic);
+            pa.insert(taskId, status, heuristic);
             updateSmallHTop(robotIndex, 0, partialAssignments);
         }
         bigH.sort(compareSmallH);
@@ -76,18 +73,18 @@ Assignment SCMAPD::extractTop() {
     auto candidateAssignment{std::move(partialAssignments.at(0))};
 
     bigH.pop_front();
-    unassignedTasksIndices.erase(taskId);
+    status.removeTaskIndex(taskId);
 
     return candidateAssignment;
 }
 
 void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
-    const Assignment& a = assignments[assignmentIndex];
+    const Assignment& a = status.getAssignment(assignmentIndex);
 
     for (int i = 0 ; i < v ; ++i) {
         auto& targetPA = partialAssignments[i];
         if(Assignment::hasConflicts(a, targetPA)) {
-            targetPA.recomputePath(a.getConstraints(), ambientMapInstance, tasks);
+            targetPA.recomputePath(a.getConstraints(), status);
             // restart
             if(v > 0){
                 Assignment& minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
