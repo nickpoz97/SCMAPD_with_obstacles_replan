@@ -39,25 +39,26 @@ Assignment
 SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot) {
     Assignment robotCopy{Assignment{robot}};
     const auto& task = status.getTask(taskIndex);
+    auto k = robot.getIndex();
 
     robotCopy.setTasks(
             {{task.startLoc, Demand::START, task.index},
              {task.goalLoc,  Demand::GOAL,  task.index}},
-            status, <#initializer#>, <#initializer#>);
+            status.getOtherConstraints(k), status.getAmbientMapInstance(), status.getTasks());
     return robotCopy;
 }
 
 void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
     for(auto candidateAssignment = extractTop(); !status.getUnassignedTasksIndices().empty(); candidateAssignment = extractTop()){
-        auto robotIndex = candidateAssignment.getIndex();
+        auto k = candidateAssignment.getIndex();
         // todo check this
-        status.getAssignment(robotIndex) = std::move(candidateAssignment);
+        status.getAssignment(k) = std::move(candidateAssignment);
 
         for (auto& [taskId, partialAssignments] : bigH){
-            auto& pa = partialAssignments[robotIndex];
-            pa.insert(taskId, status, <#initializer#>, heuristic);
-            updateSmallHTop(robotIndex, heuristic == Heuristic::MCA ? 1 : 2, partialAssignments);
+            auto& pa = partialAssignments[k];
+            pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k), heuristic);
+            updateSmallHTop(k, heuristic == Heuristic::MCA ? 1 : 2, partialAssignments);
         }
         sortBigH(bigH, heuristic);
     }

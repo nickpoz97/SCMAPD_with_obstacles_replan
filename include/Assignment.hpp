@@ -36,21 +36,14 @@ public:
              const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks);
 
     void
-    insert(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks,
-           Heuristic heuristic);
+    insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
+           const std::vector<cmapd::Constraint> &outerConstraints, Heuristic heuristic);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
     inline operator Coord() const { return getStartPosition(); }
 
     inline operator Path() const { return getPath(); }
-
-    std::pair<Path, std::vector<cmapd::Constraint>> computePath(
-            const cmapd::AmbientMapInstance &ambientMapInstance,
-            const std::vector<cmapd::Constraint> &outerConstraints
-    ) const;
-
-    void recomputePath(const std::vector<cmapd::Constraint> &newConstraints, const Status &status);
 
     static bool hasConflicts(const Assignment& a, const Assignment& b);
 
@@ -96,6 +89,11 @@ private:
 
     // first index has been added to reduce search time
     static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex = 0);
+
+    [[nodiscard]] std::pair<Path, std::vector<cmapd::Constraint>> computePath(
+            const cmapd::AmbientMapInstance &ambientMapInstance,
+            const std::vector<cmapd::Constraint> &outerConstraints
+    ) const;
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);

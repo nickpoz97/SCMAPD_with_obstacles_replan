@@ -43,15 +43,15 @@ bool Assignment::empty() const {
 }
 
 void
-Assignment::insert(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks,
-                   Heuristic heuristic) {
+Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
+                   const std::vector<cmapd::Constraint> &outerConstraints, Heuristic heuristic) {
 
-    auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, distanceMatrix, tasks);
+    auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
 
     const auto& task = tasks[taskId];
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
-    internalUpdate(distanceMatrix, <#initializer#>, <#initializer#>);
+    internalUpdate(outerConstraints, tasks, ambientMapInstance);
 }
 
 std::pair<WaypointsList::iterator, WaypointsList::iterator>
