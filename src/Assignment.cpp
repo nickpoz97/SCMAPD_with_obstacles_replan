@@ -59,7 +59,7 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
     WaypointsList::iterator bestStartIt;
     WaypointsList::iterator bestGoalIt;
 
-    TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
+    TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
     // search for best position for task start and goal
     for(auto waypointStart = waypoints.begin(); waypointStart != waypoints.end() ; ++waypointStart){
@@ -139,11 +139,12 @@ TimeStep Assignment::computeApproxTTD(
             distanceMatrix.getDistance(startWaypoint->position, goalWaypoint->position) +
             distanceMatrix.getDistance(goalWaypoint->position, afterGoalIt->position);
 
-    auto ttdAfter = computeRealTTD(
+    auto afterGoalIndex = findWaypointTimestep(path, *afterGoalIt);
+    auto ttdAfter = afterGoalIndex.has_value() ? computeRealTTD(
             tasks, distanceMatrix,
             waypoints.cend(),
-            static_cast<int>(findWaypointTimestep(path, *afterGoalIt).value())
-    );
+            static_cast<int>(afterGoalIndex.value())
+    ) : 0;
 
     return ttdBefore + ttdApprox + ttdAfter;
 
@@ -178,8 +179,8 @@ Assignment::internalUpdate(const std::vector<cmapd::Constraint> &outerConstraint
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }
 
-std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex) {
-    for(int i = firstIndex ; i < path.size() ; ++i){
+std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const Waypoint &waypoint) {
+    for(int i = 0 ; i < path.size() ; ++i){
         if(path[i] == waypoint.position){
             return i;
         }

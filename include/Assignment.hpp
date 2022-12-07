@@ -88,7 +88,7 @@ private:
     ) const;
 
     // first index has been added to reduce search time
-    static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint, int firstIndex = 0);
+    static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint);
 
     [[nodiscard]] std::pair<Path, std::vector<cmapd::Constraint>> computePath(
             const cmapd::AmbientMapInstance &ambientMapInstance,
