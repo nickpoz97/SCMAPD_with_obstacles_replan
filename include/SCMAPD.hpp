@@ -19,7 +19,7 @@ public:
     SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
            std::vector<Task> &&tasksVector, Heuristic heuristic);
 
-    void solve(Heuristic heuristic, TimeStep cutOffTime);
+    void solve(TimeStep cutOffTime);
 private:
     Status status;
     Heuristic heuristic;

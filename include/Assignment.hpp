@@ -37,7 +37,7 @@ public:
 
     void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-           const std::vector<cmapd::Constraint> &outerConstraints, Heuristic heuristic);
+           const std::vector<cmapd::Constraint> &outerConstraints);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 

@@ -37,6 +37,7 @@ std::vector<cmapd::Constraint> Status::getOtherConstraints(int k) const {
     for(const auto& a : assignments){
         if(a.getIndex() != k) { reserveSize += a.getConstraints().size(); }
     }
+    otherConstraints.reserve(reserveSize);
     // copy
     auto outIt = otherConstraints.begin();
     for(const auto& a : assignments){

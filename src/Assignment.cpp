@@ -44,7 +44,7 @@ bool Assignment::empty() const {
 
 void
 Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-                   const std::vector<cmapd::Constraint> &outerConstraints, Heuristic heuristic) {
+                   const std::vector<cmapd::Constraint> &outerConstraints) {
 
     auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
 

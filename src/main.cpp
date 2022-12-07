@@ -7,7 +7,7 @@
 #include "ambient/AmbientMapInstance.h"
 
 int main(int argc, char* argv[]){
-    cmapd::AmbientMap map("grid.txt");
+    cmapd::AmbientMap map("data/grid.txt");
 
     auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
     auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     );
 
     SCMAPD scmapd{std::move(instance), std::move(robots), std::move(tasks), Heuristic::RMCA_A};
-    scmapd.solve(Heuristic::HEUR, 10);
+    scmapd.solve(10);
 
     namespace po = boost::program_options;
     using std::string;

@@ -48,7 +48,7 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
     return robotCopy;
 }
 
-void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
+void SCMAPD::solve(TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
     for(auto candidateAssignment = extractTop(); !status.getUnassignedTasksIndices().empty(); candidateAssignment = extractTop()){
         auto k = candidateAssignment.getIndex();
@@ -57,7 +57,7 @@ void SCMAPD::solve(Heuristic heuristic, TimeStep cutOffTime) {
 
         for (auto& [taskId, partialAssignments] : bigH){
             auto& pa = partialAssignments[k];
-            pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k), heuristic);
+            pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k));
             updateSmallHTop(k, heuristic == Heuristic::MCA ? 1 : 2, partialAssignments);
         }
         sortBigH(bigH, heuristic);
@@ -79,15 +79,16 @@ Assignment SCMAPD::extractTop() {
 void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
     const Assignment& a = status.getAssignment(assignmentIndex);
 
-    for (int i = 0 ; i < v ; ++i) {
-        auto& targetPA = partialAssignments[i];
+    for (int k = 0 ; k < v ; ++k) {
+        auto& targetPA = partialAssignments[k];
         if(Assignment::hasConflicts(a, targetPA)) {
-            targetPA.internalUpdate(status.getOtherConstraints(i), status.getTasks(), status.getAmbientMapInstance());
-            // restart
+            targetPA.internalUpdate(status.getOtherConstraints(k), status.getTasks(), status.getAmbientMapInstance());
+            // todo min search on first v elements or everyone?
             Assignment &minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
             Assignment &firstPA = *partialAssignments.begin();
             std::swap(minPA, firstPA);
-            i = 0;
+            // restart
+            k = 0;
         }
     }
 }
