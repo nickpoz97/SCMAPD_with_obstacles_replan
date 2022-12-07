@@ -15,8 +15,6 @@
 #include <fstream>
 #include <vector>
 
-#include "boost/algorithm/string/trim.hpp"
-
 #include "Point.h"
 
 namespace cmapd {
@@ -34,7 +32,7 @@ void validate_char(char c, int row, int col) {
     }
 }
 
-AmbientMap::AmbientMap(const std::filesystem::path& path_to_map) {
+AmbientMap::AmbientMap(const std::filesystem::path &path_to_map, int nRows, int nCols) {
     
     std::ifstream map_file{path_to_map};
     if (!map_file) {
@@ -43,14 +41,12 @@ AmbientMap::AmbientMap(const std::filesystem::path& path_to_map) {
     
     std::string line {};
     int rows_counter {0};
-    while(std::getline(map_file, line)){
+    for(int row = 0 ; row < nRows ; ++row){
+        std::getline(map_file, line);
         std::vector<char> char_vec {};
         int cols_counter {0};
-        boost::algorithm::trim(line);
-        if(line.empty()){
-            continue;
-        }
-        for(char c : line){
+        for(int col = 0 ; col < nCols ; ++col){
+            char c = line[col];
             validate_char(c, rows_counter, cols_counter);
             char_vec.push_back(c);
             cols_counter++;

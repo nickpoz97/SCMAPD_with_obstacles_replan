@@ -32,9 +32,11 @@ class AmbientMap {
      * rows and columns of the map and the overall structure of the map ('#' for walls, ' ' for
      * empty spaces, 'O' for possible agent and targets positions)
      * @param path_to_map
+     * @param nRows
+     * @param nCols
      * @throw runtime_error if the file in input does not exist
      */
-    explicit AmbientMap(const std::filesystem::path& path_to_map);
+    explicit AmbientMap(const std::filesystem::path &path_to_map, int nRows, int nCols);
     /**
      * Method that returns a const reference of the map structure
      * @return const reference of the map structure

@@ -25,7 +25,7 @@ utils::loadRobots(const std::filesystem::path &agentsFilePath, int nCols, char h
 
         //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
-        Coord position{std::stoi(xCoordString), std::stoi(yCoordString)};
+        Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
         agents.emplace_back(position, i, capacity);
     }
 
@@ -64,7 +64,7 @@ std::vector<Task> utils::loadTasks(const std::filesystem::path &tasksFilePath, i
         unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
 
 
-        tasks.push_back({{xBegin, yBegin}, {xEnd, yEnd}, releaseTime, i});
+        tasks.push_back({{yBegin, xBegin}, {yEnd, xEnd}, releaseTime, i});
     }
 
     return tasks;

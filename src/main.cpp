@@ -7,13 +7,15 @@
 #include "ambient/AmbientMapInstance.h"
 
 int main(int argc, char* argv[]){
-    cmapd::AmbientMap map("data/grid.txt");
+    auto rawMatrix = cnpy::npy_load("data/distance_matrix.npy");
+    auto nRows = rawMatrix.shape[0];
+    auto nCols = rawMatrix.shape[1];
+
+    cmapd::AmbientMap map("data/grid.txt", nRows, nCols);
 
     auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
     auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
 
-    auto rawMatrix = cnpy::npy_load("data/distance_matrix.npy");
-    auto nCols = rawMatrix.shape[1];
 
     cmapd::AmbientMapInstance instance(
         map,
@@ -45,17 +47,17 @@ int main(int argc, char* argv[]){
 //
 //            ("sipp", po::value<bool>()->default_value(1), "using SIPP as the low-level solver")
             ;
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if (vm.count("help")) {
-        std::cout << desc << '\n';
-        return 1;
-    }
-
-    cmapd::AmbientMap ambientMap{vm["map"].as<std::string>()};
-
-    po::notify(vm);
+//    po::variables_map vm;
+//    po::store(po::parse_command_line(argc, argv, desc), vm);
+//
+//    if (vm.count("help")) {
+//        std::cout << desc << '\n';
+//        return 1;
+//    }
+//
+//    cmapd::AmbientMap ambientMap{vm["map"].as<std::string>()};
+//
+//    po::notify(vm);
 
     return 0;
 }
