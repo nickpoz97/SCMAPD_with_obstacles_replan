@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
         {std::move(rawMatrix), static_cast<unsigned int>(nCols)}
     );
 
-    SCMAPD scmapd{std::move(instance), std::move(robots), std::move(tasks), Heuristic::RMCA_A};
+    SCMAPD scmapd{std::move(instance), std::move(robots), std::move(tasks), Heuristic::MCA};
     scmapd.solve(10);
 
     namespace po = boost::program_options;

@@ -50,21 +50,28 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
 
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
-    for(auto candidateAssignment = extractTop(); !status.getUnassignedTasksIndices().empty(); candidateAssignment = extractTop()){
+    for(auto [taskId, candidateAssignment] = extractTop();
+        !status.getUnassignedTasksIndices().empty();
+        std::tie(taskId, candidateAssignment) = extractTop()
+    ){
         auto k = candidateAssignment.getIndex();
         // todo check this
         status.getAssignment(k) = std::move(candidateAssignment);
 
-        for (auto& [taskId, partialAssignments] : bigH){
+        for (auto& [otherTaskId, partialAssignments] : bigH){
             auto& pa = partialAssignments[k];
             pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k));
-            updateSmallHTop(k, heuristic == Heuristic::MCA ? 1 : 2, partialAssignments);
+            updateSmallHTop(
+                k,
+                heuristic == Heuristic::MCA ? 1 : 2,
+                partialAssignments
+            );
         }
         sortBigH(bigH, heuristic);
     }
 }
 
-Assignment SCMAPD::extractTop() {
+std::pair<unsigned int, Assignment> SCMAPD::extractTop() {
     // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<unsigned, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
     auto& [taskId, partialAssignments] = bigH.front();
@@ -73,7 +80,7 @@ Assignment SCMAPD::extractTop() {
     bigH.pop_front();
     status.removeTaskIndex(taskId);
 
-    return candidateAssignment;
+    return {taskId, candidateAssignment};
 }
 
 void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
@@ -99,7 +106,7 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
             bigH.sort(
                 [](const SmallH& a, const SmallH& b){return a.second[0] < b.second[0];}
             );
-            break;
+        break;
         case Heuristic::RMCA_A:
             bigH.sort(
                 [](const SmallH& a, const SmallH& b) {
@@ -109,7 +116,7 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
                     return aVal > bVal;
                 }
             );
-            break;
+        break;
         case Heuristic::RMCA_R:
             bigH.sort(
                 [](const SmallH& a, const SmallH& b) {
@@ -119,6 +126,6 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
                     return aVal > bVal;
                 }
             );
-            break;
+        break;
     }
 }

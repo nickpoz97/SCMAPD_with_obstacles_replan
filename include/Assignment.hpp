@@ -64,8 +64,8 @@ private:
     WaypointsList waypoints{};
     Path path{};
 
-    void insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
-                             WaypointsList::iterator &waypointGoal);
+    void insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                             std::_List_iterator<Waypoint> waypointGoal);
 
     bool checkCapacityConstraint();
 

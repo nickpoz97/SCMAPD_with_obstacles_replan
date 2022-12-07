@@ -81,12 +81,12 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
 
 void Assignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
                                                  WaypointsList::iterator &waypointGoal) {
-    waypoints.erase(waypointStart);
-    waypoints.erase(waypointGoal);
+    waypointStart = waypoints.erase(waypointStart);
+    waypointGoal = waypoints.erase(waypointGoal);
 }
 
-void Assignment::insertTaskWaypoints(const Task &task, WaypointsList::iterator &waypointStart,
-                                            WaypointsList::iterator &waypointGoal) {
+void Assignment::insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                     std::_List_iterator<Waypoint> waypointGoal) {
     waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index});
     waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index});
 }
@@ -105,8 +105,6 @@ bool Assignment::checkCapacityConstraint() {
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
                                     WaypointsList::const_iterator lastWaypoint, int firstIndexPath) const{
-    assert(lastWaypoint != waypoints.end());
-
     TimeStep cumulatedTTD = 0;
     auto wpIt = waypoints.cbegin();
 
