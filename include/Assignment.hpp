@@ -73,7 +73,8 @@ private:
                                   WaypointsList::iterator &waypointGoal);
 
     [[nodiscard]] TimeStep computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                          WaypointsList::const_iterator lastWaypoint, int firstIndexPath = 0) const;
+                                          WaypointsList::const_iterator firstWaypoint,
+                                          WaypointsList::const_iterator lastWaypoint) const;
 
     [[nodiscard]] TimeStep computeRealTTD(
             const std::vector<Task> &tasks,

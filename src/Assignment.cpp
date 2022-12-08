@@ -1,4 +1,5 @@
 #include <limits>
+#include <array>
 #include <numeric>
 #include <cassert>
 #include <algorithm>
@@ -104,12 +105,13 @@ bool Assignment::checkCapacityConstraint() {
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                    WaypointsList::const_iterator lastWaypoint, int firstIndexPath) const{
+                                    WaypointsList::const_iterator firstWaypoint,
+                                    WaypointsList::const_iterator lastWaypoint) const{
     TimeStep cumulatedTTD = 0;
-    auto wpIt = waypoints.cbegin();
+    auto wpIt = firstWaypoint;
 
     // i is the timestep, if lastWaypoint is reached, break
-    for(int i = firstIndexPath ; i < path.size() && wpIt != lastWaypoint; ++i){
+    for(int i = 0 ; i < path.size() && wpIt != lastWaypoint; ++i){
         // reached waypoint
         if(path[i] == wpIt->position){
             if(wpIt->demand == Demand::GOAL){
@@ -130,24 +132,26 @@ TimeStep Assignment::computeApproxTTD(
     WaypointsList::const_iterator goalWaypoint
     ) const{
 
-    auto beforeStartIt = std::prev(startWaypoint);
-    auto afterGoalIt = std::next(goalWaypoint);
+    TimeStep ttd = 0;
 
-    auto ttdBefore = computeRealTTD(tasks, distanceMatrix, beforeStartIt);
+    assert(startWaypoint != waypoints.cend() && goalWaypoint != waypoints.cbegin());
 
-    auto ttdApprox = distanceMatrix.getDistance(beforeStartIt->position, startWaypoint->position) +
-            distanceMatrix.getDistance(startWaypoint->position, goalWaypoint->position) +
-            distanceMatrix.getDistance(goalWaypoint->position, afterGoalIt->position);
+    std::array<WaypointsList::const_iterator, 4> checkpoints{};
 
-    auto afterGoalIndex = findWaypointTimestep(path, *afterGoalIt);
-    auto ttdAfter = afterGoalIndex.has_value() ? computeRealTTD(
-            tasks, distanceMatrix,
-            waypoints.cend(),
-            static_cast<int>(afterGoalIndex.value())
-    ) : 0;
+    checkpoints[0] = startWaypoint != waypoints.cbegin() ? std::prev(startWaypoint) : startWaypoint;
+    checkpoints[1] = std::next(startWaypoint);
+    checkpoints[2] = goalWaypoint != waypoints.cend() ? std::next(goalWaypoint) : goalWaypoint;
+    checkpoints[3] = checkpoints[2] != waypoints.cend() ? std::next(checkpoints[2]) : checkpoints[2];
 
-    return ttdBefore + ttdApprox + ttdAfter;
+    ttd += computeRealTTD(tasks, distanceMatrix, waypoints.cbegin(), checkpoints[0]);
+    ttd += distanceMatrix.getDistance(checkpoints[0]->position, startWaypoint->position);
+    ttd += distanceMatrix.getDistance(startWaypoint->position, checkpoints[1]->position);
+    ttd += computeRealTTD(tasks, distanceMatrix, checkpoints[1], checkpoints[2]);
+    ttd += distanceMatrix.getDistance(checkpoints[2]->position, goalWaypoint->position);
+    ttd += distanceMatrix.getDistance(goalWaypoint->position, checkpoints[3]->position);
+    ttd += computeRealTTD(tasks, distanceMatrix, checkpoints[3], waypoints.end());
 
+    return ttd;
 }
 
 bool operator<(const Assignment& a, const Assignment& b){
@@ -155,7 +159,7 @@ bool operator<(const Assignment& a, const Assignment& b){
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
-    return computeRealTTD(tasks, distanceMatrix, waypoints.cend(), 0);
+    return computeRealTTD(tasks, distanceMatrix, waypoints.cbegin(), waypoints.cend());
 }
 
 const Path &Assignment::getPath() const {
