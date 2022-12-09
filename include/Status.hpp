@@ -39,7 +39,7 @@ public:
 
     std::vector<cmapd::Constraint> getOtherConstraints(int k) const;
 private:
-    const cmapd::AmbientMapInstance&& ambientMapInstance;
+    const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;
     std::vector<Assignment> assignments;
     std::unordered_set<unsigned int> unassignedTasksIndices;

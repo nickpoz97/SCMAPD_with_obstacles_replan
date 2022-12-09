@@ -57,13 +57,16 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
 
 std::pair<WaypointsList::iterator, WaypointsList::iterator>
 Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks) {
+    assert(waypoints.begin() != waypoints.end());
+
     WaypointsList::iterator bestStartIt;
     WaypointsList::iterator bestGoalIt;
 
     TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
+    // todo fix this loop
     // search for best position for task start and goal
-    for(auto waypointStart = waypoints.begin(); waypointStart != waypoints.end() ; ++waypointStart){
+    for(auto waypointStart = waypoints.begin(); std::next(waypointStart) != waypoints.end() ; ++waypointStart){
         for (auto waypointGoal = std::next(waypointStart); waypointGoal != waypoints.end(); ++waypointGoal){
             insertTaskWaypoints(tasks[taskId], waypointStart, waypointGoal);
             if(checkCapacityConstraint()){

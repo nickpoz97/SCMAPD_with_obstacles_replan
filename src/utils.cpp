@@ -75,18 +75,17 @@ SCMAPD utils::loadData(const std::filesystem::path &agentsFile, const std::files
                        Heuristic heuristic) {
     DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
 
-    cmapd::AmbientMap map(gridFile, dm.nRows, dm.nCols);
-
-    auto robots{utils::loadRobots(agentsFile, map.columns_number())};
-    auto tasks{utils::loadTasks(tasksFile, map.columns_number())};
+    auto robots{utils::loadRobots(agentsFile, dm.nCols)};
+    auto tasks{utils::loadTasks(tasksFile, dm.nCols)};
 
 
     cmapd::AmbientMapInstance instance(
-            map,
+            cmapd::AmbientMap(gridFile, dm.nRows, dm.nCols),
             {robots.begin(), robots.end()},
             {tasks.begin(), tasks.end()},
             std::move(dm)
     );
 
-    return {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+    SCMAPD scmapd {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+    return scmapd;
 }

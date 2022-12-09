@@ -33,10 +33,10 @@ class AmbientMapInstance final : public AmbientMap {
   public:
     // given map, agents, tasks and h_table it build a runtime instance
     explicit AmbientMapInstance(
-        const AmbientMap& map,
-        std::vector<Point> a,
-        std::vector<std::pair<Point, Point>> t,
-        DistanceMatrix&& distanceMatrix
+            AmbientMap &&map,
+            std::vector<Point>&& a,
+            std::vector<std::pair<Point, Point>>&& t,
+            DistanceMatrix&& distanceMatrix
     );
 
     /**

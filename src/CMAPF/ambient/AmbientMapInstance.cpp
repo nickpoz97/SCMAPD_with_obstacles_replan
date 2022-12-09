@@ -18,11 +18,11 @@
 namespace cmapd {
 
 AmbientMapInstance::AmbientMapInstance(
-    const AmbientMap &map,
-    std::vector<Point> a,
-    std::vector<std::pair<Point, Point>> t,
-    DistanceMatrix&& distanceMatrix
-) : AmbientMap(map), m_agents(std::move(a)), m_tasks(std::move(t)), m_h_table(std::move(distanceMatrix)){
+        AmbientMap &&map,
+        std::vector<Point>&& a,
+        std::vector<std::pair<Point, Point>>&& t,
+        DistanceMatrix&& distanceMatrix
+) : AmbientMap{std::move(map)}, m_agents{std::move(a)}, m_tasks{std::move(t)}, m_h_table{std::move(distanceMatrix)}{
 
     for (auto agent : m_agents) {
         m_grid[agent.row][agent.col] = 'a';
