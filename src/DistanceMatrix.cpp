@@ -2,9 +2,10 @@
 #include <cnpy.h>
 #include "DistanceMatrix.hpp"
 
-DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data, unsigned int nCols) :
+DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
     rawDistanceMatrix{data},
-    nCols{nCols},
+    nRows{static_cast<unsigned>(rawDistanceMatrix.shape[0])},
+    nCols{static_cast<unsigned>(rawDistanceMatrix.shape[1])},
     startCoordsSize{static_cast<unsigned int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},
     endCoordsSize{static_cast<unsigned int>(rawDistanceMatrix.shape[2] * rawDistanceMatrix.shape[3])}
     {}

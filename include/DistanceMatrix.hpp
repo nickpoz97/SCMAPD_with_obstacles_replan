@@ -10,9 +10,8 @@
 #include "TypeDefs.hpp"
 #include "custom_types.h"
 
-class DistanceMatrix {
-public:
-    DistanceMatrix(cnpy::NpyArray&& data, unsigned nCols);
+struct DistanceMatrix {
+    explicit DistanceMatrix(cnpy::NpyArray&& data);
     [[nodiscard]] unsigned getDistance(CompressedCoord from, CompressedCoord to) const;
     [[nodiscard]] unsigned getDistance(Coord from, Coord to) const;
 
@@ -22,8 +21,9 @@ public:
     [[nodiscard]] unsigned computeCumulatedValue(cmapd::Point x,
                                    int label,
                                    const cmapd::path_t& goal_sequence) const;
-private:
+
     const cnpy::NpyArray rawDistanceMatrix;
+    const unsigned nRows;
     const unsigned nCols;
 
     const unsigned startCoordsSize;

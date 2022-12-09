@@ -69,3 +69,24 @@ std::vector<Task> utils::loadTasks(const std::filesystem::path &tasksFilePath, i
 
     return tasks;
 }
+
+SCMAPD utils::loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
+                       const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
+                       Heuristic heuristic) {
+    DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
+
+    cmapd::AmbientMap map(gridFile, dm.nRows, dm.nCols);
+
+    auto robots{utils::loadRobots(agentsFile, map.columns_number())};
+    auto tasks{utils::loadTasks(tasksFile, map.columns_number())};
+
+
+    cmapd::AmbientMapInstance instance(
+            map,
+            {robots.begin(), robots.end()},
+            {tasks.begin(), tasks.end()},
+            std::move(dm)
+    );
+
+    return {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+}

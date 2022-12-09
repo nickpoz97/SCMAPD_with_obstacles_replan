@@ -7,24 +7,13 @@
 #include "ambient/AmbientMapInstance.h"
 
 int main(int argc, char* argv[]){
-    auto rawMatrix = cnpy::npy_load("data/distance_matrix.npy");
-    auto nRows = rawMatrix.shape[0];
-    auto nCols = rawMatrix.shape[1];
+    auto distanceMatrixFile{"data/distance_matrix.npy"};
+    auto gridFile{"data/grid.txt"};
 
-    cmapd::AmbientMap map("data/grid.txt", nRows, nCols);
+    auto robotsFile{"data/0.agents"};
+    auto tasksFile{"data/0.tasks"};
 
-    auto robots{utils::loadRobots("data/0.agents", map.columns_number())};
-    auto tasks{utils::loadTasks("data/0.tasks", map.columns_number())};
-
-
-    cmapd::AmbientMapInstance instance(
-        map,
-        {robots.begin(), robots.end()},
-        {tasks.begin(), tasks.end()},
-        {std::move(rawMatrix), static_cast<unsigned int>(nCols)}
-    );
-
-    SCMAPD scmapd{std::move(instance), std::move(robots), std::move(tasks), Heuristic::MCA};
+    SCMAPD scmapd{utils::loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
     scmapd.solve(10);
 
     namespace po = boost::program_options;
