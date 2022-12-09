@@ -64,35 +64,37 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
 
     TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
-    // todo fix this loop
+    // todo add watpoint after waypointGoal
     // search for best position for task start and goal
     for(auto waypointStart = waypoints.begin(); std::next(waypointStart) != waypoints.end() ; ++waypointStart){
-        for (auto waypointGoal = std::next(waypointStart); waypointGoal != waypoints.end(); ++waypointGoal){
-            insertTaskWaypoints(tasks[taskId], waypointStart, waypointGoal);
+        for (auto waypointGoal = waypointStart; waypointGoal != waypoints.end(); ++waypointGoal){
+            auto [newStartIt, newGoalIt] = insertTaskWaypoints(tasks[taskId], waypointStart, waypointGoal);
             if(checkCapacityConstraint()){
-                auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix, waypointStart, waypointGoal);
+                auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix, newStartIt, newGoalIt);
                 if(newApproxTtd < bestApproxTTD){
                     bestApproxTTD = newApproxTtd;
                     bestStartIt = waypointStart;
                     bestGoalIt = waypointGoal;
                 }
             }
-            restorePreviousWaypoints(waypointStart, waypointGoal);
+            restorePreviousWaypoints(newStartIt, newGoalIt);
         }
     }
     return {bestStartIt, bestGoalIt};
 }
 
-void Assignment::restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
-                                                 WaypointsList::iterator &waypointGoal) {
-    waypointStart = waypoints.erase(waypointStart);
-    waypointGoal = waypoints.erase(waypointGoal);
+void Assignment::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
+                                          std::_List_iterator<Waypoint> waypointGoal) {
+    waypoints.erase(waypointStart);
+    waypoints.erase(waypointGoal);
 }
 
-void Assignment::insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                     std::_List_iterator<Waypoint> waypointGoal) {
-    waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index});
-    waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index});
+std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                            std::_List_iterator<Waypoint> waypointGoal) {
+    return {
+        waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index}),
+        waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index})
+    };
 }
 
 bool Assignment::checkCapacityConstraint() {

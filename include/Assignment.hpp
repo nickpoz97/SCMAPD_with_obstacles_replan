@@ -64,13 +64,13 @@ private:
     WaypointsList waypoints{};
     Path path{};
 
-    void insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                             std::_List_iterator<Waypoint> waypointGoal);
+    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                    std::_List_iterator<Waypoint> waypointGoal);
 
     bool checkCapacityConstraint();
 
-    void restorePreviousWaypoints(WaypointsList::iterator &waypointStart,
-                                  WaypointsList::iterator &waypointGoal);
+    void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
+                                  std::_List_iterator<Waypoint> waypointGoal);
 
     [[nodiscard]] TimeStep computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
                                           WaypointsList::const_iterator firstWaypoint,
