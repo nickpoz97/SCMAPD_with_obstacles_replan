@@ -3,6 +3,7 @@
 //
 
 #include <boost/iterator/counting_iterator.hpp>
+#include <fmt/core.h>
 #include "Status.hpp"
 
 Status::Status(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
@@ -67,6 +68,15 @@ Assignment &Status::getAssignment(int k) {
 
 void Status::removeTaskIndex(int i) {
     unassignedTasksIndices.erase(i);
+}
+
+void Status::print() {
+    static int nCalls = 0;
+
+    fmt::print("iteration {}", nCalls++);
+    for (const auto& a : assignments){
+
+    }
 }
 
 

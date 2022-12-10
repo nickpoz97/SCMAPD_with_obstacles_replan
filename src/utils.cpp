@@ -1,5 +1,7 @@
 #include <utils.hpp>
 #include <fstream>
+#include <fmt/core.h>
+
 #include "Assignment.hpp"
 #include "DistanceMatrix.hpp"
 
@@ -88,4 +90,8 @@ SCMAPD utils::loadData(const std::filesystem::path &agentsFile, const std::files
 
     SCMAPD scmapd {std::move(instance), std::move(robots), std::move(tasks), heuristic};
     return scmapd;
+}
+
+std::string utils::coordToString(Coord c) {
+    return fmt::format("[row: {}, col: {}]", c.row, c.col);
 }

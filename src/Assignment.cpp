@@ -3,6 +3,8 @@
 #include <numeric>
 #include <cassert>
 #include <algorithm>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "Assignment.hpp"
 #include "pbs.h"
@@ -64,11 +66,18 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
 
     TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
+    // we must use end iterator position to explore all possible combinations
+    auto nIterations = waypoints.size() + 1;
+    int i = 0;
+    int j = 0;
+    auto waypointStart = waypoints.begin();
+    auto waypointGoal = waypointStart;
+
     // todo add watpoint after waypointGoal
     // search for best position for task start and goal
-    for(auto waypointStart = waypoints.begin(); std::next(waypointStart) != waypoints.end() ; ++waypointStart){
-        for (auto waypointGoal = waypointStart; waypointGoal != waypoints.end(); ++waypointGoal){
-            auto [newStartIt, newGoalIt] = insertTaskWaypoints(tasks[taskId], waypointStart, waypointGoal);
+    for(; i < nIterations ; ++waypointStart, ++i){
+        for (; j < nIterations; ++waypointGoal, ++j){
+            auto [newStartIt, newGoalIt] = insertNewWaypoints(tasks[taskId], waypointStart, waypointGoal);
             if(checkCapacityConstraint()){
                 auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix, newStartIt, newGoalIt);
                 if(newApproxTtd < bestApproxTTD){
@@ -89,8 +98,8 @@ void Assignment::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypoint
     waypoints.erase(waypointGoal);
 }
 
-std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                                                                            std::_List_iterator<Waypoint> waypointGoal) {
+std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                           std::_List_iterator<Waypoint> waypointGoal) {
     return {
         waypoints.insert(waypointStart, {task.startLoc, Demand::START, task.index}),
         waypoints.insert(waypointGoal, {task.goalLoc, Demand::GOAL, task.index})
@@ -123,7 +132,7 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
                 const Task& task = tasks[wpIt->taskIndex];
                 cumulatedTTD += i - task.getIdealGoalTime(distanceMatrix);
             }
-            wpIt = std::next(wpIt);
+            ++wpIt;
         }
     }
 
@@ -216,4 +225,9 @@ bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
     bool nodeConflict = a[i] == b[i];
 
     return edgeConflict || nodeConflict;
+}
+
+Assignment::operator std::string() const{
+    fmt::format("Index: {}", index);
+    fmt::format("Waypoints: {}", utils::objContainerString(waypoints));
 }

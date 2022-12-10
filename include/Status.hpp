@@ -38,6 +38,8 @@ public:
     void removeTaskIndex(int i);
 
     std::vector<cmapd::Constraint> getOtherConstraints(int k) const;
+
+    void print();
 private:
     const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;

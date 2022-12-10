@@ -52,6 +52,8 @@ public:
     // this should be called when waypoints and/or constraints are changed
     void internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
                         const cmapd::AmbientMapInstance &ambientMapInstance);
+
+    explicit operator std::string() const;
 private:
     Coord startPosition;
     unsigned index;
@@ -64,8 +66,8 @@ private:
     WaypointsList waypoints{};
     Path path{};
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertTaskWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                                                                    std::_List_iterator<Waypoint> waypointGoal);
+    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                   std::_List_iterator<Waypoint> waypointGoal);
 
     bool checkCapacityConstraint();
 
