@@ -12,6 +12,7 @@
 #include <compare>
 #include <ostream>
 #include <utility>
+#include <fmt/format.h>
 
 namespace cmapd {
 /**
@@ -40,6 +41,8 @@ struct Point {
     Point& operator+=(const std::pair<int, int>& rhs);
     /// Used to print a Point to console.
     friend std::ostream& operator<<(std::ostream& os, const Point& point);
+
+    inline explicit operator std::string() const{ return fmt::format("[row: {}, col: {}]", row, col);}
 };
 
 inline Point& Point::operator+=(const std::pair<int, int>& rhs) {

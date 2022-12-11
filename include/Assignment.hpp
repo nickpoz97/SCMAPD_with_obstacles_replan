@@ -101,4 +101,7 @@ private:
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 };
+
+std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', unsigned int capacity= 3);
+
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

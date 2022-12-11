@@ -70,12 +70,18 @@ void Status::removeTaskIndex(int i) {
     unassignedTasksIndices.erase(i);
 }
 
-void Status::print() {
+void Status::print(FILE *fp) {
     static int nCalls = 0;
 
-    fmt::print("iteration {}", nCalls++);
-    for (const auto& a : assignments){
+    if(nCalls == 0) {
+        for(const auto& t : tasks){
+            fmt::print("{}", static_cast<std::string>(t));
+        }
+    }
 
+    fmt::print(fp, "iteration {}\n", nCalls++);
+    for (const auto& a : assignments){
+        fmt::print("{}", static_cast<std::string>(a));
     }
 }
 

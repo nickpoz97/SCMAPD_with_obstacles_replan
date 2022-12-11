@@ -54,6 +54,8 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         !status.getUnassignedTasksIndices().empty();
         std::tie(taskId, candidateAssignment) = extractTop()
     ){
+        status.print();
+
         auto k = candidateAssignment.getIndex();
         // todo check this
         status.getAssignment(k) = std::move(candidateAssignment);
@@ -128,4 +130,24 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
             );
         break;
     }
+}
+
+SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
+                       const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
+                       Heuristic heuristic) {
+    DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
+
+    auto robots{loadAssignments(agentsFile, dm.nCols)};
+    auto tasks{loadTasks(tasksFile, dm.nCols)};
+
+
+    cmapd::AmbientMapInstance instance(
+            cmapd::AmbientMap(gridFile, dm.nRows, dm.nCols),
+            {robots.begin(), robots.end()},
+            {tasks.begin(), tasks.end()},
+            std::move(dm)
+    );
+
+    SCMAPD scmapd {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+    return scmapd;
 }

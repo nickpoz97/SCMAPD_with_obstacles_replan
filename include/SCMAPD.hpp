@@ -38,4 +38,8 @@ private:
     static void sortBigH(BigH &bigH, Heuristic heuristic);
 };
 
+SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
+                const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
+                Heuristic heuristic);
+
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

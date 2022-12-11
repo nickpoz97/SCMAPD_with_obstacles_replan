@@ -13,7 +13,7 @@ using TimeStep = unsigned int;
 
 using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
-enum class Demand{
+enum class Demand : int{
     START = 1,
     GOAL = -1
 };

@@ -19,7 +19,7 @@ struct Waypoint{
 
     inline explicit operator std::string() const {
         return fmt::format("[pos: {}, demand: {}, taskId: {}]",
-            utils::coordToString(position), static_cast<unsigned>(demand), taskIndex);
+            static_cast<std::string>(position), static_cast<int>(demand), taskIndex);
     }
 };
 

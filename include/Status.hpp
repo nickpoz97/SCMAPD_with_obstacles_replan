@@ -39,7 +39,7 @@ public:
 
     std::vector<cmapd::Constraint> getOtherConstraints(int k) const;
 
-    void print();
+    void print(FILE *fp = stdout);
 private:
     const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;

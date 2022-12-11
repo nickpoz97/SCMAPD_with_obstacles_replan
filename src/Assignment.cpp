@@ -3,6 +3,7 @@
 #include <numeric>
 #include <cassert>
 #include <algorithm>
+#include <fstream>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
@@ -110,7 +111,7 @@ bool Assignment::checkCapacityConstraint() {
     unsigned actualWeight = 0;
 
     for(const auto& waypoint : waypoints){
-        actualWeight += static_cast<unsigned>(waypoint.demand);
+        actualWeight += static_cast<int>(waypoint.demand);
         if(actualWeight > getCapacity()){
             return false;
         }
@@ -228,6 +229,44 @@ bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
 }
 
 Assignment::operator std::string() const{
-    fmt::format("Index: {}", index);
-    fmt::format("Waypoints: {}", utils::objContainerString(waypoints));
+    auto [firstDiv, lastDiv] = utils::buildDivider("Assignment");
+
+    return fmt::format(
+        "{}\n{}\n{}\n{}\n{}\n{}\n",
+        firstDiv,
+        fmt::format("Index: {}", index),
+        fmt::format("Waypoints: {}", utils::objContainerString(waypoints)),
+        fmt::format("Path: {}", utils::objContainerString(path)),
+        fmt::format("Path Length: {}", path.size()),
+        lastDiv
+    );
+}
+
+std::vector<Assignment>
+loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, unsigned int capacity){
+    std::ifstream fs (agentsFilePath, std::ios::in);
+    std::string line;
+
+    // nAgents line
+    std::getline(fs, line);
+    size_t nAgents = std::stoi(line);
+
+    std::vector<Assignment> agents;
+    agents.reserve(nAgents);
+
+    for (unsigned i = 0 ; i < nAgents; ++i){
+        std::getline(fs, line);
+
+        std::string xCoordString, yCoordString;
+        auto coordStream = std::stringstream(line);
+        std::getline(coordStream, yCoordString, horizontalSep);
+        std::getline(coordStream, xCoordString, horizontalSep);
+
+        //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
+
+        Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
+        agents.emplace_back(position, i, capacity);
+    }
+
+    return agents;
 }

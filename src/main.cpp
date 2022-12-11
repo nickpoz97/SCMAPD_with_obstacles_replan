@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
     auto robotsFile{"data/0.agents"};
     auto tasksFile{"data/0.tasks"};
 
-    SCMAPD scmapd{utils::loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
+    SCMAPD scmapd{loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
     scmapd.solve(10);
 
     namespace po = boost::program_options;
