@@ -40,7 +40,7 @@ std::vector<cmapd::Constraint> Status::getOtherConstraints(int k) const {
     }
     otherConstraints.reserve(reserveSize);
     // copy
-    auto outIt = otherConstraints.begin();
+    auto outIt = std::back_inserter(otherConstraints);
     for(const auto& a : assignments){
         if (a.getIndex() != k){
             const auto& aCon = a.getConstraints();
