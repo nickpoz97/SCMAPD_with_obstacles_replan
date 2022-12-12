@@ -59,13 +59,15 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         status.print();
 
         auto k = candidateAssignment.getIndex();
-        status.getAssignment(k) = std::move(candidateAssignment);
+
+        auto& assignment = status.getAssignment(k);
+        assignment = std::move(candidateAssignment);
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
             auto& pa = partialAssignments[k];
             pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k));
             updateSmallHTop(
-                k,
+                assignment,
                 heuristic == Heuristic::MCA ? 1 : 2,
                 partialAssignments
             );
@@ -93,13 +95,12 @@ std::pair<int, Assignment> SCMAPD::extractTop() {
     return {taskId, candidateAssignment};
 }
 
-void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
+void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments) {
     std::sort(partialAssignments.begin(), partialAssignments.end());
-    const Assignment& a = status.getAssignment(assignmentIndex);
 
     for (int k = 0 ; k < v ; ++k) {
         auto& targetPA = partialAssignments[k];
-        if(targetPA.getIndex() != a.getIndex() && Assignment::hasConflicts(a, targetPA)) {
+        if(Assignment::hasConflicts(fixedAssignment, targetPA)) {
             targetPA.internalUpdate(status.getOtherConstraints(k), status.getTasks(), status.getAmbientMapInstance());
             // todo min search on first v elements or everyone?
             std::sort(partialAssignments.begin(), partialAssignments.end());

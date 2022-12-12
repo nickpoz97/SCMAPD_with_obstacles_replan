@@ -225,6 +225,11 @@ bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
     const auto& pathA = a.getPath();
     const auto& pathB = b.getPath();
 
+    // same robot
+    if(a.getIndex() == b.getIndex()){
+        return false;
+    }
+
     for (int i = 0 ; i < std::min(pathA.size(), pathB.size()); ++i){
         if(checkConflict(pathA, pathB, i)) { return true; }
     }

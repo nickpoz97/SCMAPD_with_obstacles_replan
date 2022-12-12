@@ -33,7 +33,7 @@ private:
 
     std::pair<int, Assignment> extractTop();
 
-    void updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments);
+    void updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments);
 
     static void sortBigH(BigH &bigH, Heuristic heuristic);
 };
