@@ -10,13 +10,13 @@
 #include "Assignment.hpp"
 #include "pbs.h"
 
-Assignment::Assignment(Coord startPosition, unsigned index, unsigned capacity) :
+Assignment::Assignment(Coord startPosition, int index, int capacity) :
         startPosition{startPosition},
         index{index},
         capacity{capacity}
     {}
 
-unsigned int Assignment::getCapacity() const {
+int Assignment::getCapacity() const {
     return capacity;
 }
 
@@ -24,7 +24,7 @@ TimeStep Assignment::getMCA() const {
     return newTTD - oldTTD;
 }
 
-unsigned Assignment::getIndex() const {
+int Assignment::getIndex() const {
     return index;
 }
 
@@ -61,16 +61,18 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
     internalUpdate(outerConstraints, tasks, ambientMapInstance);
 
+#ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
+    int sum = 0;
+    for(const auto& w : waypoints){
+        sum += static_cast<int>(w.demand);
+    }
+    assert(sum == 0);
+#endif
 }
 
 std::pair<WaypointsList::iterator, WaypointsList::iterator>
 Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks) {
-    assert(waypoints.begin() != waypoints.end());
-
-    WaypointsList::iterator bestStartIt;
-    WaypointsList::iterator bestGoalIt;
-
     TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
     // we must use end iterator position to explore all possible combinations
@@ -80,7 +82,9 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
     auto waypointStart = waypoints.begin();
     auto waypointGoal = waypointStart;
 
-    // todo add watpoint after waypointGoal
+    auto bestStartIt = waypointStart;
+    auto bestGoalIt = waypointGoal;
+
     // search for best position for task start and goal
     for(; i < nIterations ; ++waypointStart, ++i){
         for (; j < nIterations; ++waypointGoal, ++j){
@@ -114,7 +118,7 @@ std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertNe
 }
 
 bool Assignment::checkCapacityConstraint() {
-    unsigned actualWeight = 0;
+    int actualWeight = 0;
 
     for(const auto& waypoint : waypoints){
         actualWeight += static_cast<int>(waypoint.demand);
@@ -250,7 +254,7 @@ Assignment::operator std::string() const{
 }
 
 std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, unsigned int capacity){
+loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, int capacity){
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 
@@ -261,7 +265,7 @@ loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char hor
     std::vector<Assignment> agents;
     agents.reserve(nAgents);
 
-    for (unsigned i = 0 ; i < nAgents; ++i){
+    for (int i = 0 ; i < nAgents; ++i){
         std::getline(fs, line);
 
         std::string xCoordString, yCoordString;

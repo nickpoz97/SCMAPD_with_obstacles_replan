@@ -22,7 +22,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCol
     std::vector<Task> tasks;
     tasks.reserve(nTasks);
 
-    for (unsigned i = 0 ; i < nTasks ; ++i){
+    for (int i = 0 ; i < nTasks ; ++i){
         std::getline(fs, line);
 
         std::stringstream taskString{line};
@@ -40,7 +40,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCol
         std::getline(taskString, value, horizontalSep);
         int xEnd = std::stoi(value);
 
-        unsigned releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
+        int releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
 
 
         tasks.push_back({{yBegin, xBegin}, {yEnd, xEnd}, releaseTime, i});

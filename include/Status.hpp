@@ -33,7 +33,7 @@ public:
     const Assignment& getAssignment(int k) const;
     Assignment& getAssignment(int k);
 
-    const std::unordered_set<unsigned int>& getUnassignedTasksIndices() const;
+    const std::unordered_set<int>& getUnassignedTasksIndices() const;
 
     void removeTaskIndex(int i);
 
@@ -44,7 +44,7 @@ private:
     const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;
     std::vector<Assignment> assignments;
-    std::unordered_set<unsigned int> unassignedTasksIndices;
+    std::unordered_set<int> unassignedTasksIndices;
     ConstraintsPerAgent actualConstraints;
 };
 

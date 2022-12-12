@@ -4,29 +4,29 @@
 
 DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
     rawDistanceMatrix{std::move(data)},
-    nRows{static_cast<unsigned>(rawDistanceMatrix.shape[0])},
-    nCols{static_cast<unsigned>(rawDistanceMatrix.shape[1])},
-    startCoordsSize{static_cast<unsigned int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},
-    endCoordsSize{static_cast<unsigned int>(rawDistanceMatrix.shape[2] * rawDistanceMatrix.shape[3])}
+    nRows{static_cast<int>(rawDistanceMatrix.shape[0])},
+    nCols{static_cast<int>(rawDistanceMatrix.shape[1])},
+    startCoordsSize{static_cast<int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},
+    endCoordsSize{static_cast<int>(rawDistanceMatrix.shape[2] * rawDistanceMatrix.shape[3])}
     {}
 
-unsigned DistanceMatrix::getDistance(Coord from, Coord to) const {
+int DistanceMatrix::getDistance(Coord from, Coord to) const {
     return getDistance(
             from2Dto1D(from.col, from.row, nCols), from2Dto1D(to.col, to.row, nCols)
     );
 }
 
-CompressedCoord DistanceMatrix::from2Dto1D(unsigned col, unsigned row, size_t nCols) {
-    return row * static_cast<unsigned>(nCols) + col;
+CompressedCoord DistanceMatrix::from2Dto1D(int col, int row, size_t nCols) {
+    return row * static_cast<int>(nCols) + col;
 }
 
-unsigned DistanceMatrix::getDistance(CompressedCoord from, CompressedCoord to) const {
+int DistanceMatrix::getDistance(CompressedCoord from, CompressedCoord to) const {
     // distance matrix is considered double
     const auto* ptr = rawDistanceMatrix.data<double>();
-    return static_cast<unsigned>(ptr[from * startCoordsSize + to]);
+    return static_cast<int>(ptr[from * startCoordsSize + to]);
 }
 
-unsigned
+int
 DistanceMatrix::computeCumulatedValue(cmapd::Point x, int label, const cmapd::path_t &goal_sequence) const {
     auto h_value{getDistance(x, goal_sequence[label])};
     for (int j{label + 1}; j < goal_sequence.size(); ++j) {

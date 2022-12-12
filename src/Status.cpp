@@ -23,7 +23,7 @@ const Task & Status::getTask(int i) const {
     return tasks[i];
 }
 
-const std::unordered_set<unsigned int> &Status::getUnassignedTasksIndices() const{
+const std::unordered_set<int> &Status::getUnassignedTasksIndices() const{
     return unassignedTasksIndices;
 }
 

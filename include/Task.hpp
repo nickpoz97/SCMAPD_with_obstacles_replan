@@ -9,7 +9,7 @@ struct Task {
     const Coord startLoc;
     const Coord goalLoc;
     const TimeStep releaseTime;
-    const unsigned index;
+    const int index;
 
     friend bool operator==(const Task& t1, const Task& t2);
     [[nodiscard]] TimeStep getIdealGoalTime(const DistanceMatrix& dm) const;

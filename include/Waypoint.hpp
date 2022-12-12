@@ -13,9 +13,9 @@
 struct Waypoint{
     Coord position;
     Demand demand;
-    unsigned taskIndex;
+    int taskIndex;
 
-    inline operator Coord() const {return position;}
+    inline explicit operator Coord() const {return position;}
 
     inline explicit operator std::string() const {
         return fmt::format("[pos: {}, demand: {}, taskId: {}]",

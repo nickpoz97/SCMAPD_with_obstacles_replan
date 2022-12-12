@@ -13,13 +13,13 @@
 class Assignment {
 
 public:
-    explicit Assignment(Coord startPosition, unsigned index, unsigned capacity);
+    explicit Assignment(Coord startPosition, int index, int capacity);
 
-    [[nodiscard]] unsigned int getCapacity() const;
+    [[nodiscard]] int getCapacity() const;
 
     [[nodiscard]] TimeStep getMCA() const;
 
-    [[nodiscard]] unsigned getIndex() const;
+    [[nodiscard]] int getIndex() const;
 
     [[nodiscard]] Coord getStartPosition() const;
 
@@ -56,8 +56,8 @@ public:
     explicit operator std::string() const;
 private:
     Coord startPosition;
-    unsigned index;
-    unsigned capacity;
+    int index;
+    int capacity;
 
     TimeStep oldTTD = 0;
     TimeStep newTTD = 0;
@@ -102,6 +102,6 @@ private:
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 };
 
-std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', unsigned int capacity= 3);
+std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', int capacity= 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

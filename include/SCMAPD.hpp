@@ -9,7 +9,7 @@
 #include "Assignment.hpp"
 
 // taskIndex, robot
-using SmallH = std::pair<unsigned, std::vector<Assignment>>;
+using SmallH = std::pair<int, std::vector<Assignment>>;
 
 // heap of assignments that differ by tasks
 using BigH = std::list<SmallH>;
@@ -31,7 +31,7 @@ private:
     static Assignment
     initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot);
 
-    std::pair<unsigned int, Assignment> extractTop();
+    std::pair<int, Assignment> extractTop();
 
     void updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments);
 

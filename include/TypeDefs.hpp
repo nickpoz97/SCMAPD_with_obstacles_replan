@@ -8,7 +8,7 @@
 #include "custom_types.h"
 
 using Coord = cmapd::Point;
-using CompressedCoord = unsigned int;
+using CompressedCoord = int;
 using TimeStep = int;
 
 using PickupDropoffTime = std::pair<TimeStep, TimeStep>;

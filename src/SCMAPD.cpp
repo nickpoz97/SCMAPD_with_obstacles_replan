@@ -74,8 +74,8 @@ void SCMAPD::solve(TimeStep cutOffTime) {
     }
 }
 
-std::pair<unsigned int, Assignment> SCMAPD::extractTop() {
-    // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<unsigned, ptr>)
+std::pair<int, Assignment> SCMAPD::extractTop() {
+    // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<int, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
     auto& [taskId, partialAssignments] = bigH.front();
     auto candidateAssignment{std::move(partialAssignments.at(0))};

@@ -64,7 +64,7 @@ std::pair<path_t, std::vector<Constraint>> pbs(
     Path waypointsCoords{};
     waypointsCoords.reserve(waypoints.size());
     for(const auto& w : waypoints){
-        waypointsCoords.push_back(w);
+        waypointsCoords.push_back(static_cast<Point>(w));
     }
 
     path_t path{multi_a_star::multi_a_star(aIndex, instance.agents().at(aIndex), waypointsCoords, instance, constraints)};
