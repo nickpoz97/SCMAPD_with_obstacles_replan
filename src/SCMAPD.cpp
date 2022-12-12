@@ -41,10 +41,12 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
     const auto& task = status.getTask(taskIndex);
     auto k = robot.getIndex();
 
-    robotCopy.setTasks(
-            {{task.startLoc, Demand::START, task.index},
-             {task.goalLoc,  Demand::GOAL,  task.index}},
-            status.getOtherConstraints(k), status.getAmbientMapInstance(), status.getTasks());
+    robotCopy.insert(
+        task.index,
+        status.getAmbientMapInstance(),
+        status.getTasks(),
+        status.getOtherConstraints(k)
+    );
     return robotCopy;
 }
 
@@ -57,7 +59,6 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         status.print();
 
         auto k = candidateAssignment.getIndex();
-        // todo check this
         status.getAssignment(k) = std::move(candidateAssignment);
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
@@ -79,8 +80,15 @@ std::pair<unsigned int, Assignment> SCMAPD::extractTop() {
     auto& [taskId, partialAssignments] = bigH.front();
     auto candidateAssignment{std::move(partialAssignments.at(0))};
 
+#ifndef NDEBUG
+    auto oldRemainingTasks = status.getUnassignedTasksIndices().size();
+    auto oldBigHSIze = bigH.size();
+#endif
+
     bigH.pop_front();
     status.removeTaskIndex(taskId);
+
+    assert(oldBigHSIze == bigH.size() + 1 && oldRemainingTasks == status.getUnassignedTasksIndices().size() + 1);
 
     return {taskId, candidateAssignment};
 }
@@ -147,6 +155,20 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
             std::move(dm)
     );
 
+#ifndef NDEBUG
+    assert(instance.agents().size() == robots.size());
+    for (int i = 0 ; i < instance.agents().size() ; ++i){
+        assert(instance.agents()[i] == static_cast<Coord>(robots[i]));
+    }
+    assert(instance.tasks().size() == tasks.size());
+    for (int i = 0 ; i < instance.tasks().size() ; ++i){
+        const auto& t = static_cast<std::pair<Coord,Coord>>(tasks[i]);
+        assert(instance.tasks()[i] == t);
+    }
+#endif
+
     SCMAPD scmapd {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+
     return scmapd;
+
 }

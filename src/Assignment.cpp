@@ -52,10 +52,16 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
 
     auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
 
+#ifndef NDEBUG
+    auto oldWaypointSize = waypoints.size();
+#endif
+
     const auto& task = tasks[taskId];
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
     internalUpdate(outerConstraints, tasks, ambientMapInstance);
+
+    assert(oldWaypointSize == waypoints.size() - 2);
 }
 
 std::pair<WaypointsList::iterator, WaypointsList::iterator>
