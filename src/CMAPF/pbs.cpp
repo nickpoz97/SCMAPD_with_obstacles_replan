@@ -87,6 +87,12 @@ std::pair<path_t, std::vector<Constraint>> pbs(
         }
     }
 
+#ifndef NDEBUG
+    for(const auto& c: newConstraints ){
+        assert(c.agent != aIndex);
+    }
+#endif
+
     return {path, newConstraints};
 }
 

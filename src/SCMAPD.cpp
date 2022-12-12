@@ -14,22 +14,22 @@ SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
     BigH totalHeap{};
 
     for(int ti = 0 ; ti < status.getTasks().size() ; ++ti){
-        std::vector<Assignment> pas;
+        std::vector<Assignment> partialAssignments;
         const auto& robots = status.getAssignments();
-        pas.reserve(robots.size());
+        partialAssignments.reserve(robots.size());
 
         // add "task" to each robot
         for (const auto& r : robots){
             // robot in partial assignments heap
-            pas.emplace_back(
+            partialAssignments.emplace_back(
                 initializePartialAssignment(status, ti, r)
             );
         }
         std::sort(
-            pas.begin(),
-            pas.end()
+            partialAssignments.begin(),
+            partialAssignments.end()
         );
-        totalHeap.push_back({ti, std::move(pas)});
+        totalHeap.push_back({ti, std::move(partialAssignments)});
     }
     sortBigH(totalHeap, heuristic);
     return totalHeap;
@@ -86,16 +86,15 @@ std::pair<unsigned int, Assignment> SCMAPD::extractTop() {
 }
 
 void SCMAPD::updateSmallHTop(int assignmentIndex, int v, std::vector<Assignment> &partialAssignments) {
+    std::sort(partialAssignments.begin(), partialAssignments.end());
     const Assignment& a = status.getAssignment(assignmentIndex);
 
     for (int k = 0 ; k < v ; ++k) {
         auto& targetPA = partialAssignments[k];
-        if(Assignment::hasConflicts(a, targetPA)) {
+        if(targetPA.getIndex() != a.getIndex() && Assignment::hasConflicts(a, targetPA)) {
             targetPA.internalUpdate(status.getOtherConstraints(k), status.getTasks(), status.getAmbientMapInstance());
             // todo min search on first v elements or everyone?
-            Assignment &minPA = *std::min_element(partialAssignments.begin(), partialAssignments.begin() + v);
-            Assignment &firstPA = *partialAssignments.begin();
-            std::swap(minPA, firstPA);
+            std::sort(partialAssignments.begin(), partialAssignments.end());
             // restart
             k = 0;
         }

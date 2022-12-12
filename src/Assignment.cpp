@@ -232,12 +232,13 @@ Assignment::operator std::string() const{
     auto [firstDiv, lastDiv] = utils::buildDivider("Assignment");
 
     return fmt::format(
-        "{}\n{}\n{}\n{}\n{}\n{}\n",
+        "{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
         firstDiv,
         fmt::format("Index: {}", index),
         fmt::format("Waypoints: {}", utils::objContainerString(waypoints)),
         fmt::format("Path: {}", utils::objContainerString(path)),
         fmt::format("Path Length: {}", path.size()),
+        fmt::format("newTTD - oldTTD = {} - {} = {}", newTTD, oldTTD, getMCA()),
         lastDiv
     );
 }

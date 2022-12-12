@@ -9,7 +9,7 @@
 
 using Coord = cmapd::Point;
 using CompressedCoord = unsigned int;
-using TimeStep = unsigned int;
+using TimeStep = int;
 
 using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
