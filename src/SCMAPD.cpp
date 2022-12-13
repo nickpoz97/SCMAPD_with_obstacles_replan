@@ -69,8 +69,8 @@ void SCMAPD::solve(TimeStep cutOffTime) {
             );
         }
         sortBigH(bigH, heuristic);
+        status.print();
     }
-    status.print();
 }
 
 std::pair<int, Assignment> SCMAPD::extractTop() {

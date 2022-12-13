@@ -10,8 +10,8 @@ int main(int argc, char* argv[]){
     auto distanceMatrixFile{"data/distance_matrix.npy"};
     auto gridFile{"data/grid.txt"};
 
-    auto robotsFile{"data/0.agents"};
-    auto tasksFile{"data/0.tasks"};
+    auto robotsFile{"data/test_extended.agents"};
+    auto tasksFile{"data/test_extended.tasks"};
 
     SCMAPD scmapd{loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
     scmapd.solve(10);
