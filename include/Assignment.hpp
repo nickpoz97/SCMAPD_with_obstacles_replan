@@ -32,10 +32,6 @@ public:
     [[nodiscard]] const std::vector<cmapd::Constraint> &getConstraints() const;
 
     void
-    setTasks(WaypointsList &&newWaypoints, const std::vector<cmapd::Constraint> &outerConstraints,
-             const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks);
-
-    void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
            const std::vector<cmapd::Constraint> &outerConstraints);
 
@@ -92,11 +88,6 @@ private:
 
     // first index has been added to reduce search time
     static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint);
-
-    [[nodiscard]] std::pair<Path, std::vector<cmapd::Constraint>> computePath(
-            const cmapd::AmbientMapInstance &ambientMapInstance,
-            const std::vector<cmapd::Constraint> &outerConstraints
-    ) const;
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);

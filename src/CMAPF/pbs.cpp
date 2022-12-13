@@ -74,7 +74,10 @@ std::pair<path_t, std::vector<Constraint>> pbs(
     // Adding constraints for other agents
     for (int timestep = 0; timestep < path.size(); ++timestep) {
         Point point{path.at(timestep)};
-        for (int other_agent = aIndex + 1; other_agent < instance.num_agents(); ++other_agent) {
+        for (int other_agent = 0; other_agent < instance.num_agents(); ++other_agent) {
+            if(other_agent == aIndex){
+                continue;
+            }
             for (moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
                  const auto& move : moves) {
                 Point from_where{point + move};

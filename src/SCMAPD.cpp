@@ -7,7 +7,9 @@ SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assig
     status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
     heuristic(heuristic),
     bigH(buildPartialAssignmentHeap(status, heuristic))
-    {}
+    {
+        status.print();
+    }
 
 BigH
 SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
@@ -45,7 +47,7 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
         task.index,
         status.getAmbientMapInstance(),
         status.getTasks(),
-        status.getOtherConstraints(k)
+        {}
     );
     return robotCopy;
 }
@@ -56,8 +58,6 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         !status.getUnassignedTasksIndices().empty();
         std::tie(taskId, candidateAssignment) = extractTop()
     ){
-        status.print();
-
         auto k = candidateAssignment.getIndex();
 
         auto& assignment = status.getAssignment(k);
@@ -74,6 +74,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         }
         sortBigH(bigH, heuristic);
     }
+    status.print();
 }
 
 std::pair<int, Assignment> SCMAPD::extractTop() {
@@ -168,8 +169,5 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
     }
 #endif
 
-    SCMAPD scmapd {std::move(instance), std::move(robots), std::move(tasks), heuristic};
-
-    return scmapd;
-
+    return {std::move(instance), std::move(robots), std::move(tasks), heuristic};
 }

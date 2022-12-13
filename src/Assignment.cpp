@@ -32,12 +32,6 @@ Coord Assignment::getStartPosition() const {
     return startPosition;
 }
 
-void Assignment::setTasks(WaypointsList &&newWaypoints, const std::vector<cmapd::Constraint> &outerConstraints,
-                          const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks) {
-    waypoints = std::move(newWaypoints);
-    internalUpdate(outerConstraints, tasks, ambientMapInstance);
-}
-
 const WaypointsList &Assignment::getWaypoints() const {
     return waypoints;
 }
@@ -191,19 +185,12 @@ const Path &Assignment::getPath() const {
     return path;
 }
 
-std::pair<Path, std::vector<cmapd::Constraint>> Assignment::computePath(
-        const cmapd::AmbientMapInstance& ambientMapInstance,
-        const std::vector<cmapd::Constraint> &outerConstraints
-        ) const {
-    return cmapd::pbs::pbs(ambientMapInstance, outerConstraints, static_cast<int>(index), waypoints);
-}
-
 void
 Assignment::internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
                            const cmapd::AmbientMapInstance &ambientMapInstance) {
     oldTTD = newTTD;
 
-    std::tie(path, constraints) = computePath(ambientMapInstance, outerConstraints);
+    std::tie(path, constraints) = cmapd::pbs::pbs(ambientMapInstance, outerConstraints, index, waypoints);
     // reset ttd
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }

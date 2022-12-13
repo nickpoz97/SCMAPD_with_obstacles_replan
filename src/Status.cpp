@@ -11,8 +11,7 @@ Status::Status(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assig
     ambientMapInstance(std::move(ambientMapInstance)),
     tasks(std::move(tasksVector)),
     assignments(std::move(robots)),
-    unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-    actualConstraints(assignments.size())
+    unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size()))
     {}
 
 const DistanceMatrix &Status::getDistanceMatrix() const {

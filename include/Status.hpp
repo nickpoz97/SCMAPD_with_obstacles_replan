@@ -45,7 +45,6 @@ private:
     const std::vector<Task> tasks;
     std::vector<Assignment> assignments;
     std::unordered_set<int> unassignedTasksIndices;
-    ConstraintsPerAgent actualConstraints;
 };
 
 
