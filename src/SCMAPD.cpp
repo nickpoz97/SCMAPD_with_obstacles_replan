@@ -40,11 +40,9 @@ SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
 Assignment
 SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot) {
     Assignment robotCopy{Assignment{robot}};
-    const auto& task = status.getTask(taskIndex);
-    auto k = robot.getIndex();
 
     robotCopy.insert(
-        task.index,
+        taskIndex,
         status.getAmbientMapInstance(),
         status.getTasks(),
         {}
@@ -54,10 +52,8 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
 
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
-    for(auto [taskId, candidateAssignment] = extractTop();
-        !status.getUnassignedTasksIndices().empty();
-        std::tie(taskId, candidateAssignment) = extractTop()
-    ){
+    while( !status.getUnassignedTasksIndices().empty() ){
+        auto [taskId, candidateAssignment] = extractTop();
         auto k = candidateAssignment.getIndex();
 
         auto& assignment = status.getAssignment(k);
@@ -81,7 +77,7 @@ std::pair<int, Assignment> SCMAPD::extractTop() {
     // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<int, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
     auto& [taskId, partialAssignments] = bigH.front();
-    auto candidateAssignment{std::move(partialAssignments.at(0))};
+    auto candidateAssignment{std::move(partialAssignments[0])};
 
 #ifndef NDEBUG
     auto oldRemainingTasks = status.getUnassignedTasksIndices().size();
@@ -99,14 +95,14 @@ std::pair<int, Assignment> SCMAPD::extractTop() {
 void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments) {
     std::sort(partialAssignments.begin(), partialAssignments.end());
 
-    for (int k = 0 ; k < v ; ++k) {
-        auto& targetPA = *findPA(partialAssignments, k);
+    for (int i = 0 ; i < v ; ++i) {
+        auto& targetPA = partialAssignments[i];
         if(Assignment::hasConflicts(fixedAssignment, targetPA)) {
-            targetPA.internalUpdate(status.getOtherConstraints(k), status.getTasks(), status.getAmbientMapInstance());
+            targetPA.internalUpdate(status.getOtherConstraints(targetPA.getIndex()), status.getTasks(), status.getAmbientMapInstance());
             // todo min search on first v elements or everyone?
             std::sort(partialAssignments.begin(), partialAssignments.end());
             // restart
-            k = 0;
+            i = 0;
         }
     }
 }
