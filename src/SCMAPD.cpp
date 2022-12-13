@@ -64,7 +64,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         assignment = std::move(candidateAssignment);
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
-            auto& pa = partialAssignments[k];
+            auto& pa = *findPA(partialAssignments, k);
             pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k));
             updateSmallHTop(
                 assignment,
@@ -100,7 +100,7 @@ void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vect
     std::sort(partialAssignments.begin(), partialAssignments.end());
 
     for (int k = 0 ; k < v ; ++k) {
-        auto& targetPA = partialAssignments[k];
+        auto& targetPA = *findPA(partialAssignments, k);
         if(Assignment::hasConflicts(fixedAssignment, targetPA)) {
             targetPA.internalUpdate(status.getOtherConstraints(k), status.getTasks(), status.getAmbientMapInstance());
             // todo min search on first v elements or everyone?
