@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <functional>
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
 
@@ -29,10 +30,7 @@ SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
                 initializePartialAssignment(status, ti, r)
             );
         }
-        std::sort(
-            partialAssignments.begin(),
-            partialAssignments.end()
-        );
+        sortPA(partialAssignments);
         totalHeap.push_back({ti, std::move(partialAssignments)});
     }
     sortBigH(totalHeap, heuristic);
@@ -97,14 +95,14 @@ std::pair<int, Assignment> SCMAPD::extractTop() {
 }
 
 void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments) {
-    std::sort(partialAssignments.begin(), partialAssignments.end());
+    sortPA(partialAssignments, v);
 
     for (int i = 0 ; i < v ; ++i) {
         auto& targetPA = partialAssignments[i];
         if(Assignment::hasConflicts(fixedAssignment, targetPA)) {
             targetPA.internalUpdate(status.getOtherConstraints(targetPA.getIndex()), status.getTasks(), status.getAmbientMapInstance());
             // todo min search on first v elements or everyone?
-            std::sort(partialAssignments.begin(), partialAssignments.end());
+            sortPA(partialAssignments, v);
             // restart
             i = 0;
         }
@@ -112,33 +110,35 @@ void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vect
 }
 
 void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
+    std::function<bool(const SmallH&,const SmallH&)> comparator;
+
     switch(heuristic){
         case Heuristic::MCA:
-            bigH.sort(
-                [](const SmallH& a, const SmallH& b){return a.second[0] < b.second[0];}
-            );
+                comparator = [](const SmallH& a, const SmallH& b) -> bool {return a.second[0] < b.second[0];};
         break;
         case Heuristic::RMCA_A:
-            bigH.sort(
-                [](const SmallH& a, const SmallH& b) {
+            comparator =
+                [](const SmallH& a, const SmallH& b) -> bool {
                     auto aVal = a.second[0].getMCA() - a.second[1].getMCA();
                     auto bVal = b.second[0].getMCA() - b.second[1].getMCA();
 
                     return aVal > bVal;
-                }
-            );
+                };
         break;
         case Heuristic::RMCA_R:
-            bigH.sort(
-                [](const SmallH& a, const SmallH& b) {
+            comparator = [](const SmallH& a, const SmallH& b) -> bool {
                     auto aVal = a.second[0].getMCA() / a.second[1].getMCA();
                     auto bVal = b.second[0].getMCA() / b.second[1].getMCA();
 
                     return aVal > bVal;
-                }
-            );
+                };
         break;
     }
+
+    std::iter_swap(
+            bigH.begin(),
+            std::min_element(bigH.begin(), bigH.end(), comparator)
+    );
 }
 
 void SCMAPD::printResult() const{
@@ -159,6 +159,12 @@ void SCMAPD::printResult() const{
     fmt::print("agent\tcost\tpath\n");
     for(const auto& a: status.getAssignments()){
         fmt::print("{}\t{}\t{}\n", a.getIndex(), a.getPath().size(), buildPathString(a.getPath()));
+    }
+}
+
+void SCMAPD::sortPA(std::vector<Assignment> &pa, int v) {
+    for(int i = 0 ; i < v ; ++i){
+        std::iter_swap(pa.begin()+i, std::min_element(pa.begin()+i, pa.end()));
     }
 }
 

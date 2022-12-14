@@ -39,6 +39,7 @@ private:
     void updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments);
 
     static void sortBigH(BigH &bigH, Heuristic heuristic);
+    static void sortPA(std::vector<Assignment> &pa, int v = 1);
 
     static inline auto findPA(std::vector<Assignment> &partialAssignments, int agentID) {
         assert(0 <= agentID && agentID < partialAssignments.size());
