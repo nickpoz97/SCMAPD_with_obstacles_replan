@@ -162,13 +162,27 @@ TimeStep Assignment::computeApproxTTD(
     checkpoints[2] = goalWaypoint != waypoints.cend() ? std::next(goalWaypoint) : goalWaypoint;
     checkpoints[3] = checkpoints[2] != waypoints.cend() ? std::next(checkpoints[2]) : checkpoints[2];
 
-    ttd += computeRealTTD(tasks, distanceMatrix, waypoints.cbegin(), checkpoints[0]);
-    ttd += distanceMatrix.getDistance(checkpoints[0]->position, startWaypoint->position);
-    ttd += distanceMatrix.getDistance(startWaypoint->position, checkpoints[1]->position);
-    ttd += computeRealTTD(tasks, distanceMatrix, checkpoints[1], checkpoints[2]);
-    ttd += distanceMatrix.getDistance(checkpoints[2]->position, goalWaypoint->position);
-    ttd += distanceMatrix.getDistance(goalWaypoint->position, checkpoints[3]->position);
-    ttd += computeRealTTD(tasks, distanceMatrix, checkpoints[3], waypoints.end());
+    auto wpIt = waypoints.cbegin();
+    int iApprox = 0;
+
+    for(int i = 0 ; i < path.size() && wpIt != waypoints.cend() ; ++i){
+        if(path[i] == wpIt->position) {
+            if (wpIt == startWaypoint) {
+                iApprox += distanceMatrix.getDistance(checkpoints[0]->position, startWaypoint->position);
+                iApprox += distanceMatrix.getDistance(startWaypoint->position, checkpoints[1]->position);
+            }
+            if (wpIt == goalWaypoint) {
+                iApprox += distanceMatrix.getDistance(checkpoints[2]->position, goalWaypoint->position);
+                ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
+                iApprox += distanceMatrix.getDistance(goalWaypoint->position, checkpoints[3]->position);
+                ++wpIt;
+            }
+            if (wpIt->demand == Demand::GOAL) {
+                ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
+            }
+        }
+        ++wpIt;
+    }
 
     return ttd;
 }
