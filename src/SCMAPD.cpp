@@ -3,11 +3,13 @@
 #include "Assignment.hpp"
 
 SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
-               std::vector<Task> &&tasksVector, Heuristic heuristic) :
+               std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
     status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
     heuristic(heuristic),
-    bigH(buildPartialAssignmentHeap(status, heuristic))
+    bigH(buildPartialAssignmentHeap(status, heuristic)),
+    debug{debug}
     {
+    if(debug)
         status.print();
     }
 
@@ -69,7 +71,9 @@ void SCMAPD::solve(TimeStep cutOffTime) {
             );
         }
         sortBigH(bigH, heuristic);
-        status.print();
+        if(debug){
+            status.print();
+        }
     }
 }
 
@@ -137,6 +141,27 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
     }
 }
 
+void SCMAPD::printResult() const{
+    auto buildPathString = [](const std::vector<Coord>& path){
+        static constexpr std::string_view pattern = "({},{})->";
+
+        std::string result{};
+        result.reserve(pattern.size() * path.size());
+
+        for(const auto& pos : path){
+            result.append(fmt::format(pattern, pos.row, pos.col));
+        }
+
+        result.resize(result.size() - 2);
+        return result;
+    };
+
+    fmt::print("agent\tcost\tpath\n");
+    for(const auto& a: status.getAssignments()){
+        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.getPath().size(), buildPathString(a.getPath()));
+    }
+}
+
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                        const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                        Heuristic heuristic) {
@@ -165,5 +190,5 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
     }
 #endif
 
-    return {std::move(instance), std::move(robots), std::move(tasks), heuristic};
+    return {std::move(instance), std::move(robots), std::move(tasks), heuristic, false};
 }

@@ -17,13 +17,16 @@ using BigH = std::list<SmallH>;
 class SCMAPD {
 public:
     SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
-           std::vector<Task> &&tasksVector, Heuristic heuristic);
+           std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug);
 
     void solve(TimeStep cutOffTime);
+
+    void printResult() const;
 private:
     Status status;
     Heuristic heuristic;
     BigH bigH;
+    bool debug;
 
     static BigH
     buildPartialAssignmentHeap(const Status &status, Heuristic heuristic);

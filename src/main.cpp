@@ -15,6 +15,7 @@ int main(int argc, char* argv[]){
 
     SCMAPD scmapd{loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
     scmapd.solve(10);
+    scmapd.printResult();
 
     namespace po = boost::program_options;
     using std::string;
