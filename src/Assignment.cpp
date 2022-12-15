@@ -153,14 +153,14 @@ TimeStep Assignment::computeApproxTTD(
 
     TimeStep ttd = 0;
 
-    assert(startWaypoint != waypoints.cend() && goalWaypoint != waypoints.cbegin());
+    assert(startWaypoint != waypoints.cend() && goalWaypoint != waypoints.cbegin() && goalWaypoint != waypoints.cend());
 
-    std::array<WaypointsList::const_iterator, 4> checkpoints{};
-
-    checkpoints[0] = startWaypoint != waypoints.cbegin() ? std::prev(startWaypoint) : startWaypoint;
-    checkpoints[1] = std::next(startWaypoint);
-    checkpoints[2] = goalWaypoint != waypoints.cend() ? std::next(goalWaypoint) : goalWaypoint;
-    checkpoints[3] = checkpoints[2] != waypoints.cend() ? std::next(checkpoints[2]) : checkpoints[2];
+    auto prevWpIt = [this](WaypointsList::const_iterator it){
+        return it == waypoints.cbegin() ? it : std::prev(it);
+    };
+    auto nextWpIt = [this](WaypointsList::const_iterator it){
+        return std::next(it) == waypoints.cend() ? it : std::next(it);
+    };
 
     auto wpIt = waypoints.cbegin();
     int iApprox = 0;
@@ -168,13 +168,16 @@ TimeStep Assignment::computeApproxTTD(
     for(int i = 0 ; i < path.size() && wpIt != waypoints.cend() ; ++i){
         if(path[i] == wpIt->position) {
             if (wpIt == startWaypoint) {
-                iApprox += distanceMatrix.getDistance(checkpoints[0]->position, startWaypoint->position);
-                iApprox += distanceMatrix.getDistance(startWaypoint->position, checkpoints[1]->position);
+                iApprox += distanceMatrix.getDistance(prevWpIt(startWaypoint)->position, startWaypoint->position);
+                auto afterStartIt = nextWpIt(startWaypoint);
+                if(afterStartIt != goalWaypoint) {
+                    iApprox += distanceMatrix.getDistance(startWaypoint->position, afterStartIt->position);
+                }
             }
             if (wpIt == goalWaypoint) {
-                iApprox += distanceMatrix.getDistance(checkpoints[2]->position, goalWaypoint->position);
+                iApprox += distanceMatrix.getDistance(prevWpIt(goalWaypoint)->position, goalWaypoint->position);
                 ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
-                iApprox += distanceMatrix.getDistance(goalWaypoint->position, checkpoints[3]->position);
+                iApprox += distanceMatrix.getDistance(goalWaypoint->position, nextWpIt(goalWaypoint)->position);
                 ++wpIt;
             }
             if (wpIt->demand == Demand::GOAL) {
