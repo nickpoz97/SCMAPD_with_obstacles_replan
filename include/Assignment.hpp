@@ -47,7 +47,7 @@ public:
 
     // this should be called when waypoints and/or constraints are changed
     void internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
-                        const cmapd::AmbientMapInstance &ambientMapInstance);
+                        const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks);
 
     explicit operator std::string() const;
 private:

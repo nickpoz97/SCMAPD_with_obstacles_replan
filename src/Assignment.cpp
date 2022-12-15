@@ -53,7 +53,7 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
     const auto& task = tasks[taskId];
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
-    internalUpdate(outerConstraints, tasks, ambientMapInstance);
+    internalUpdate(outerConstraints, tasks, ambientMapInstance, true);
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
@@ -183,8 +183,8 @@ TimeStep Assignment::computeApproxTTD(
             if (wpIt->demand == Demand::GOAL) {
                 ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
             }
+            ++wpIt;
         }
-        ++wpIt;
     }
 
     return ttd;
@@ -204,8 +204,8 @@ const Path &Assignment::getPath() const {
 
 void
 Assignment::internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
-                           const cmapd::AmbientMapInstance &ambientMapInstance) {
-    oldTTD = newTTD;
+                           const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks) {
+    if(newTasks) { oldTTD = newTTD; }
 
     std::tie(path, constraints) = cmapd::pbs::pbs(ambientMapInstance, outerConstraints, index, waypoints);
     // reset ttd
