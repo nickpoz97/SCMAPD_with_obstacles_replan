@@ -15,8 +15,6 @@ namespace cmapd {
 /// @brief This struct models a constraint that prohibits an agent from moving in a certain way.
 /// Formally this is an edge-constraint, but we also use it to model a vertex constraint.
 struct Constraint {
-    /// The constrained agent.
-    int agent;
     /// The moment in time in which the agent is prohibited from doing a move.
     int timestep;
     /// The cell from which the agent can't move.

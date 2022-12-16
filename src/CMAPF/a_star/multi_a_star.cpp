@@ -33,8 +33,7 @@ bool is_constrained(const std::vector<Constraint>& constraints,
                     const Node& child,
                     const Node& parent) {
     // create the constraint to be checked
-    Constraint check_me{.agent = agent,
-                        .timestep = child.get_g_value(),
+    Constraint check_me{.timestep = child.get_g_value(),
                         .from_position = parent.get_location(),
                         .to_position = child.get_location()};
     if (std::find(constraints.cbegin(), constraints.cend(), check_me) != constraints.cend()) {
@@ -44,7 +43,7 @@ bool is_constrained(const std::vector<Constraint>& constraints,
     if (std::find_if(constraints.cbegin(),
                      constraints.cend(),
                      [&check_me](const Constraint& constraint) -> bool {
-                         return constraint.final && check_me.agent == constraint.agent
+                         return constraint.final
                                 && constraint.timestep <= check_me.timestep
                                 && check_me.from_position == constraint.from_position
                                 && check_me.to_position == constraint.to_position;

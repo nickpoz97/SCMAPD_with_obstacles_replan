@@ -234,7 +234,7 @@ Assignment::fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int
             auto from_where{point + move};
             if (instance.is_valid(from_where)) {
                 // if this is the last timestep, final should equal to true
-                constraintsVector.push_back({otherAgent, timestep, from_where, point, timestep == path.size() - 1});
+                constraintsVector.push_back({timestep, from_where, point, timestep == path.size() - 1});
             }
         }
     }
