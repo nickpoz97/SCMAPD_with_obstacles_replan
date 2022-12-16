@@ -31,29 +31,18 @@ const Assignment &Status::getAssignment(int k) const{
 }
 
 std::vector<cmapd::Constraint> Status::getOtherConstraints(int k) const {
-    auto copyCondition = [k](const cmapd::Constraint& c){return c.agent == k;};
-
     // reserve size
     std::vector<cmapd::Constraint> otherConstraints{};
-    size_t reserveSize = 0;
-    for(const auto& a : assignments){
-        if(a.getIndex() != k) {
-            const auto& cS = a.getConstraints();
-            reserveSize += std::count_if(cS.cbegin(), cS.cend(), copyCondition);
-        }
-    }
-    otherConstraints.reserve(reserveSize);
+    size_t size = 0;
 
-    // copy
-    auto outIt = std::back_inserter(otherConstraints);
     for(const auto& a : assignments){
-        if (a.getIndex() != k){
-            const auto& cS = a.getConstraints();
-            outIt = std::copy_if(cS.begin(), cS.end(), outIt, copyCondition);
-        }
+        size += a.getPath().size() * Assignment::moves.size();
     }
+    otherConstraints.reserve(size);
 
-    assert(otherConstraints.size() == reserveSize);
+    for(const auto& a : assignments){
+        a.fillConstraintsVector(ambientMapInstance, k, otherConstraints);
+    }
 
 #ifndef NDEBUG
     for (const auto& c : otherConstraints){

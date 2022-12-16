@@ -207,7 +207,7 @@ Assignment::internalUpdate(const std::vector<cmapd::Constraint> &outerConstraint
                            const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks) {
     if(newTasks) { oldTTD = newTTD; }
 
-    std::tie(path, constraints) = cmapd::pbs::pbs(ambientMapInstance, outerConstraints, index, waypoints);
+    path = cmapd::pbs::pbs(ambientMapInstance, outerConstraints, index, waypoints);
     // reset ttd
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }
@@ -221,8 +221,23 @@ std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const
     return {};
 }
 
-const std::vector<cmapd::Constraint> &Assignment::getConstraints() const {
-    return constraints;
+void
+Assignment::fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int otherAgent,
+                                  std::vector<cmapd::Constraint> &constraintsVector) const {
+    if(otherAgent == index) {
+        return;
+    }
+
+    for (int timestep = 0 ; timestep < path.size(); ++timestep) {
+        const auto& point = path[timestep];
+        for (const auto& move : moves) {
+            auto from_where{point + move};
+            if (instance.is_valid(from_where)) {
+                // if this is the last timestep, final should equal to true
+                constraintsVector.push_back({otherAgent, timestep, from_where, point, timestep == path.size() - 1});
+            }
+        }
+    }
 }
 
 bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){

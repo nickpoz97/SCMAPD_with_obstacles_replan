@@ -29,7 +29,8 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    [[nodiscard]] const std::vector<cmapd::Constraint> &getConstraints() const;
+    void
+    fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int otherAgent, std::vector<cmapd::Constraint> &constraintsVector) const;
 
     void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
@@ -50,6 +51,8 @@ public:
                         const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks);
 
     explicit operator std::string() const;
+
+    static inline const cmapd::moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 private:
     Coord startPosition;
     int index;
@@ -58,7 +61,6 @@ private:
     TimeStep oldTTD = 0;
     TimeStep newTTD = 0;
 
-    std::vector<cmapd::Constraint> constraints{};
     WaypointsList waypoints{};
     Path path{};
 

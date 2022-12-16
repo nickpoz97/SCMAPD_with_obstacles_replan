@@ -15,17 +15,8 @@
 
 namespace cmapd::pbs {
 
-/**
- * This function finds paths without conflicts for every agent using a Priority Based Search.
- * @param instance The ambient map instance on which we are operating.
- * @param goal_sequences A vector containing a goal sequence for every agent.
- * @return a solution, if found.
- * @throws runtime_error if no solution is found.
- */
-std::vector<path_t> pbs(const AmbientMapInstance& instance, const std::vector<path_t>& goal_sequences);
-
 // note: constraints are updated, so it is an in-out parameter
-std::pair<path_t, std::vector<Constraint>> pbs(
+    path_t pbs(
             const AmbientMapInstance& instance,
             const std::vector<Constraint> &constraints,
             int aIndex,
