@@ -21,10 +21,10 @@
 namespace cmapd::pbs {
 
     path_t pbs(
-        const AmbientMapInstance& instance,
-        const std::vector<Constraint> &constraints,
-        int aIndex,
-        const WaypointsList& waypoints
+            const AmbientMapInstance& instance,
+            const std::vector<std::vector<Constraint>> &constraints,
+            int aIndex,
+            const WaypointsList& waypoints
         ){
     Path waypointsCoords{};
     waypointsCoords.reserve(waypoints.size());

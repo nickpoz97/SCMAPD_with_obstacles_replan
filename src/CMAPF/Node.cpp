@@ -44,7 +44,7 @@ Point get_position(const path_t& path, int timestep) {
 
 Node::Node(const AmbientMapInstance& instance,
            std::vector<path_t> goal_sequences,
-           std::vector<Constraint>&& constraints)
+           std::vector<std::vector<Constraint>> &&constraints)
     : m_constraints{std::move(constraints)} {
     for (int i = 0; i < std::ssize(goal_sequences); ++i) {
         auto start_location = goal_sequences.at(i).at(0);
@@ -138,7 +138,5 @@ int Node::num_conflicts() const {
     }
     return num_conflicts;
 }
-
-std::vector<Constraint> Node::get_constraints() const { return m_constraints; }
 
 }  // namespace cmapd::cbs

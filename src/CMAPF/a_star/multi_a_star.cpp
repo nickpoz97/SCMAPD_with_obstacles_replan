@@ -28,28 +28,40 @@ namespace cmapd::multi_a_star {
  * @param parent The parent of child.
  * @return true if child is constrained.
  */
-bool is_constrained(const std::vector<Constraint>& constraints,
-                    int agent,
-                    const Node& child,
-                    const Node& parent) {
+    bool
+    is_constrained(const std::vector<std::vector<Constraint>> &constraints, int agent, const Node &child,
+                   const Node &parent) {
     // create the constraint to be checked
     Constraint check_me{.timestep = child.get_g_value(),
                         .from_position = parent.get_location(),
                         .to_position = child.get_location()};
-    if (std::find(constraints.cbegin(), constraints.cend(), check_me) != constraints.cend()) {
-        return true;
+    for(int i = 0; i < constraints.size(); ++i){
+        if(i == agent){
+            continue;
+        }
+        const auto& c = constraints[i];
+        if (std::find(c.cbegin(), c.cend(), check_me) != c.cend()) {
+            return true;
+        }
     }
     // check for a previous final constraint
-    if (std::find_if(constraints.cbegin(),
-                     constraints.cend(),
-                     [&check_me](const Constraint& constraint) -> bool {
-                         return constraint.final
-                                && constraint.timestep <= check_me.timestep
-                                && check_me.from_position == constraint.from_position
-                                && check_me.to_position == constraint.to_position;
-                     })
-        != constraints.cend()) {
-        return true;
+    for(int i = 0; i < constraints.size(); ++i){
+        if(i == agent){
+            continue;
+        }
+        const auto& c = constraints[i];
+        if (std::find_if(
+            c.cbegin(),
+            c.cend(),
+            [&check_me](const Constraint& constraint) -> bool {
+             return constraint.final
+                    && constraint.timestep <= check_me.timestep
+                    && check_me.from_position == constraint.from_position
+                    && check_me.to_position == constraint.to_position;
+            })
+            != c.cend()) {
+            return true;
+        }
     }
     return false;
 }
@@ -58,7 +70,7 @@ path_t multi_a_star(int agent,
                     Point start_location,
                     const path_t& goal_sequence,
                     const AmbientMapInstance& map_instance,
-                    const std::vector<Constraint>& constraints) {
+                    const std::vector<std::vector<Constraint>> &constraints) {
     // if the goal sequence is empty, the path is the starting point
     if (goal_sequence.empty()) {
         return path_t{start_location};

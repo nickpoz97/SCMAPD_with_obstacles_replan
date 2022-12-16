@@ -39,5 +39,7 @@ int main(int argc, char* argv[]){
     scmapd.solve(10);
     scmapd.printResult();
 
+    scmapd.printCheckMessage();
+
     return 0;
 }

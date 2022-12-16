@@ -11,7 +11,8 @@ Status::Status(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assig
     ambientMapInstance(std::move(ambientMapInstance)),
     tasks(std::move(tasksVector)),
     assignments(std::move(robots)),
-    unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size()))
+    unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
+    constraints(assignments.size())
     {}
 
 const DistanceMatrix &Status::getDistanceMatrix() const {
@@ -30,27 +31,8 @@ const Assignment &Status::getAssignment(int k) const{
     return assignments[k];
 }
 
-std::vector<cmapd::Constraint> Status::getOtherConstraints(int k) const {
-    // reserve size
-    std::vector<cmapd::Constraint> otherConstraints{};
-    size_t size = 0;
-
-    for(const auto& a : assignments){
-        size += a.getPath().size() * Assignment::moves.size();
-    }
-    otherConstraints.reserve(size);
-
-    for(const auto& a : assignments){
-        a.fillConstraintsVector(ambientMapInstance, k, otherConstraints);
-    }
-
-#ifndef NDEBUG
-    for (const auto& c : otherConstraints){
-        assert(c.agent == k);
-    }
-#endif
-
-    return otherConstraints;
+std::vector<std::vector<cmapd::Constraint>> Status::getOtherConstraints(int k){
+    return constraints;
 }
 
 const std::vector<Task> &Status::getTasks() const {
@@ -86,6 +68,24 @@ void Status::print(FILE *fp) {
     for (const auto& a : assignments){
         fmt::print("{}", static_cast<std::string>(a));
     }
+}
+
+int Status::update(Assignment&& a) {
+    auto k = a.getIndex();
+    constraints[k] = a.getConstraints(ambientMapInstance);
+    assignments[k] = std::move(a);
+    return k;
+}
+
+bool Status::checkCollisions() const{
+    for(int i = 0 ; i < assignments.size(); ++i){
+        for(int j = i+1 ; j < assignments.size(); ++j){
+            if(Assignment::hasConflicts(assignments[i], assignments[j])){
+                return true;
+            }
+        }
+    };
+    return false;
 }
 
 

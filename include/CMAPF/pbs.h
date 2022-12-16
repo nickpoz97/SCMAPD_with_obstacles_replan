@@ -18,7 +18,7 @@ namespace cmapd::pbs {
 // note: constraints are updated, so it is an in-out parameter
     path_t pbs(
             const AmbientMapInstance& instance,
-            const std::vector<Constraint> &constraints,
+            const std::vector<std::vector<Constraint>> &constraints,
             int aIndex,
             const WaypointsList& waypoints
 );

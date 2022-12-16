@@ -22,6 +22,8 @@ public:
     void solve(TimeStep cutOffTime);
 
     void printResult() const;
+
+    void printCheckMessage() const;
 private:
     Status status;
     Heuristic heuristic;

@@ -29,12 +29,12 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    void
-    fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int otherAgent, std::vector<cmapd::Constraint> &constraintsVector) const;
+    std::vector<cmapd::Constraint>
+    getConstraints(const cmapd::AmbientMapInstance &instance) const;
 
     void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-           const std::vector<cmapd::Constraint> &outerConstraints);
+           const std::vector<std::vector<cmapd::Constraint>> &outerConstraints);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
@@ -47,7 +47,7 @@ public:
     static bool checkConflict(const Path& a, const Path& b, int i);
 
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
+    void internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &outerConstraints, const std::vector<Task> &tasks,
                         const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks);
 
     explicit operator std::string() const;

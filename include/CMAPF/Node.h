@@ -27,7 +27,7 @@ class Node {
     /// the paths of the current node, one for every agent.
     std::vector<path_t> m_paths;
     /// the constraints of the current node
-    std::vector<Constraint> m_constraints;
+    std::vector<std::vector<Constraint>> m_constraints;
     /**
      * Detect the first conflict in the provided paths, if present.
      * @param first_agent The number of the first agent.
@@ -51,7 +51,7 @@ class Node {
      */
     explicit Node(const AmbientMapInstance& instance,
                   std::vector<path_t> goal_sequences,
-                  std::vector<Constraint>&& constraints = {});
+                  std::vector<std::vector<Constraint>> &&constraints = {});
     /**
      * Get the lengths of every path.
      * @return a vector containing the length of every computed path.
@@ -82,11 +82,6 @@ class Node {
      * @return the computed paths, one for every agent.
      */
     [[nodiscard]] std::vector<path_t> get_paths() const;
-    /**
-     * Get the constraints of the current node.
-     * @return the constraints of the current node.
-     */
-    [[nodiscard]] std::vector<Constraint> get_constraints() const;
 };
 
 }  // namespace cmapd::cbs

@@ -42,7 +42,7 @@ bool Assignment::empty() const {
 
 void
 Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-                   const std::vector<cmapd::Constraint> &outerConstraints) {
+                   const std::vector<std::vector<cmapd::Constraint>> &outerConstraints) {
 
     auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
 
@@ -203,7 +203,7 @@ const Path &Assignment::getPath() const {
 }
 
 void
-Assignment::internalUpdate(const std::vector<cmapd::Constraint> &outerConstraints, const std::vector<Task> &tasks,
+Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &outerConstraints, const std::vector<Task> &tasks,
                            const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks) {
     if(newTasks) { oldTTD = newTTD; }
 
@@ -221,12 +221,9 @@ std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const
     return {};
 }
 
-void
-Assignment::fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int otherAgent,
-                                  std::vector<cmapd::Constraint> &constraintsVector) const {
-    if(otherAgent == index) {
-        return;
-    }
+std::vector<cmapd::Constraint>
+Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
+    std::vector<cmapd::Constraint> constraints;
 
     for (int timestep = 0 ; timestep < path.size(); ++timestep) {
         const auto& point = path[timestep];
@@ -234,10 +231,12 @@ Assignment::fillConstraintsVector(const cmapd::AmbientMapInstance &instance, int
             auto from_where{point + move};
             if (instance.is_valid(from_where)) {
                 // if this is the last timestep, final should equal to true
-                constraintsVector.push_back({timestep, from_where, point, timestep == path.size() - 1});
+                constraints.push_back({timestep, from_where, point, timestep == path.size() - 1});
             }
         }
     }
+
+    return constraints;
 }
 
 bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){

@@ -2,6 +2,7 @@
 #include <functional>
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
+#include "fmt/color.h"
 
 SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
@@ -53,17 +54,15 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractTop takes care of tasks indices removal
     while( !status.getUnassignedTasksIndices().empty() ){
+        assert(!status.checkCollisions());
         auto [taskId, candidateAssignment] = extractTop();
-        auto k = candidateAssignment.getIndex();
-
-        auto& assignment = status.getAssignment(k);
-        assignment = std::move(candidateAssignment);
+        auto k = status.update(std::move(candidateAssignment));
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
             auto& pa = *findPA(partialAssignments, k);
             pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getOtherConstraints(k));
             updateSmallHTop(
-                assignment,
+                status.getAssignment(k),
                 heuristic == Heuristic::MCA ? 1 : 2,
                 partialAssignments
             );
@@ -85,7 +84,6 @@ std::pair<int, Assignment> SCMAPD::extractTop() {
     auto oldRemainingTasks = status.getUnassignedTasksIndices().size();
     auto oldBigHSIze = bigH.size();
 #endif
-
     bigH.pop_front();
     status.removeTaskIndex(taskId);
 
@@ -167,6 +165,14 @@ void SCMAPD::sortPA(std::vector<Assignment> &pa, int v) {
     for(int i = 0 ; i < v ; ++i){
         std::iter_swap(pa.begin()+i, std::min_element(pa.begin()+i, pa.end()));
     }
+}
+
+void SCMAPD::printCheckMessage() const{
+    if(status.checkCollisions()){
+        fmt::print(fmt::emphasis::bold | fg(fmt::color::red), "Collisions are present\n");
+        return;
+    }
+    fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
 }
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

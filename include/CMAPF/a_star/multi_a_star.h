@@ -33,6 +33,6 @@ path_t multi_a_star(int agent,
                     Point start_location,
                     const path_t& goal_sequence,
                     const AmbientMapInstance& map_instance,
-                    const std::vector<Constraint>& constraints);
+                    const std::vector<std::vector<Constraint>> &constraints);
 
 }  // namespace cmapd::multi_a_star

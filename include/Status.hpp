@@ -37,14 +37,19 @@ public:
 
     void removeTaskIndex(int i);
 
-    std::vector<cmapd::Constraint> getOtherConstraints(int k) const;
+    std::vector<std::vector<cmapd::Constraint>> getOtherConstraints(int k);
 
     void print(FILE *fp = stdout);
+
+    int update(Assignment&& a);
+
+    bool checkCollisions() const;
 private:
     const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;
     std::vector<Assignment> assignments;
     std::unordered_set<int> unassignedTasksIndices;
+    std::vector<std::vector<cmapd::Constraint>> constraints;
 };
 
 
