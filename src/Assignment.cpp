@@ -240,6 +240,10 @@ Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
 }
 
 bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
+    if(a.empty() || b.empty()){
+        return false;
+    }
+
     const auto& pathA = a.getPath();
     const auto& pathB = b.getPath();
 
@@ -248,15 +252,20 @@ bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
         return false;
     }
 
-    for (int i = 0 ; i < std::min(pathA.size(), pathB.size()); ++i){
+    for (int i = 0 ; i < std::max(pathA.size(), pathB.size()); ++i){
         if(checkConflict(pathA, pathB, i)) { return true; }
     }
     return false;
 }
 
 bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
-    bool edgeConflict = (i > 0) && a[i - 1] == b[i] && a[i] == b[i - 1];
-    bool nodeConflict = a[i] == b[i];
+    auto checkAndFix = [](int t, const Path& path){
+        auto lastElement = path.size() - 1;
+        return t <= lastElement ? path[t] : path[lastElement];
+    };
+
+    bool edgeConflict = (i > 0) && checkAndFix(i-1, a) == checkAndFix(i, b) && checkAndFix(i, a) == checkAndFix(i-1, b);
+    bool nodeConflict = checkAndFix(i, a) == checkAndFix(i,b);
 
     return edgeConflict || nodeConflict;
 }
@@ -274,6 +283,15 @@ Assignment::operator std::string() const{
         fmt::format("newTTD - oldTTD = {} - {} = {}", newTTD, oldTTD, getMCA()),
         lastDiv
     );
+}
+
+bool Assignment::pathContainsErrors(const std::vector<std::vector<cmapd::Constraint>>& constraints) const {
+    for(int i = 0 ; i < path.size() ; ++i){
+        for(const auto& c : constraints){
+            cmapd::Constraint pointC{i, path[i], path[i]};
+
+        }
+    }
 }
 
 std::vector<Assignment>
