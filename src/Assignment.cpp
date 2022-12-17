@@ -124,8 +124,8 @@ bool Assignment::checkCapacityConstraint() {
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                    WaypointsList::const_iterator firstWaypoint,
-                                    WaypointsList::const_iterator lastWaypoint) const{
+                                    const std::_List_iterator<Waypoint> &firstWaypoint,
+                                    const std::_List_iterator<Waypoint> &lastWaypoint){
     TimeStep cumulatedTTD = 0;
     auto wpIt = firstWaypoint;
 
@@ -135,7 +135,9 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
         if(path[i] == wpIt->position){
             if(wpIt->demand == Demand::GOAL){
                 const Task& task = tasks[wpIt->taskIndex];
-                cumulatedTTD += i - task.getIdealGoalTime(distanceMatrix);
+                auto delay = i - task.getIdealGoalTime(distanceMatrix);
+                cumulatedTTD += delay;
+                wpIt->setDelay(delay);
             }
             ++wpIt;
         }
@@ -145,10 +147,10 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
 }
 
 TimeStep Assignment::computeApproxTTD(
-    const std::vector<Task> &tasks,
-    const DistanceMatrix &distanceMatrix,
-    WaypointsList::const_iterator startWaypoint,
-    WaypointsList::const_iterator goalWaypoint
+        const std::vector<Task> &tasks,
+        const DistanceMatrix &distanceMatrix,
+        WaypointsList::iterator startWaypoint,
+        WaypointsList::iterator goalWaypoint
     ) const{
 
     TimeStep ttd = 0;
@@ -194,8 +196,8 @@ bool operator<(const Assignment& a, const Assignment& b){
     return a.getMCA() < b.getMCA();
 }
 
-TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) const {
-    return computeRealTTD(tasks, distanceMatrix, waypoints.cbegin(), waypoints.cend());
+TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
+    return computeRealTTD(tasks, distanceMatrix, waypoints.begin(), waypoints.end());
 }
 
 const Path &Assignment::getPath() const {
@@ -259,9 +261,9 @@ bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
 }
 
 bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
-    auto checkAndFix = [](int t, const Path& path){
-        auto lastElement = path.size() - 1;
-        return t <= lastElement ? path[t] : path[lastElement];
+    auto checkAndFix = [](int t, const Path& p){
+        auto lastElement = p.size() - 1;
+        return t <= lastElement ? p[t] : p[lastElement];
     };
 
     bool edgeConflict = (i > 0) && checkAndFix(i-1, a) == checkAndFix(i, b) && checkAndFix(i, a) == checkAndFix(i-1, b);
@@ -292,6 +294,10 @@ bool Assignment::pathContainsErrors(const std::vector<std::vector<cmapd::Constra
 
         }
     }
+}
+
+bool conflictsWith(const Path &path, TimeStep i, const cmapd::Constraint &c) {
+    return i < path.size() && path[i] == c.from_position && path[i+1] == c.to_position;
 }
 
 std::vector<Assignment>

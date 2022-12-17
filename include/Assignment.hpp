@@ -29,7 +29,7 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-    std::vector<cmapd::Constraint>
+    [[nodiscard]] std::vector<cmapd::Constraint>
     getConstraints(const cmapd::AmbientMapInstance &instance) const;
 
     void
@@ -73,20 +73,20 @@ private:
                                   std::_List_iterator<Waypoint> waypointGoal);
 
     [[nodiscard]] TimeStep computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                          WaypointsList::const_iterator firstWaypoint,
-                                          WaypointsList::const_iterator lastWaypoint) const;
+                                          const std::_List_iterator<Waypoint> &firstWaypoint,
+                                          const std::_List_iterator<Waypoint> &lastWaypoint);
 
     [[nodiscard]] TimeStep computeRealTTD(
             const std::vector<Task> &tasks,
             const DistanceMatrix &distanceMatrix
-    ) const;
+    );
 
     [[nodiscard]] TimeStep computeApproxTTD(
-        const std::vector<Task> &tasks,
-        const DistanceMatrix &distanceMatrix,
-        WaypointsList::const_iterator startWaypoint,
-        WaypointsList::const_iterator goalWaypoint
-    ) const;
+            const std::vector<Task> &tasks,
+            const DistanceMatrix &distanceMatrix,
+            std::_List_iterator<Waypoint> startWaypoint,
+            std::_List_iterator<Waypoint> goalWaypoint
+    )const ;
 
     // first index has been added to reduce search time
     static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint);
@@ -94,9 +94,10 @@ private:
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 
-    bool pathContainsErrors(const std::vector<std::vector<cmapd::Constraint>>& constraints) const;
+    [[nodiscard]] bool pathContainsErrors(const std::vector<std::vector<cmapd::Constraint>>& constraints) const;
 };
 
+bool conflictsWith(const Path & path, TimeStep i, const cmapd::Constraint& c);
 std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', int capacity= 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

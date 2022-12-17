@@ -6,21 +6,28 @@
 #define SIMULTANEOUS_CMAPD_WAYPOINT_HPP
 
 #include <fmt/printf.h>
+#include <optional>
 #include "TypeDefs.hpp"
 #include "CMAPF/Point.h"
 #include "utils.hpp"
 
 struct Waypoint{
-    Coord position;
-    Demand demand;
-    int taskIndex;
+    const Coord position;
+    const Demand demand;
+    const int taskIndex;
 
-    inline explicit operator Coord() const {return position;}
+    Waypoint(const Coord &position, Demand demand, int taskIndex);
 
-    inline explicit operator std::string() const {
-        return fmt::format("[pos: {}, demand: {}, taskId: {}]",
-            static_cast<std::string>(position), static_cast<int>(demand), taskIndex);
-    }
+    explicit operator Coord() const;
+
+    explicit operator std::string() const;
+
+    void setDelay(TimeStep t);
+
+    [[nodiscard]] TimeStep getDelay() const;
+
+private:
+    std::optional<TimeStep> delay{};
 };
 
 using WaypointsList = std::list<Waypoint>;

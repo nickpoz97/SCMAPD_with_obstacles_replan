@@ -14,21 +14,10 @@ struct Task {
     friend bool operator==(const Task& t1, const Task& t2);
     [[nodiscard]] TimeStep getIdealGoalTime(const DistanceMatrix& dm) const;
 
-    inline explicit operator std::pair<Coord ,Coord>() const { return {startLoc, goalLoc}; }
+    [[nodiscard]] std::pair<Coord, Coord> getCoordinates() const;
 
-    inline explicit operator std::string() const{
-        auto [firstDiv, lastDiv] = utils::buildDivider("Task");
-
-        return fmt::format(
-            "{}\n{}\n{}\n{}\n{}\n{}\n",
-            firstDiv,
-            fmt::format("Start Coord: {}", static_cast<std::string>(startLoc)),
-            fmt::format("Goal Coord: {}", static_cast<std::string>(goalLoc)),
-            fmt::format("Release Timew: {}", releaseTime),
-            fmt::format("Index: {}", index),
-            lastDiv
-        );
-    }
+    explicit operator std::string() const;
+    explicit operator std::pair<Coord, Coord>() const{return getCoordinates();}
 };
 
 std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep=',');

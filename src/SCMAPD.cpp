@@ -194,11 +194,11 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
 #ifndef NDEBUG
     assert(instance.agents().size() == robots.size());
     for (int i = 0 ; i < instance.agents().size() ; ++i){
-        assert(instance.agents()[i] == static_cast<Coord>(robots[i]));
+        assert(instance.agents()[i] == robots[i].getStartPosition());
     }
     assert(instance.tasks().size() == tasks.size());
     for (int i = 0 ; i < instance.tasks().size() ; ++i){
-        const auto& t = static_cast<std::pair<Coord,Coord>>(tasks[i]);
+        const auto& t = tasks[i].getCoordinates();
         assert(instance.tasks()[i] == t);
     }
 #endif

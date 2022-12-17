@@ -11,6 +11,22 @@ TimeStep Task::getIdealGoalTime(const DistanceMatrix &dm) const {
     return releaseTime + dm.getDistance(startLoc, goalLoc);
 }
 
+std::pair<Coord, Coord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
+
+Task::operator std::string() const {
+    auto [firstDiv, lastDiv] = utils::buildDivider("Task");
+
+    return fmt::format(
+            "{}\n{}\n{}\n{}\n{}\n{}\n",
+            firstDiv,
+            fmt::format("Start Coord: {}", static_cast<std::string>(startLoc)),
+            fmt::format("Goal Coord: {}", static_cast<std::string>(goalLoc)),
+            fmt::format("Release Timew: {}", releaseTime),
+            fmt::format("Index: {}", index),
+            lastDiv
+    );
+}
+
 std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep){
     std::ifstream fs (tasksFilePath, std::ios::in);
     std::string line;

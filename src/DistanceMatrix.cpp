@@ -8,7 +8,11 @@ DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
     nCols{static_cast<int>(rawDistanceMatrix.shape[1])},
     startCoordsSize{static_cast<int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},
     endCoordsSize{static_cast<int>(rawDistanceMatrix.shape[2] * rawDistanceMatrix.shape[3])}
-    {}
+    {
+        if(startCoordsSize != endCoordsSize || rawDistanceMatrix.shape.size() != 4){
+            throw std::runtime_error("Loaded wrong distance matrix");
+        }
+    }
 
 int DistanceMatrix::getDistance(Coord from, Coord to) const {
     return getDistance(
@@ -23,7 +27,7 @@ CompressedCoord DistanceMatrix::from2Dto1D(int col, int row, size_t nCols) {
 int DistanceMatrix::getDistance(CompressedCoord from, CompressedCoord to) const {
     // distance matrix is considered double
     const auto* ptr = rawDistanceMatrix.data<double>();
-    return static_cast<int>(ptr[from * startCoordsSize + to]);
+    return static_cast<int>(ptr[from * endCoordsSize + to]);
 }
 
 int
@@ -35,6 +39,6 @@ DistanceMatrix::computeCumulatedValue(cmapd::Point x, int label, const cmapd::pa
     return h_value;
 }
 
-CompressedCoord DistanceMatrix::from2Dto2D(cmapd::Point point, size_t nCols) {
-    return point.row * nCols + point.col;
+CompressedCoord DistanceMatrix::from2Dto1D(cmapd::Point point, size_t nCols) {
+    return from2Dto1D(point.col, point.row, nCols);
 }
