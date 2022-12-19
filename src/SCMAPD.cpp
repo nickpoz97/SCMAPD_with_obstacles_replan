@@ -42,12 +42,9 @@ Assignment
 SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot) {
     Assignment robotCopy{Assignment{robot}};
 
-    robotCopy.insert(
-        taskIndex,
-        status.getAmbientMapInstance(),
-        status.getTasks(),
-        {}
-    );
+    robotCopy.addTask(
+            status.getAmbientMapInstance(),
+            {}, <#initializer#>);
     return robotCopy;
 }
 
@@ -60,7 +57,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
             auto& pa = *findPA(partialAssignments, k);
-            pa.insert(taskId, status.getAmbientMapInstance(), status.getTasks(), status.getConstraints());
+            pa.addTask(status.getAmbientMapInstance(), status.getConstraints(), <#initializer#>);
             updateSmallHTop(
                 status.getAssignment(k),
                 heuristic == Heuristic::MCA ? 1 : 2,
