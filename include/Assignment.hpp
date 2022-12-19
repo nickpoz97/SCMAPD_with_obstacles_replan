@@ -34,7 +34,7 @@ public:
 
     void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-           const std::vector<std::vector<cmapd::Constraint>> &outerConstraints);
+           const std::vector<std::vector<cmapd::Constraint>> &constraints);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
@@ -42,15 +42,13 @@ public:
 
     inline explicit operator Path() const { return getPath(); }
 
-    static bool hasConflicts(const Assignment& a, const Assignment& b);
-
-    static bool checkConflict(const Path& a, const Path& b, int i);
-
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &outerConstraints, const std::vector<Task> &tasks,
+    void internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &constraints, const std::vector<Task> &tasks,
                         const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks);
 
     explicit operator std::string() const;
+
+    [[nodiscard]] bool hasConflicts(const std::vector<cmapd::Constraint> &constraints) const;
 
     static inline const cmapd::moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 private:
@@ -94,10 +92,8 @@ private:
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 
-    [[nodiscard]] bool pathContainsErrors(const std::vector<std::vector<cmapd::Constraint>>& constraints) const;
+    static bool conflictsWith(const Path & path, TimeStep i, const cmapd::Constraint& c);
 };
-
-bool conflictsWith(const Path & path, TimeStep i, const cmapd::Constraint& c);
 std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', int capacity= 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

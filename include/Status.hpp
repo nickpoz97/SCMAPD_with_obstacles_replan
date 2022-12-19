@@ -31,13 +31,12 @@ public:
     const Task & getTask(int i) const;
 
     const Assignment& getAssignment(int k) const;
-    Assignment& getAssignment(int k);
 
     const std::unordered_set<int>& getUnassignedTasksIndices() const;
 
     void removeTaskIndex(int i);
 
-    std::vector<std::vector<cmapd::Constraint>> getOtherConstraints(int k);
+    std::vector<std::vector<cmapd::Constraint>> getConstraints();
 
     void print(FILE *fp = stdout);
 

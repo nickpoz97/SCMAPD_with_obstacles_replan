@@ -42,7 +42,7 @@ bool Assignment::empty() const {
 
 void
 Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-                   const std::vector<std::vector<cmapd::Constraint>> &outerConstraints) {
+                   const std::vector<std::vector<cmapd::Constraint>> &constraints) {
 
     auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
 
@@ -53,7 +53,7 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
     const auto& task = tasks[taskId];
     waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
     waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
-    internalUpdate(outerConstraints, tasks, ambientMapInstance, true);
+    internalUpdate(constraints, tasks, ambientMapInstance, true);
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
@@ -205,11 +205,11 @@ const Path &Assignment::getPath() const {
 }
 
 void
-Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &outerConstraints, const std::vector<Task> &tasks,
+Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &constraints, const std::vector<Task> &tasks,
                            const cmapd::AmbientMapInstance &ambientMapInstance, bool newTasks) {
     if(newTasks) { oldTTD = newTTD; }
 
-    path = cmapd::pbs::pbs(ambientMapInstance, outerConstraints, index, waypoints);
+    path = cmapd::pbs::pbs(ambientMapInstance, constraints, index, waypoints);
     // reset ttd
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }
@@ -241,37 +241,6 @@ Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
     return constraints;
 }
 
-bool Assignment::hasConflicts(const Assignment& a, const Assignment& b){
-    if(a.empty() || b.empty()){
-        return false;
-    }
-
-    const auto& pathA = a.getPath();
-    const auto& pathB = b.getPath();
-
-    // same robot
-    if(a.getIndex() == b.getIndex()){
-        return false;
-    }
-
-    for (int i = 0 ; i < std::max(pathA.size(), pathB.size()); ++i){
-        if(checkConflict(pathA, pathB, i)) { return true; }
-    }
-    return false;
-}
-
-bool Assignment::checkConflict(const Path& a, const Path& b, int i) {
-    auto checkAndFix = [](int t, const Path& p){
-        auto lastElement = p.size() - 1;
-        return t <= lastElement ? p[t] : p[lastElement];
-    };
-
-    bool edgeConflict = (i > 0) && checkAndFix(i-1, a) == checkAndFix(i, b) && checkAndFix(i, a) == checkAndFix(i-1, b);
-    bool nodeConflict = checkAndFix(i, a) == checkAndFix(i,b);
-
-    return edgeConflict || nodeConflict;
-}
-
 Assignment::operator std::string() const{
     auto [firstDiv, lastDiv] = utils::buildDivider("Assignment");
 
@@ -287,16 +256,17 @@ Assignment::operator std::string() const{
     );
 }
 
-bool Assignment::pathContainsErrors(const std::vector<std::vector<cmapd::Constraint>>& constraints) const {
+bool Assignment::hasConflicts(const std::vector<cmapd::Constraint> &constraints) const {
     for(int i = 0 ; i < path.size() ; ++i){
         for(const auto& c : constraints){
-            cmapd::Constraint pointC{i, path[i], path[i]};
-
+            conflictsWith(path, i, c);
         }
     }
+
+    return false;
 }
 
-bool conflictsWith(const Path &path, TimeStep i, const cmapd::Constraint &c) {
+bool Assignment::conflictsWith(const Path &path, TimeStep i, const cmapd::Constraint &c) {
     return i < path.size() && path[i] == c.from_position && path[i+1] == c.to_position;
 }
 

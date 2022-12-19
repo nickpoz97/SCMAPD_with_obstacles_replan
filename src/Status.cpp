@@ -31,7 +31,7 @@ const Assignment &Status::getAssignment(int k) const{
     return assignments[k];
 }
 
-std::vector<std::vector<cmapd::Constraint>> Status::getOtherConstraints(int k){
+std::vector<std::vector<cmapd::Constraint>> Status::getConstraints() {
     return constraints;
 }
 
@@ -45,10 +45,6 @@ const std::vector<Assignment> &Status::getAssignments() const {
 
 const cmapd::AmbientMapInstance & Status::getAmbientMapInstance() const {
     return ambientMapInstance;
-}
-
-Assignment &Status::getAssignment(int k) {
-    return assignments[k];
 }
 
 void Status::removeTaskIndex(int i) {
@@ -80,7 +76,7 @@ int Status::update(Assignment&& a) {
 bool Status::checkCollisions() const{
     for(int i = 0 ; i < assignments.size(); ++i){
         for(int j = i+1 ; j < assignments.size(); ++j){
-            if(Assignment::hasConflicts(assignments[i], assignments[j])){
+            if(assignments[i].hasConflicts(constraints[j])){
                 return true;
             }
         }
