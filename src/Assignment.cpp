@@ -210,15 +210,6 @@ Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &co
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
 }
 
-std::optional<TimeStep> Assignment::findWaypointTimestep(const Path &path, const Waypoint &waypoint) {
-    for(int i = 0 ; i < path.size() ; ++i){
-        if(path[i] == waypoint.position){
-            return i;
-        }
-    }
-    return {};
-}
-
 std::vector<cmapd::Constraint>
 Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
     std::vector<cmapd::Constraint> constraints;

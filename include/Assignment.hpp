@@ -114,9 +114,6 @@ private:
             std::_List_iterator<Waypoint> goalWaypoint
     )const ;
 
-    // first index has been added to reduce search time
-    static std::optional<TimeStep> findWaypointTimestep(const Path &path, const Waypoint &waypoint);
-
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
 
