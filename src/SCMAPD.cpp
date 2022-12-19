@@ -52,10 +52,10 @@ SCMAPD::initializePartialAssignment(const Status &status, int taskIndex, const A
 }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
-    // extractTop takes care of tasks indices removal
+    // extractBigHTop takes care of tasks indices removal
     while( !status.getUnassignedTasksIndices().empty() ){
         assert(!status.checkCollisions());
-        auto [taskId, candidateAssignment] = extractTop();
+        auto [taskId, candidateAssignment] = extractBigHTop();
         auto k = status.update(std::move(candidateAssignment));
 
         for (auto& [otherTaskId, partialAssignments] : bigH){
@@ -74,7 +74,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
     }
 }
 
-std::pair<int, Assignment> SCMAPD::extractTop() {
+std::pair<int, Assignment> SCMAPD::extractBigHTop() {
     // top() refers to tasks, [0] to PartialAssignment (and so waypoints) (pair<int, ptr>)
     // thanks to shared pointer, the heap does not destroy the object and partialAssignmentsPtr doesn't throw SIGSEG
     auto& [taskId, partialAssignments] = bigH.front();
@@ -168,11 +168,9 @@ void SCMAPD::sortPA(std::vector<Assignment> &pa, int v) {
 }
 
 void SCMAPD::printCheckMessage() const{
-    if(status.checkCollisions()){
-        fmt::print(fmt::emphasis::bold | fg(fmt::color::red), "Collisions are present\n");
-        return;
+    if(!status.printCollisions()){
+        fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
     }
-    fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
 }
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

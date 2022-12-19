@@ -36,7 +36,7 @@ private:
     static Assignment
     initializePartialAssignment(const Status &status, int taskIndex, const Assignment &robot);
 
-    std::pair<int, Assignment> extractTop();
+    std::pair<int, Assignment> extractBigHTop();
 
     void updateSmallHTop(const Assignment &fixedAssignment, int v, std::vector<Assignment> &partialAssignments);
 

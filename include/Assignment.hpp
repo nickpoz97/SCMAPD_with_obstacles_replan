@@ -1,3 +1,5 @@
+/// @file Assignment.hpp
+
 #ifndef SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP
 #define SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP
 
@@ -10,28 +12,54 @@
 #include "Constraint.h"
 #include "ambient/AmbientMapInstance.h"
 
+/**
+ * @class Assignment
+ * @brief class that abstracts an agent and its path
+ */
 class Assignment {
 
 public:
+    /**
+     *
+     * @param startPosition initial position of the agent
+     * @param index numerical id for the agent
+     * @param capacity max number of tasks the agent can keep
+     */
     explicit Assignment(Coord startPosition, int index, int capacity);
 
+    /// @return agent capacity
     [[nodiscard]] int getCapacity() const;
 
+    /// @return difference between actual TTD and TTD before last task addition to path
     [[nodiscard]] TimeStep getMCA() const;
 
+    /// @return agent numerical id
     [[nodiscard]] int getIndex() const;
 
+    /// @return agent initial position
     [[nodiscard]] Coord getStartPosition() const;
 
+    /// @return reference to agent path
     [[nodiscard]] const Path &getPath() const;
 
-    [[nodiscard]] const WaypointsList &getWaypoints() const;
-
+    /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
 
+    /**
+     * @param instance ambient used to compute constraints together with path
+     * @return constraints which other agents must avoid
+     * @warning linear complexity (wrt path length)
+     */
     [[nodiscard]] std::vector<cmapd::Constraint>
     getConstraints(const cmapd::AmbientMapInstance &instance) const;
 
+    /**
+     * @brief add a new task in the best position and recompute path
+     * @param taskId
+     * @param ambientMapInstance
+     * @param tasks
+     * @param constraints
+     */
     void
     insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
            const std::vector<std::vector<cmapd::Constraint>> &constraints);

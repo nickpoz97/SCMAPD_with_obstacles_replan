@@ -32,10 +32,6 @@ Coord Assignment::getStartPosition() const {
     return startPosition;
 }
 
-const WaypointsList &Assignment::getWaypoints() const {
-    return waypoints;
-}
-
 bool Assignment::empty() const {
     return waypoints.empty();
 }
@@ -234,6 +230,7 @@ Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
             if (instance.is_valid(from_where)) {
                 // if this is the last timestep, final should equal to true
                 constraints.push_back({timestep, from_where, point, timestep == path.size() - 1});
+                // todo add edge constraint
             }
         }
     }
@@ -267,7 +264,8 @@ bool Assignment::hasConflicts(const std::vector<cmapd::Constraint> &constraints)
 }
 
 bool Assignment::conflictsWith(const Path &path, TimeStep i, const cmapd::Constraint &c) {
-    return i < path.size() && path[i] == c.from_position && path[i+1] == c.to_position;
+    auto nextI = std::min(static_cast<int>(path.size()) - 1, i);
+    return i < path.size() && path[i] == c.from_position && path[nextI] == c.to_position;
 }
 
 std::vector<Assignment>

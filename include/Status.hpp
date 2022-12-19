@@ -43,6 +43,9 @@ public:
     int update(Assignment&& a);
 
     bool checkCollisions() const;
+
+    bool printCollisions() const;
+
 private:
     const cmapd::AmbientMapInstance ambientMapInstance;
     const std::vector<Task> tasks;

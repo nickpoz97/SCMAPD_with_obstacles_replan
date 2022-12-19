@@ -5,6 +5,7 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <fmt/core.h>
 #include "Status.hpp"
+#include "fmt/color.h"
 
 Status::Status(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector) :
@@ -82,6 +83,53 @@ bool Status::checkCollisions() const{
         }
     };
     return false;
+}
+
+bool Status::printCollisions() const {
+    bool found = false;
+
+    auto getPosition = [](const Path& p, int i){
+        int lastTimeStep = p.size()-1;
+        return p[std::min(i, lastTimeStep)];
+    };
+
+    auto nodeCollision = [&](const Path& pA, const Path& pB, int i){
+        return getPosition(pA,i) == getPosition(pB,i);
+    };
+
+    auto edgeCollision = [&](const Path& pA, const Path& pB, int i){
+        return i > 0 && getPosition(pA,i) == getPosition(pB,i-1) && getPosition(pA,i-1) == getPosition(pB,i);
+    };
+
+    for(int i = 0 ; i < assignments.size() ; ++i){
+        for(int j = i+1; j < assignments.size() ; ++j){
+            const auto& pa = assignments[i].getPath();
+            const auto& pb = assignments[j].getPath();
+
+            if(pa.size() == 0 || pb.size() == 0){
+                continue;
+            }
+
+            for(int t = 0 ; t < std::max(pa.size(), pb.size()); ++t){
+                if(nodeCollision(pa, pb, t)){
+                    found = true;
+                    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+                        "Node collision between {} and {} in timestep{}\n",
+                        i,j,t
+                    );
+                }
+                if(edgeCollision(pa, pb, t)){
+                    found = true;
+                    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+                        "Edge collision between {} and {} in timestep {}\n",
+                        i,j,t
+                    );
+                }
+            }
+        }
+    }
+
+    return found;
 }
 
 
