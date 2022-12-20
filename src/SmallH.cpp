@@ -12,7 +12,7 @@ std::set<Assignment> SmallH::initializePASet(const std::vector<Assignment> &agen
     for (const auto& a : agents){
         Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
         pa.addTask(instance, {}, task);
-        partialAssignments.insert(pa);
+        partialAssignments.insert(std::move(pa));
     }
 
     return partialAssignments;
@@ -28,12 +28,13 @@ const Task &SmallH::getTask() const{
 
 void SmallH::updateSmallHTop(const Assignment &a, int v, const Status &status) {
     for (int i = 0 ; i < v ; ++i) {
-        for (auto& targetPA : paSet){
-            if(targetPA.getIndex() == a.getIndex() && targetPA.hasConflicts(status.getConstraints()[a.getIndex()])){
-                targetPA.internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
-                // restart
-                i = 0;
-            }
+        auto targetIt = std::next(paSet.begin(), v);
+        if(targetIt->hasConflicts(status.getConstraints()[a.getIndex()])){
+            auto targetPA = std::move(paSet.extract(targetIt).value());
+            targetPA.internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
+            paSet.insert(targetPA);
+            // restart
+            i = 0;
         }
     }
 }
