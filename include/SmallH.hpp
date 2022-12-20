@@ -10,6 +10,7 @@ class SmallH {
 public:
     SmallH(const std::vector<Assignment> &agents, Task &&task, const cmapd::AmbientMapInstance &instance);
     std::pair<int, Assignment> extractTop();
+    [[nodiscard]] TimeStep getTopMCA() const;
     [[nodiscard]] const Task& getTask() const;
     void updateSmallHTop(const Assignment &a, int v, const Status& status);
 private:

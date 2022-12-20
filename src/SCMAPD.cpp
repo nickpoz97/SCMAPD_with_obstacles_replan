@@ -115,8 +115,8 @@ void SCMAPD::sortBigH(BigH &bigH, Heuristic heuristic) {
         case Heuristic::RMCA_A:
             comparator =
                 [](const SmallH& a, const SmallH& b) -> bool {
-                    auto aVal = a.second[0].getMCA() - a.second[1].getMCA();
-                    auto bVal = b.second[0].getMCA() - b.second[1].getMCA();
+                    auto aVal = a.getTopMCA() - a.second[1].getMCA();
+                    auto bVal = b.getTopMCA() - b.second[1].getMCA();
 
                     return aVal > bVal;
                 };

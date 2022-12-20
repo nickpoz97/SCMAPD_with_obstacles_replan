@@ -38,3 +38,7 @@ void SmallH::updateSmallHTop(const Assignment &a, int v, const Status &status) {
         }
     }
 }
+
+TimeStep SmallH::getTopMCA() const{
+    return paSet.cbegin()->getMCA();
+}

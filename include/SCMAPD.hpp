@@ -8,12 +8,6 @@
 #include "Status.hpp"
 #include "Assignment.hpp"
 
-// taskIndex, robot
-using SmallH = std::pair<int, std::vector<Assignment>>;
-
-// heap of assignments that differ by tasks
-using BigH = std::list<SmallH>;
-
 class SCMAPD {
 public:
     SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
