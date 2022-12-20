@@ -96,7 +96,7 @@ void SCMAPD::updateSmallHTop(const Assignment &fixedAssignment, int v, std::vect
     sortPA(partialAssignments, v);
 
     for (int i = 0 ; i < v ; ++i) {
-        auto& targetPA = partialAssignments[i];
+        auto& targetPA = *findPA(partialAssignments, i);
         if(targetPA.hasConflicts(status.getConstraints()[fixedAssignment.getIndex()])) {
             targetPA.internalUpdate(status.getConstraints(), status.getTasks(),
                                     status.getAmbientMapInstance(), false);
