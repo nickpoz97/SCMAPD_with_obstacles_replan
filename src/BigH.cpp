@@ -27,3 +27,8 @@ SmallHComp BigH::getComparator(Heuristic h) {
 }
 
 BigH::BigH(Heuristic h) : smallHSet(getComparator(h)){}
+
+std::pair<int, Assignment> BigH::extractTopTop() {
+    SmallH topSH = std::move(smallHSet.extract(smallHSet.begin()).value());
+    return topSH.extractTop();
+}

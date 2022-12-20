@@ -9,8 +9,8 @@ using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
 class BigH {
 public:
     explicit BigH(Heuristic h);
-
     void insert(SmallH&& smallH);
+    std::pair<int, Assignment> extractTopTop();
 private:
     static SmallHComp getComparator(Heuristic h);
     std::set<SmallH, SmallHComp> smallHSet;
