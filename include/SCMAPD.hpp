@@ -24,8 +24,6 @@ private:
     BigH bigH;
     bool debug;
 
-    static BigH
-    buildPartialAssignmentHeap(const Status &status, Heuristic heuristic);
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

@@ -8,23 +8,12 @@
 SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
     status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
-    bigH(buildPartialAssignmentHeap(status, heuristic)),
+    bigH{status, heuristic},
     debug{debug}
     {
     if(debug)
         status.print();
     }
-
-BigH
-SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
-    BigH bigH{heuristic};
-
-    for(const auto& t : status.getTasks()){
-        SmallH smallH(status, t, 0);
-        bigH.insert(std::move(smallH));
-    }
-    return bigH;
-}
 
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
@@ -33,6 +22,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         auto [taskId, candidateAssignment] = bigH.extractAndDestroy();
         auto k = status.update(std::move(candidateAssignment));
 
+        bigH.updateOtherPAs(k, status, taskId);
         bigH.updateSmallHTop(k, status);
         if(debug){
             status.print();

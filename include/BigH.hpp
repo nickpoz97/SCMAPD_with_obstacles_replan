@@ -12,13 +12,16 @@ public:
     std::pair<int, Assignment> extractAndDestroy();
     [[nodiscard]] bool empty() const;
     void updateSmallHTop(int k, const Status &status);
+
+    void updateOtherPAs(int k, Status status, int taskId);
+
 private:
     int v;
     SmallHComp comparator;
     std::vector<SmallH> smallHVec;
 
     static SmallHComp getComparator(Heuristic h);
-    static std::vector<SmallH> buildPartialAssignmentHeap(const Status &status, Heuristic heuristic, int v);
+    static std::vector<SmallH> buildPartialAssignmentHeap(const Status &status, int v);
     void restoreHeapTop();
 };
 

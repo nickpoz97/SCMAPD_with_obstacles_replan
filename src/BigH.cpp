@@ -25,7 +25,7 @@ SmallHComp BigH::getComparator(Heuristic h) {
 BigH::BigH(const Status &status, Heuristic h) :
     v{h == Heuristic::MCA ? 1 : 2},
     comparator{getComparator(h)},
-    smallHVec{buildPartialAssignmentHeap(status, h, v)}
+    smallHVec{buildPartialAssignmentHeap(status, v)}
     {
         restoreHeapTop();
     }
@@ -45,10 +45,11 @@ void BigH::updateSmallHTop(int k, const Status &status) {
     for(auto& sH : smallHVec){
         sH.updateTopElements(fixedAgent, status);
     }
+    restoreHeapTop();
 }
 
 std::vector<SmallH>
-BigH::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic, int v) {
+BigH::buildPartialAssignmentHeap(const Status &status, int v) {
     const auto& tasks = status.getTasks();
 
     decltype(BigH::smallHVec) bigH{};
@@ -66,4 +67,12 @@ void BigH::restoreHeapTop() {
     auto firstElementIt = smallHVec.begin();
     auto result = std::min_element(smallHVec.begin(), smallHVec.end(), comparator);
     std::swap(firstElementIt, result);
+}
+
+void BigH::updateOtherPAs(int k, Status status, int taskId) {
+    for(auto& sH : smallHVec){
+        sH.find(k).addTask(status.getAmbientMapInstance(), status.getConstraints(), taskId, status.getTasks());
+    }
+
+    restoreHeapTop();
 }
