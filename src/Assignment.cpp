@@ -38,16 +38,18 @@ bool Assignment::empty() const {
 
 void
 Assignment::addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
-                    const std::vector<std::vector<cmapd::Constraint>> &constraints, const Task &task) {
+                    const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
+                    const std::vector<Task> &tasks) {
 
-    auto [bestStartIt, bestGoalIt] = findBestPositions(task, ambientMapInstance.h_table());
+    const auto& t = tasks[taskId];
+    auto [bestStartIt, bestGoalIt] = findBestPositions(t, ambientMapInstance.h_table());
 
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
 
-    waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
-    waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
+    waypoints.insert(bestStartIt, {t.startLoc, Demand::START, t.index});
+    waypoints.insert(bestGoalIt, {t.goalLoc, Demand::GOAL, t.index});
     internalUpdate(constraints, tasks, ambientMapInstance, true);
 
 #ifndef NDEBUG

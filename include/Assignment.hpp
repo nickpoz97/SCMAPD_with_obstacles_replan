@@ -62,7 +62,8 @@ public:
      */
     void
     addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
-            const std::vector<std::vector<cmapd::Constraint>> &constraints, const Task &task);
+            const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
+            const std::vector<Task> &tasks);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 

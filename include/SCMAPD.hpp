@@ -21,7 +21,6 @@ public:
     void printCheckMessage() const;
 private:
     Status status;
-    Heuristic heuristic;
     BigH bigH;
     bool debug;
 

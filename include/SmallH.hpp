@@ -8,7 +8,7 @@
 
 class SmallH {
 public:
-    SmallH(const std::vector<Assignment> &agents, const Task &task, const cmapd::AmbientMapInstance &instance);
+    SmallH(const Status &status, const Task &task);
     std::pair<int, Assignment> extractTop();
     [[nodiscard]] TimeStep getTopMCA() const;
 
@@ -17,8 +17,7 @@ private:
     std::set<Assignment> paSet;
     int taskId;
 
-    static std::set<Assignment> initializePASet(const std::vector<Assignment> &agents, const Task &task,
-                                                const cmapd::AmbientMapInstance &instance);
+    static std::set<Assignment> initializePASet(const Status &status, int taskId);
 };
 
 

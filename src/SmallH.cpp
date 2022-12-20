@@ -1,17 +1,16 @@
 #include "SmallH.hpp"
 
-SmallH::SmallH(const std::vector<Assignment> &agents, const Task &task, const cmapd::AmbientMapInstance &instance) :
-        paSet{initializePASet(agents, task, instance)},
+SmallH::SmallH(const Status &status, const Task &task) :
+        paSet{initializePASet(status, task.index)},
         taskId{task.index}
     {}
 
-std::set<Assignment> SmallH::initializePASet(const std::vector<Assignment> &agents, const Task &task,
-                                             const cmapd::AmbientMapInstance &instance) {
+std::set<Assignment> SmallH::initializePASet(const Status &status, int taskId) {
     std::set<Assignment> partialAssignments{};
 
-    for (const auto& a : agents){
+    for (const auto& a : status.getAssignments()){
         Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
-        pa.addTask(instance, {}, task);
+        pa.addTask(status.getAmbientMapInstance(), {}, taskId, status.getTasks());
         partialAssignments.insert(std::move(pa));
     }
 
