@@ -8,9 +8,8 @@ using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
 
 class BigH {
 public:
-    explicit BigH(const Status &status, Heuristic h);
-    void insert(SmallH&& smallH);
-    std::pair<int, Assignment> extractTopTop();
+    BigH(const Status &status, Heuristic h);
+    std::pair<int, Assignment> extractAndDestroy();
     [[nodiscard]] bool empty() const;
     void updateSmallHTop(int k, const Status &status);
 private:
@@ -20,6 +19,7 @@ private:
 
     static SmallHComp getComparator(Heuristic h);
     static std::vector<SmallH> buildPartialAssignmentHeap(const Status &status, Heuristic heuristic, int v);
+    void restoreHeapTop();
 };
 
 
