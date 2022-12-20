@@ -2,22 +2,24 @@
 #define SIMULTANEOUS_CMAPD_SMALLH_HPP
 
 #include <vector>
-#include <set>
 #include "Assignment.hpp"
 #include "Status.hpp"
 
 class SmallH {
 public:
-    SmallH(const Status &status, const Task &task);
-    std::pair<int, Assignment> extractTop();
+    SmallH(const Status &status, const Task &task, int v);
+    std::pair<int, Assignment> extractTopAndDestroy();
     [[nodiscard]] TimeStep getTopMCA() const;
 
-    void updateSmallHTop(const Assignment &a, int v, const Status& status);
+    void updateTopElements(const Assignment &a, const Status &status);
+    Assignment& find(int id);
 private:
-    std::set<Assignment> paSet;
-    int taskId;
+    std::vector<Assignment> paVec;
+    const int taskId;
+    const int v;
 
-    static std::set<Assignment> initializePASet(const Status &status, int taskId);
+    static std::vector<Assignment> initializePASet(const Status &status, int taskId, int v);
+    void sortVTop();
 };
 
 

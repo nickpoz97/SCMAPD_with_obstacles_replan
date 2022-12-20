@@ -20,7 +20,7 @@ SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
     BigH bigH{heuristic};
 
     for(const auto& t : status.getTasks()){
-        SmallH smallH(status, t);
+        SmallH smallH(status, t, 0);
         bigH.insert(std::move(smallH));
     }
     return bigH;

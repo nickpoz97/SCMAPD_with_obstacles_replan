@@ -1,29 +1,37 @@
 #include "SmallH.hpp"
 
-SmallH::SmallH(const Status &status, const Task &task) :
-        paSet{initializePASet(status, task.index)},
-        taskId{task.index}
-    {}
+SmallH::SmallH(const Status &status, const Task &task, int v) :
+        paVec{initializePASet(status, task.index, v)},
+        taskId{task.index},
+        v{v}
+    {
+        sortVTop();
+    }
 
-std::set<Assignment> SmallH::initializePASet(const Status &status, int taskId) {
-    std::set<Assignment> partialAssignments{};
+std::vector<Assignment> SmallH::initializePASet(const Status &status, int taskId, int v) {
+    const auto& tasks = status.getTasks();
+    std::vector<Assignment> partialAssignments{};
+    partialAssignments.reserve(tasks.size());
 
     for (const auto& a : status.getAssignments()){
         Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
         pa.addTask(status.getAmbientMapInstance(), {}, taskId, status.getTasks());
-        partialAssignments.insert(std::move(pa));
+        partialAssignments.push_back(std::move(pa));
     }
 
     return partialAssignments;
 }
 
-std::pair<int, Assignment> SmallH::extractTop() {
-    return {taskId, std::move(paSet.extract(paSet.begin()).value())};
+std::pair<int, Assignment> SmallH::extractTopAndDestroy() {
+    assert(!paVec.empty());
+    std::pair<int, Assignment> tmp {taskId, std::move(*paVec.begin())};
+    paVec.clear();
+    return tmp;
 }
 
-void SmallH::updateSmallHTop(const Assignment &a, int v, const Status &status) {
+void SmallH::updateTopElements(const Assignment &a, const Status &status) {
     for (int i = 0 ; i < v ; ++i) {
-        auto targetIt = std::next(paSet.begin(), v);
+        auto targetIt = paVec.begin() + i;
 
         // same agent
         if(a.getIndex() == targetIt->getIndex()){
@@ -31,9 +39,8 @@ void SmallH::updateSmallHTop(const Assignment &a, int v, const Status &status) {
         }
 
         if(targetIt->hasConflicts(status.getConstraints()[a.getIndex()])){
-            auto targetPA = std::move(paSet.extract(targetIt).value());
-            targetPA.internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
-            paSet.insert(targetPA);
+            targetIt->internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
+            sortVTop();
             // restart
             i = 0;
         }
@@ -41,5 +48,20 @@ void SmallH::updateSmallHTop(const Assignment &a, int v, const Status &status) {
 }
 
 TimeStep SmallH::getTopMCA() const{
-    return paSet.cbegin()->getMCA();
+    assert(!paVec.empty());
+    return paVec.cbegin()->getMCA();
+}
+
+void SmallH::sortVTop() {
+    for (int i = 0 ; i < std::min(v, static_cast<int>(paVec.size())) ; ++i) {
+        auto it = paVec.begin() + i;
+        auto result = std::min_element(it, paVec.end());
+        std::swap(it, result);
+    }
+}
+
+Assignment &SmallH::find(int id) {
+    auto result = std::find_if(paVec.begin(), paVec.end(), [&id](const Assignment& el){return el.getIndex() == id;});
+    assert(result == paVec.end());
+    return *result;
 }

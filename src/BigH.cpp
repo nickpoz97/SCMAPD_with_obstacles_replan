@@ -2,7 +2,7 @@
 #include "BigH.hpp"
 
 void BigH::insert(SmallH&& smallH){
-    smallHSet.insert(std::move(smallH));
+    smallHVec.insert(std::move(smallH));
 }
 
 SmallHComp BigH::getComparator(Heuristic h) {
@@ -26,27 +26,45 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(Heuristic h) : smallHSet(getComparator(h)), v{h == Heuristic::MCA ? 1 : 2}{}
+BigH::BigH(const Status &status, Heuristic h) :
+    v{h == Heuristic::MCA ? 1 : 2},
+    comparator{getComparator(h)},
+    smallHVec{buildPartialAssignmentHeap(status, h, v)}
+    {}
 
 std::pair<int, Assignment> BigH::extractTopTop() {
-    SmallH topSH = std::move(smallHSet.extract(smallHSet.begin()).value());
-    return topSH.extractTop();
+    SmallH topSH = std::move(smallHVec.extract(smallHVec.begin()).value());
+    return topSH.extractTopAndDestroy();
 }
 
 bool BigH::empty() const {
-    return smallHSet.empty();
+    return smallHVec.empty();
 }
 
 void BigH::updateSmallHTop(int k, const Status &status) {
     const auto& fixedAgent = status.getAssignment(k);
 
-    for(auto it = smallHSet.begin() ; it != smallHSet.end() ;){
+    for(auto it = smallHVec.begin() ; it != smallHVec.end() ;){
         auto nextIt = std::next(it);
 
-        auto candidate = smallHSet.extract(it);
-        candidate.value().updateSmallHTop(fixedAgent, v, status);
-        smallHSet.insert(std::move(candidate));
+        auto candidate = smallHVec.extract(it);
+        candidate.value().updateTopElements(fixedAgent, status);
+        smallHVec.insert(std::move(candidate));
 
         it = nextIt;
     }
+}
+
+std::vector<SmallH>
+BigH::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic, int v) {
+    const auto& tasks = status.getTasks();
+
+    decltype(BigH::smallHVec) bigH{};
+    bigH.reserve(tasks.size());
+
+    for(const auto& t : status.getTasks()){
+        SmallH smallH(status, t, v);
+        bigH.push_back(std::move(smallH));
+    }
+    return bigH;
 }
