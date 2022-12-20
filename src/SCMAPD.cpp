@@ -17,12 +17,13 @@ SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assig
 
 BigH
 SCMAPD::buildPartialAssignmentHeap(const Status &status, Heuristic heuristic) {
-    BigH totalHeap{heuristic};
+    BigH bigH{heuristic};
 
     for(const auto& t : status.getTasks()){
         SmallH smallH(status, t);
+        bigH.insert(std::move(smallH));
     }
-    return totalHeap;
+    return bigH;
 }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
