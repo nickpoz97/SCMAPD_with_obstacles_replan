@@ -11,8 +11,11 @@ public:
     explicit BigH(Heuristic h);
     void insert(SmallH&& smallH);
     std::pair<int, Assignment> extractTopTop();
+    bool empty() const;
+    void updateSmallHTop(int k, const Status &status);
 private:
     static SmallHComp getComparator(Heuristic h);
+    int v;
     std::set<SmallH, SmallHComp> smallHSet;
 };
 

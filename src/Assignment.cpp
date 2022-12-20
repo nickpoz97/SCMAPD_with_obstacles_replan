@@ -260,7 +260,7 @@ bool Assignment::conflictsWith(const Path &path, TimeStep i, const cmapd::Constr
 }
 
 std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, int capacity){
+loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep, int capacity) {
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 

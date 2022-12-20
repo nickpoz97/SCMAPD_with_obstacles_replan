@@ -119,6 +119,6 @@ private:
 
     static bool conflictsWith(const Path & path, TimeStep i, const cmapd::Constraint& c);
 };
-std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', int capacity= 3);
+std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep, int capacity);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

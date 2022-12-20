@@ -26,9 +26,27 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(Heuristic h) : smallHSet(getComparator(h)){}
+BigH::BigH(Heuristic h) : smallHSet(getComparator(h)), v{h == Heuristic::MCA ? 1 : 2}{}
 
 std::pair<int, Assignment> BigH::extractTopTop() {
     SmallH topSH = std::move(smallHSet.extract(smallHSet.begin()).value());
     return topSH.extractTop();
+}
+
+bool BigH::empty() const {
+    return smallHSet.empty();
+}
+
+void BigH::updateSmallHTop(int k, const Status &status) {
+    const auto& fixedAgent = status.getAssignment(k);
+
+    for(auto it = smallHSet.begin() ; it != smallHSet.end() ;){
+        auto nextIt = std::next(it);
+
+        auto candidate = smallHSet.extract(it);
+        candidate.value().updateSmallHTop(fixedAgent, v, status);
+        smallHSet.insert(std::move(candidate));
+
+        it = nextIt;
+    }
 }
