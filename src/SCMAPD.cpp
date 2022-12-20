@@ -71,7 +71,7 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
                        Heuristic heuristic) {
     DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
 
-    auto robots{loadAssignments(agentsFile, 0, 0)};
+    auto robots{loadAssignments(agentsFile)};
     auto tasks{loadTasks(tasksFile, dm)};
 
     cmapd::AmbientMapInstance instance(
