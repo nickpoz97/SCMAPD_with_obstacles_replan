@@ -32,7 +32,7 @@ const Assignment &Status::getAssignment(int k) const{
     return assignments[k];
 }
 
-std::vector<std::vector<cmapd::Constraint>> Status::getConstraints() const{
+const std::vector<std::vector<cmapd::Constraint>> & Status::getConstraints() const{
     return constraints;
 }
 

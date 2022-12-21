@@ -39,8 +39,16 @@ void SmallH::updateTopElements(const Assignment &a, const Status &status) {
             continue;
         }
 
-        if(targetIt->hasConflicts(status.getConstraints()[a.getIndex()])){
+        const auto& allConstraints = status.getConstraints();
+        if(targetIt->hasConflicts(allConstraints[a.getIndex()])){
             targetIt->internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
+#ifndef NDEBUG
+            for(int j = 0 ; j < allConstraints.size() ; ++j){
+                if(targetIt->getIndex() != j){
+                    assert(!targetIt->hasConflicts(allConstraints[j]));
+                }
+            }
+#endif
             sortVTop();
             // restart
             i = 0;
@@ -68,6 +76,16 @@ Assignment &SmallH::find(int id) {
 }
 
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
-    find(k).addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks());
+    auto& target = find(k);
+    assert(target.getIndex() == k);
+    target.addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks());
+#ifndef NDEBUG
+    const auto& allConstraints = status.getConstraints();
+    for(int i = 0 ; i < allConstraints.size() ; ++i){
+        if(target.getIndex() != i){
+            assert(!target.hasConflicts(allConstraints[i]));
+        }
+    }
+#endif
     sortVTop();
 }
