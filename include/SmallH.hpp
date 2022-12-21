@@ -14,6 +14,9 @@ public:
 
     void updateTopElements(const Assignment &a, const Status &status);
     Assignment& find(int id);
+
+    void addTaskToAgent(int k, int otherTaskId, const Status &status);
+
 private:
     std::vector<Assignment> paVec;
     int taskId;

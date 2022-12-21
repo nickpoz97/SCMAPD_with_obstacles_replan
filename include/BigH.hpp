@@ -11,9 +11,8 @@ public:
     BigH(const Status &status, Heuristic h);
     std::pair<int, Assignment> extractAndDestroy();
     [[nodiscard]] bool empty() const;
-    void updateSmallHTop(int k, const Status &status);
 
-    void updateOtherPAs(int k, Status status, int taskId);
+    void update(int k, int taskId, const Status &status);
 
 private:
     int v;

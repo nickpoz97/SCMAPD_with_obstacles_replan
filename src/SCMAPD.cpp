@@ -22,8 +22,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         auto [taskId, candidateAssignment] = bigH.extractAndDestroy();
         auto k = status.update(std::move(candidateAssignment));
 
-        bigH.updateOtherPAs(k, status, taskId);
-        bigH.updateSmallHTop(k, status);
+        bigH.update(k, taskId, status);
         if(debug){
             status.print();
         }
@@ -41,7 +40,9 @@ void SCMAPD::printResult() const{
             result.append(fmt::format(pattern, pos.row, pos.col));
         }
 
-        result.resize(result.size() - 2);
+        if(!result.empty()){
+            result.resize(result.size() - 2);
+        }
         return result;
     };
 

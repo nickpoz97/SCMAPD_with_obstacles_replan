@@ -66,3 +66,8 @@ Assignment &SmallH::find(int id) {
     assert(result != paVec.end());
     return *result;
 }
+
+void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
+    find(k).addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks());
+    sortVTop();
+}
