@@ -6,9 +6,11 @@
 #include <fstream>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <set>
 
 #include "Assignment.hpp"
-#include "pbs.h"
+#include "a_star/Frontier.h"
+#include "a_star/Node.h"
 
 Assignment::Assignment(Coord startPosition, int index, int capacity) :
         startPosition{startPosition},
@@ -208,7 +210,7 @@ Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &co
                            bool newTasks, const std::vector<Assignment> &actualAssignments) {
     if(newTasks) { oldTTD = newTTD; }
 
-    path = cmapd::pbs::pbs(ambientMapInstance, constraints, index, waypoints);
+    path = multi_a_star(ambientMapInstance, actualAssignments);
     // reset ttd
     newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
     assert(!conflictsWithOthers(actualAssignments));
@@ -259,6 +261,22 @@ bool Assignment::checkConflictAtTime(const Path &a, const Path &b, TimeStep i) {
     return nodeCollision || edgeCollision;
 }
 
+bool Assignment::checkConflictAtTime(const Path &a, const std::pair<Coord, Coord> &b, TimeStep i) {
+    if(a.empty()){
+        return false;
+    }
+
+    auto getPosition = [](const Path& p, int i){
+        int lastTimeStep = p.size()-1;
+        return p[std::min(i, lastTimeStep)];
+    };
+
+    auto nodeCollision = getPosition(a,i) == b.second;
+    auto edgeCollision = i > 0 && getPosition(a,i) == b.first && getPosition(a,i-1) == b.second;
+
+    return nodeCollision || edgeCollision;
+}
+
 bool Assignment::conflictsWithPath(const Path &a, const Path &b) {
     if(a.empty() || b.empty()){
         return false;
@@ -279,6 +297,77 @@ bool Assignment::conflictsWithOthers(const std::vector<Assignment>& actualAssign
         }
     }
     return false;
+}
+
+Path Assignment::multi_a_star(const cmapd::AmbientMapInstance& map_instance, const std::vector<Assignment> &actualAssignments) {
+    using namespace cmapd;
+
+    // if the goal sequence is empty, the path is the starting point
+    if (waypoints.empty()) {
+        return path_t{startPosition};
+    }
+
+    Path wpCoords = getWaypointsCoords();
+
+    auto isConstrained = [&actualAssignments, this](const multi_a_star::Node& child, const multi_a_star::Node& parent){
+        for(const auto& a : actualAssignments){
+            if(a.index == index){
+                continue;
+            }
+            if(checkConflictAtTime(a.path, std::pair{parent.get_location(), child.get_location()}, child.get_g_value())){
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // frontier definition
+    multi_a_star::Frontier frontier;
+    // explore set definition
+    std::set<multi_a_star::Node> explored;
+    // generation of root node in the frontier
+    frontier.push(multi_a_star::Node{startPosition, map_instance.h_table(), wpCoords});
+    // main loop
+    while (!frontier.empty()) {
+        // get top node
+        auto top_node{frontier.pop()};
+        // Update label
+        if (top_node.get_location() == static_cast<Coord>(wpCoords[top_node.get_label()])) {
+            top_node.increment_label();
+        }
+        // Goal test
+        if (top_node.get_label() == waypoints.size()) {
+            return top_node.get_path();
+        }
+        // Remember that we visited this location
+        explored.insert(top_node);
+        // Populate frontier
+        for (const auto& child : top_node.get_children(map_instance)) {
+            // Check if child is constrained
+            if (!isConstrained(child, top_node)) {
+                if (!explored.contains(child) && !frontier.contains(child)) {
+                    frontier.push(child);
+                } else if (auto costly_child_opt
+                        = frontier.contains_more_expensive(child, child.get_f_value())) {
+                    frontier.replace(costly_child_opt.value(), child);
+                }
+            }
+        }
+    }
+    // No solution is found
+    throw std::runtime_error("[multiastar] No solution  for agent " + std::to_string(index));
+}
+
+Path Assignment::getWaypointsCoords() const{
+    Path coords{};
+    coords.reserve(waypoints.size());
+    std::transform(
+        waypoints.begin(),
+        waypoints.end(),
+        std::back_inserter(coords),
+        [](const Waypoint& w){return w.position;}
+    );
+    return coords;
 }
 
 std::vector<Assignment>

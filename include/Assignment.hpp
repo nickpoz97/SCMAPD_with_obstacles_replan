@@ -82,6 +82,8 @@ public:
     static bool checkConflictAtTime(const Path &a, const Path &b, TimeStep i);
     [[nodiscard]] bool conflictsWithOthers(const std::vector<Assignment>& actualAssignments) const;
 
+    Path multi_a_star(const cmapd::AmbientMapInstance& map_instance, const std::vector<Assignment> &actualAssignments);
+
     static inline const cmapd::moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 private:
     Coord startPosition;
@@ -120,6 +122,10 @@ private:
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
+
+    Path getWaypointsCoords() const;
+
+    bool checkConflictAtTime(const Path &a, const std::pair<Coord, Coord> &b, TimeStep i);
 };
 std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep=',', int capacity=3);
 
