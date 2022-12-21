@@ -16,7 +16,7 @@ std::vector<Assignment> SmallH::initializePASet(const Status &status, int taskId
 
     for (const auto& a : status.getAssignments()){
         Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
-        pa.addTask(status.getAmbientMapInstance(), status.getConstraints(), taskId, status.getTasks());
+        pa.addTask(status.getAmbientMapInstance(), status.getConstraints(), taskId, status.getTasks(), status.getAssignments());
         partialAssignments.push_back(std::move(pa));
     }
 
@@ -39,16 +39,9 @@ void SmallH::updateTopElements(const Assignment &a, const Status &status) {
             continue;
         }
 
-        const auto& allConstraints = status.getConstraints();
-        if(targetIt->hasConflicts(allConstraints[a.getIndex()])){
-            targetIt->internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false);
-#ifndef NDEBUG
-            for(int j = 0 ; j < allConstraints.size() ; ++j){
-                if(targetIt->getIndex() != j){
-                    assert(!targetIt->hasConflicts(allConstraints[j]));
-                }
-            }
-#endif
+        if(Assignment::conflictsWithPath(targetIt->getPath(), a.getPath())){
+            targetIt->internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false,
+                                     status.getAssignments());
             sortVTop();
             // restart
             i = 0;
@@ -78,14 +71,7 @@ Assignment &SmallH::find(int id) {
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     auto& target = find(k);
     assert(target.getIndex() == k);
-    target.addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks());
-#ifndef NDEBUG
-    const auto& allConstraints = status.getConstraints();
-    for(int i = 0 ; i < allConstraints.size() ; ++i){
-        if(target.getIndex() != i){
-            assert(!target.hasConflicts(allConstraints[i]));
-        }
-    }
-#endif
+    target.addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks(),
+                   status.getAssignments());
     sortVTop();
 }

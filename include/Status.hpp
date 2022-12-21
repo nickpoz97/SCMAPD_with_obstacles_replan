@@ -42,8 +42,6 @@ public:
 
     int update(Assignment&& a);
 
-    bool checkCollisions() const;
-
     bool printCollisions() const;
 
 private:

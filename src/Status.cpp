@@ -74,17 +74,6 @@ int Status::update(Assignment&& a) {
     return k;
 }
 
-bool Status::checkCollisions() const{
-    for(int i = 0 ; i < assignments.size(); ++i){
-        for(int j = i+1 ; j < assignments.size(); ++j){
-            if(assignments[i].hasConflicts(constraints[j])){
-                return true;
-            }
-        }
-    };
-    return false;
-}
-
 bool Status::printCollisions() const {
     bool found = false;
 

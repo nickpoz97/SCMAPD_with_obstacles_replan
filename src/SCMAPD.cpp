@@ -18,7 +18,6 @@ SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assig
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        assert(!status.checkCollisions());
         auto [taskId, candidateAssignment] = bigH.extractAndDestroy();
         auto k = status.update(std::move(candidateAssignment));
 
