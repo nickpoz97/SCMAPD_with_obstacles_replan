@@ -219,13 +219,12 @@ Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
     std::vector<cmapd::Constraint> constraints;
 
     for (int timestep = 0 ; timestep < path.size(); ++timestep) {
-        const auto& point = path[timestep];
+        const auto& point = path.at(timestep);
         for (const auto& move : moves) {
             auto from_where{point + move};
             if (instance.is_valid(from_where)) {
                 // if this is the last timestep, final should equal to true
                 constraints.push_back({timestep, from_where, point, timestep == path.size() - 1});
-                // todo add edge constraint
             }
         }
     }

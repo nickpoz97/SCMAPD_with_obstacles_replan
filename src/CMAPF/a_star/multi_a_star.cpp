@@ -31,38 +31,34 @@ namespace cmapd::multi_a_star {
     bool
     is_constrained(const std::vector<std::vector<Constraint>> &constraints, int agent, const Node &child,
                    const Node &parent) {
-    // create the constraint to be checked
-    Constraint check_me{.timestep = child.get_g_value(),
-                        .from_position = parent.get_location(),
-                        .to_position = child.get_location()};
-    for(int i = 0; i < constraints.size(); ++i){
-        if(i == agent){
-            continue;
+        // create the constraint to be checked
+        Constraint check_me{.timestep = child.get_g_value(),
+                .from_position = parent.get_location(),
+                .to_position = child.get_location()};
+
+        for(int i = 0 ; i < constraints.size(); ++i){
+            if(i == agent){
+                continue;
+            }
+
+            const auto& c = constraints[i];
+
+            if (std::find(c.cbegin(), c.cend(), check_me) != c.cend()) {
+                return true;
+            }
+            // check for a previous final constraint
+            if (std::find_if(c.cbegin(),
+                             c.cend(),
+                             [&check_me](const Constraint& constraint) -> bool {
+                                 return constraint.final
+                                        && constraint.timestep <= check_me.timestep
+                                        && check_me.from_position == constraint.from_position
+                                        && check_me.to_position == constraint.to_position;
+                             })
+                != c.cend()) {
+                return true;
+            }
         }
-        const auto& c = constraints[i];
-        if (std::find(c.cbegin(), c.cend(), check_me) != c.cend()) {
-            return true;
-        }
-    }
-    // check for a previous final constraint
-    for(int i = 0; i < constraints.size(); ++i){
-        if(i == agent){
-            continue;
-        }
-        const auto& c = constraints[i];
-        if (std::find_if(
-            c.cbegin(),
-            c.cend(),
-            [&check_me](const Constraint& constraint) -> bool {
-             return constraint.final
-                    && constraint.timestep <= check_me.timestep
-                    && check_me.from_position == constraint.from_position
-                    && check_me.to_position == constraint.to_position;
-            })
-            != c.cend()) {
-            return true;
-        }
-    }
     return false;
 }
 
@@ -102,7 +98,7 @@ path_t multi_a_star(int agent,
                 if (!explored.contains(child) && !frontier.contains(child)) {
                     frontier.push(child);
                 } else if (auto costly_child_opt
-                           = frontier.contains_more_expensive(child, child.get_f_value())) {
+                        = frontier.contains_more_expensive(child, child.get_f_value())) {
                     frontier.replace(costly_child_opt.value(), child);
                 }
             }
