@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "SmallH.hpp"
 
 SmallH::SmallH(const Status &status, const Task &task, int v) :
@@ -55,13 +56,13 @@ TimeStep SmallH::getTopMCA() const{
 void SmallH::sortVTop() {
     for (int i = 0 ; i < std::min(v, static_cast<int>(paVec.size())) ; ++i) {
         auto it = paVec.begin() + i;
-        auto result = std::min_element(it, paVec.end());
-        std::swap(it, result);
+        auto minElIt = std::min_element(it, paVec.end());
+        std::iter_swap(it, minElIt);
     }
 }
 
 Assignment &SmallH::find(int id) {
     auto result = std::find_if(paVec.begin(), paVec.end(), [&id](const Assignment& el){return el.getIndex() == id;});
-    assert(result == paVec.end());
+    assert(result != paVec.end());
     return *result;
 }

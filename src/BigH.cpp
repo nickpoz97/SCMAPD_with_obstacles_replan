@@ -1,4 +1,5 @@
 #include <functional>
+#include <algorithm>
 #include "BigH.hpp"
 
 SmallHComp BigH::getComparator(Heuristic h) {
@@ -64,9 +65,9 @@ BigH::buildPartialAssignmentHeap(const Status &status, int v) {
 
 void BigH::restoreHeapTop() {
     assert(!smallHVec.empty());
-    auto firstElementIt = smallHVec.begin();
-    auto result = std::min_element(smallHVec.begin(), smallHVec.end(), comparator);
-    std::swap(firstElementIt, result);
+    auto firstElIt = smallHVec.begin();
+    auto minElIt = std::min_element(smallHVec.begin(), smallHVec.end(), comparator);
+    std::iter_swap(firstElIt, minElIt);
 }
 
 void BigH::updateOtherPAs(int k, Status status, int taskId) {
