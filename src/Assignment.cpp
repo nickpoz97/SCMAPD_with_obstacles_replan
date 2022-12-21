@@ -37,18 +37,19 @@ bool Assignment::empty() const {
 }
 
 void
-Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-                   const std::vector<std::vector<cmapd::Constraint>> &constraints) {
+Assignment::addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
+                    const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
+                    const std::vector<Task> &tasks) {
 
-    auto [bestStartIt, bestGoalIt] = findBestPositions(taskId, ambientMapInstance.h_table(), tasks);
+    const auto& t = tasks[taskId];
+    auto [bestStartIt, bestGoalIt] = findBestPositions(t, ambientMapInstance.h_table());
 
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
 
-    const auto& task = tasks[taskId];
-    waypoints.insert(bestStartIt, {task.startLoc, Demand::START, task.index});
-    waypoints.insert(bestGoalIt, {task.goalLoc, Demand::GOAL, task.index});
+    waypoints.insert(bestStartIt, {t.startLoc, Demand::START, t.index});
+    waypoints.insert(bestGoalIt, {t.goalLoc, Demand::GOAL, t.index});
     internalUpdate(constraints, tasks, ambientMapInstance, true);
 
 #ifndef NDEBUG
@@ -62,7 +63,7 @@ Assignment::insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstan
 }
 
 std::pair<WaypointsList::iterator, WaypointsList::iterator>
-Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks) {
+Assignment::findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix) {
     TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
 
     // we must use end iterator position to explore all possible combinations
@@ -78,9 +79,9 @@ Assignment::findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, 
     // search for best position for task start and goal
     for(; i < nIterations ; ++waypointStart, ++i){
         for (; j < nIterations; ++waypointGoal, ++j){
-            auto [newStartIt, newGoalIt] = insertNewWaypoints(tasks[taskId], waypointStart, waypointGoal);
+            auto [newStartIt, newGoalIt] = insertNewWaypoints(task, waypointStart, waypointGoal);
             if(checkCapacityConstraint()){
-                auto newApproxTtd = computeApproxTTD(tasks, distanceMatrix, newStartIt, newGoalIt);
+                auto newApproxTtd = computeApproxTTD(task, distanceMatrix, newStartIt, newGoalIt);
                 if(newApproxTtd < bestApproxTTD){
                     bestApproxTTD = newApproxTtd;
                     bestStartIt = waypointStart;
@@ -131,7 +132,7 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
         if(path[i] == wpIt->position){
             if(wpIt->demand == Demand::GOAL){
                 const Task& task = tasks[wpIt->taskIndex];
-                auto delay = i - task.getIdealGoalTime(distanceMatrix);
+                auto delay = i - task.getIdealGoalTime();
                 cumulatedTTD += delay;
                 wpIt->setDelay(delay);
             }
@@ -143,7 +144,7 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
 }
 
 TimeStep Assignment::computeApproxTTD(
-        const std::vector<Task> &tasks,
+        const Task &task,
         const DistanceMatrix &distanceMatrix,
         WaypointsList::iterator startWaypoint,
         WaypointsList::iterator goalWaypoint
@@ -174,12 +175,13 @@ TimeStep Assignment::computeApproxTTD(
             }
             if (wpIt == goalWaypoint) {
                 iApprox += distanceMatrix.getDistance(prevWpIt(goalWaypoint)->position, goalWaypoint->position);
-                ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
+                // todo check this
+                ttd += (i + iApprox) - task.getIdealGoalTime();
                 iApprox += distanceMatrix.getDistance(goalWaypoint->position, nextWpIt(goalWaypoint)->position);
                 ++wpIt;
             }
             if (wpIt->demand == Demand::GOAL) {
-                ttd += (i + iApprox) - tasks[wpIt->taskIndex].getIdealGoalTime(distanceMatrix);
+                ttd += (i + iApprox) - task.getIdealGoalTime();
             }
             ++wpIt;
         }
@@ -260,7 +262,7 @@ bool Assignment::conflictsWith(const Path &path, TimeStep i, const cmapd::Constr
 }
 
 std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep, int capacity){
+loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep, int capacity) {
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 

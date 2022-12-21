@@ -2,13 +2,11 @@
 #include <Task.hpp>
 
 bool operator==(const Task &t1, const Task &t2) {
-        return t1.startLoc == t2.startLoc &&
-               t1.goalLoc == t2.goalLoc &&
-               t1.releaseTime == t2.releaseTime;
+        return t1.index == t2.index;
 }
 
-TimeStep Task::getIdealGoalTime(const DistanceMatrix &dm) const {
-    return releaseTime + dm.getDistance(startLoc, goalLoc);
+TimeStep Task::getIdealGoalTime() const {
+    return idealGoalTime;
 }
 
 std::pair<Coord, Coord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
@@ -27,7 +25,22 @@ Task::operator std::string() const {
     );
 }
 
-std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCols, char horizontalSep){
+Task::Task(Coord startLoc, Coord goalLoc, const DistanceMatrix& dm) :
+    startLoc{startLoc},
+    goalLoc{goalLoc},
+    releaseTime{},
+    index{generateId()},
+    idealGoalTime{releaseTime + dm.getDistance(startLoc, goalLoc)}
+{}
+
+int Task::generateId() {
+    static int id = 0;
+    auto newId = id;
+    ++id;
+    return newId;
+}
+
+std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep){
     std::ifstream fs (tasksFilePath, std::ios::in);
     std::string line;
 
@@ -56,10 +69,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, int nCol
         std::getline(taskString, value, horizontalSep);
         int xEnd = std::stoi(value);
 
-        int releaseTime = std::getline(taskString, value, ',') ? std::stoi(value) : 0;
-
-
-        tasks.push_back({{yBegin, xBegin}, {yEnd, xEnd}, releaseTime, i});
+        tasks.push_back({{yBegin, xBegin}, {yEnd, xEnd}, dm});
     }
 
     return tasks;

@@ -61,8 +61,9 @@ public:
      * @param constraints
      */
     void
-    insert(int taskId, const cmapd::AmbientMapInstance &ambientMapInstance, const std::vector<Task> &tasks,
-           const std::vector<std::vector<cmapd::Constraint>> &constraints);
+    addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
+            const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
+            const std::vector<Task> &tasks);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
@@ -108,17 +109,17 @@ private:
     );
 
     [[nodiscard]] TimeStep computeApproxTTD(
-            const std::vector<Task> &tasks,
+            const Task &task,
             const DistanceMatrix &distanceMatrix,
             std::_List_iterator<Waypoint> startWaypoint,
             std::_List_iterator<Waypoint> goalWaypoint
     )const ;
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
-    findBestPositions(int taskId, const DistanceMatrix &distanceMatrix, const std::vector<Task> &tasks);
+    findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
 
     static bool conflictsWith(const Path & path, TimeStep i, const cmapd::Constraint& c);
 };
-std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, int nCols, char horizontalSep= ',', int capacity= 3);
+std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep=',', int capacity=3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

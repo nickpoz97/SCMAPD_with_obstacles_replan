@@ -36,7 +36,7 @@ public:
 
     void removeTaskIndex(int i);
 
-    std::vector<std::vector<cmapd::Constraint>> getConstraints();
+    std::vector<std::vector<cmapd::Constraint>> getConstraints() const;
 
     void print(FILE *fp = stdout);
 
