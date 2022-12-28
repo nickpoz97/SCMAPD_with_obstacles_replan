@@ -5,10 +5,6 @@ bool operator==(const Task &t1, const Task &t2) {
         return t1.index == t2.index;
 }
 
-TimeStep Task::getIdealGoalTime() const {
-    return idealGoalTime;
-}
-
 std::pair<Coord, Coord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
 
 Task::operator std::string() const {

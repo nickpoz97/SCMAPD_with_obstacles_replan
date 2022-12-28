@@ -16,7 +16,6 @@ struct Task {
     const TimeStep idealGoalTime;
 
     friend bool operator==(const Task& t1, const Task& t2);
-    [[nodiscard]] TimeStep getIdealGoalTime() const;
 
     [[nodiscard]] std::pair<Coord, Coord> getCoordinates() const;
 

@@ -11,6 +11,7 @@
 #include "Assignment.hpp"
 #include "a_star/Frontier.h"
 #include "a_star/Node.h"
+#include "AssignmentUpdate.hpp"
 
 Assignment::Assignment(Coord startPosition, int index, int capacity) :
         startPosition{startPosition},
@@ -43,16 +44,13 @@ Assignment::addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
                     const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
                     const std::vector<Task> &tasks, const std::vector<Assignment> &actualAssignments) {
 
-    const auto& t = tasks[taskId];
-    auto [bestStartIt, bestGoalIt] = findBestPositions(t, ambientMapInstance.h_table());
-
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
 
-    waypoints.insert(bestStartIt, {t.startLoc, Demand::START, t.index});
-    waypoints.insert(bestGoalIt, {t.goalLoc, Demand::GOAL, t.index});
-    internalUpdate(constraints, tasks, ambientMapInstance, true, actualAssignments);
+    const auto& t = tasks[taskId];
+    oldTTD = newTTD;
+    std::tie(waypoints, path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints, t);
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
@@ -208,11 +206,7 @@ void
 Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &constraints,
                            const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance,
                            bool newTasks, const std::vector<Assignment> &actualAssignments) {
-    if(newTasks) { oldTTD = newTTD; }
-
-    path = multi_a_star(ambientMapInstance, actualAssignments);
-    // reset ttd
-    newTTD = computeRealTTD(tasks, ambientMapInstance.h_table());
+    std::tie(path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints);
     assert(!conflictsWithOthers(actualAssignments));
 }
 
@@ -368,6 +362,10 @@ Path Assignment::getWaypointsCoords() const{
         [](const Waypoint& w){return w.position;}
     );
     return coords;
+}
+
+const WaypointsList &Assignment::getWaypoints() const {
+    return waypoints;
 }
 
 std::vector<Assignment>
