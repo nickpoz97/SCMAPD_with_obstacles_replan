@@ -85,8 +85,6 @@ public:
     Path multi_a_star(const cmapd::AmbientMapInstance& map_instance, const std::vector<Assignment> &actualAssignments);
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
-
-    static inline const cmapd::moves_t moves{{0, 0}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 private:
     Coord startPosition;
     int index;

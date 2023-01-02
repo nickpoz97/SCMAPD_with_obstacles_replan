@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(EXE cmapd)
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-set(INCLUDE_DIRS include include/CMAPF)
+set(INCLUDE_DIRS include)
 
 add_subdirectory(deps)
 set(CNPY_INCLUDE_DIR "deps/cnpy/include")

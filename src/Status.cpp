@@ -7,7 +7,7 @@
 #include "Status.hpp"
 #include "fmt/color.h"
 
-Status::Status(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
+Status::Status(AmbientMap &&ambientMap, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector) :
     ambientMapInstance(std::move(ambientMapInstance)),
     tasks(std::move(tasksVector)),

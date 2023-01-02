@@ -7,16 +7,15 @@
 
 #include <unordered_set>
 
-#include "ambient/AmbientMapInstance.h"
 #include "Task.hpp"
-#include "Constraint.h"
 #include "Assignment.hpp"
+#include "AmbientMap.hpp"
 
 using ConstraintsPerAgent = std::vector<std::vector<cmapd::Constraint>>;
 
 class Status{
 public:
-    Status(cmapd::AmbientMapInstance&& ambientMapInstance,
+    Status(AmbientMap &&ambientMap,
            std::vector<Assignment> &&robots,
            std::vector<Task> && tasksVector);
 
