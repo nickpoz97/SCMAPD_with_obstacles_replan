@@ -7,118 +7,57 @@
 #include "Status.hpp"
 #include "fmt/color.h"
 
-Status::Status(AmbientMap &&ambientMap, std::vector<Assignment> &&robots,
-               std::vector<Task> &&tasksVector) :
-    ambientMapInstance(std::move(ambientMapInstance)),
-    tasks(std::move(tasksVector)),
-    assignments(std::move(robots)),
-    unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasks.size())),
-    constraints(assignments.size())
+Status::Status(AmbientMap &&ambientMap, int nRobots,
+               std::vector<Task> &&tasks) :
+        ambient(std::move(ambientMap)),
+        tasksVector(std::move(tasks)),
+        paths(nRobots),
+        unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasksVector.size()))
     {}
 
-const DistanceMatrix &Status::getDistanceMatrix() const {
-    return ambientMapInstance.h_table();
-}
-
 const Task & Status::getTask(int i) const {
-    return tasks[i];
+    return tasksVector[i];
 }
 
 const std::unordered_set<int> &Status::getUnassignedTasksIndices() const{
     return unassignedTasksIndices;
 }
 
-const Assignment &Status::getAssignment(int k) const{
-    return assignments[k];
-}
-
-const std::vector<std::vector<cmapd::Constraint>> & Status::getConstraints() const{
-    return constraints;
-}
-
 const std::vector<Task> &Status::getTasks() const {
-    return tasks;
-}
-
-const std::vector<Assignment> &Status::getAssignments() const {
-    return assignments;
-}
-
-const cmapd::AmbientMapInstance & Status::getAmbientMapInstance() const {
-    return ambientMapInstance;
+    return tasksVector;
 }
 
 void Status::removeTaskIndex(int i) {
     unassignedTasksIndices.erase(i);
 }
 
-void Status::print(FILE *fp) {
-    static int nCalls = 0;
+void Status::update(Path &&path, int agentId) {
+    paths[agentId] = std::move(path);
+}
 
-    if(nCalls == 0) {
-        for(const auto& t : tasks){
-            fmt::print("{}", static_cast<std::string>(t));
+std::vector<Coord> Status::getValidNeighbors(const Coord &c, TimeStep t) const {
+    std::vector<Coord> neighbors;
+    neighbors.reserve(AmbientMap::nDirections);
+
+    for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
+        auto result = ambient.movement(c, i);
+        if(result.has_value() && !occupiedByOtherAgent(result.value(), t+1)){
+            neighbors.push_back(result.value());
         }
     }
 
-    fmt::print(fp, "iteration {}\n", nCalls++);
-    for (const auto& a : assignments){
-        fmt::print("{}", static_cast<std::string>(a));
-    }
+    return neighbors;
 }
 
-int Status::update(Assignment&& a) {
-    auto k = a.getIndex();
-    constraints[k] = a.getConstraints(ambientMapInstance);
-    assignments[k] = std::move(a);
-    return k;
+bool Status::occupiedByOtherAgent(const Coord &coord, TimeStep t) const{
+    auto predicate = [t, &coord](const Path& p){
+        return !p.empty() && coord == p[std::min(t+1, static_cast<int>(p.size()-1))];
+    };
+    return std::ranges::any_of(paths.begin(), paths.end(), predicate);
 }
 
-bool Status::printCollisions() const {
-    bool found = false;
-
-    auto getPosition = [](const Path& p, int i){
-        int lastTimeStep = p.size()-1;
-        return p[std::min(i, lastTimeStep)];
-    };
-
-    auto nodeCollision = [&](const Path& pA, const Path& pB, int i){
-        return getPosition(pA,i) == getPosition(pB,i);
-    };
-
-    auto edgeCollision = [&](const Path& pA, const Path& pB, int i){
-        return i > 0 && getPosition(pA,i) == getPosition(pB,i-1) && getPosition(pA,i-1) == getPosition(pB,i);
-    };
-
-    for(int i = 0 ; i < assignments.size() ; ++i){
-        for(int j = i+1; j < assignments.size() ; ++j){
-            const auto& pa = assignments[i].getPath();
-            const auto& pb = assignments[j].getPath();
-
-            if(pa.size() == 0 || pb.size() == 0){
-                continue;
-            }
-
-            for(int t = 0 ; t < std::max(pa.size(), pb.size()); ++t){
-                if(nodeCollision(pa, pb, t)){
-                    found = true;
-                    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
-                        "Node collision between {} and {} in timestep{}\n",
-                        i,j,t
-                    );
-                }
-                if(edgeCollision(pa, pb, t)){
-                    found = true;
-                    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
-                        "Edge collision between {} and {} in timestep {}\n",
-                        i,j,t
-                    );
-                }
-            }
-        }
-    }
-
-    return found;
+const std::vector<Path>& Status::getPaths() const {
+    return paths;
 }
 
 

@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <cnpy.h>
 #include "TypeDefs.hpp"
-#include "custom_types.h"
+#include "Coord.hpp"
 
 struct DistanceMatrix {
     explicit DistanceMatrix(cnpy::NpyArray&& data);
@@ -16,11 +16,11 @@ struct DistanceMatrix {
     [[nodiscard]] int getDistance(Coord from, Coord to) const;
 
     static CompressedCoord from2Dto1D(int col, int row, size_t nCols);
-    static CompressedCoord from2Dto1D(cmapd::Point point, size_t nCols);
+    static CompressedCoord from2Dto1D(Coord point, size_t nCols);
 
-    [[nodiscard]] int computeCumulatedValue(cmapd::Point x,
+    [[nodiscard]] int computeCumulatedValue(Coord x,
                                    int label,
-                                   const cmapd::path_t& goal_sequence) const;
+                                   const Path& goal_sequence) const;
 
     const cnpy::NpyArray rawDistanceMatrix;
     const int nRows;

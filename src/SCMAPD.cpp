@@ -19,7 +19,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
         auto [taskId, candidateAssignment] = bigH.extractAndDestroy();
-        auto k = status.update(std::move(candidateAssignment));
+        auto k = status.update(std::move(candidateAssignment), 0);
 
         bigH.update(k, taskId, status);
         if(debug){
@@ -47,7 +47,7 @@ void SCMAPD::printResult() const{
 
     fmt::print("agent\tcost\tpath\n");
     for(const auto& a: status.getAssignments()){
-        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.getPath().size(), buildPathString(a.getPath()));
+        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.extractPath().size(), buildPathString(a.extractPath()));
     }
 }
 
@@ -77,10 +77,10 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
     for (int i = 0 ; i < instance.agents().size() ; ++i){
         assert(instance.agents()[i] == robots[i].getStartPosition());
     }
-    assert(instance.tasks().size() == tasks.size());
-    for (int i = 0 ; i < instance.tasks().size() ; ++i){
+    assert(instance.tasksVector().size() == tasks.size());
+    for (int i = 0 ; i < instance.tasksVector().size() ; ++i){
         const auto& t = tasks[i].getCoordinates();
-        assert(instance.tasks()[i] == t);
+        assert(instance.tasksVector()[i] == t);
     }
 #endif
 

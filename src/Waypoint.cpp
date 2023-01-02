@@ -1,6 +1,6 @@
 #include "Waypoint.hpp"
 
-Waypoint::operator Coord() const {return position;}
+Waypoint::operator const Coord&() const {return position;}
 
 Waypoint::operator std::string() const {
         return fmt::format("[pos: {}, demand: {}, taskId: {}]",
@@ -17,7 +17,7 @@ void Waypoint::setDelay(TimeStep t) {
 
 TimeStep Waypoint::getDelay() const {
     if(!delay.has_value()){
-        throw std::runtime_error("Accessing timestep of path while not defined");
+        throw std::runtime_error("Accessing delay of waypoint while not defined");
     }
     return delay.value();
 }

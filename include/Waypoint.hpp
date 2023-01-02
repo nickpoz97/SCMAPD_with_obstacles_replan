@@ -8,7 +8,7 @@
 #include <fmt/printf.h>
 #include <optional>
 #include "TypeDefs.hpp"
-#include "CMAPF/Point.h"
+#include "Coord.hpp"
 #include "utils.hpp"
 
 struct Waypoint{
@@ -18,7 +18,7 @@ struct Waypoint{
 
     Waypoint(const Coord &position, Demand demand, int taskIndex);
 
-    explicit operator Coord() const;
+    explicit operator const Coord&() const;
 
     explicit operator std::string() const;
 

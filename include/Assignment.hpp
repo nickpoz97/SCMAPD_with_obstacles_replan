@@ -9,8 +9,7 @@
 #include "Task.hpp"
 #include "TypeDefs.hpp"
 #include "Waypoint.hpp"
-#include "Constraint.h"
-#include "ambient/AmbientMapInstance.h"
+#include "Status.hpp"
 
 /**
  * @class Assignment
@@ -39,19 +38,12 @@ public:
     /// @return agent initial position
     [[nodiscard]] Coord getStartPosition() const;
 
-    /// @return reference to agent path
-    [[nodiscard]] const Path &getPath() const;
+    /// @return actual path
+    /// @warning actual path is cleared
+    [[nodiscard]] Path && extractPath();
 
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
-
-    /**
-     * @param instance ambient used to compute constraints together with path
-     * @return constraints which other agents must avoid
-     * @warning linear complexity (wrt path length)
-     */
-    [[nodiscard]] std::vector<cmapd::Constraint>
-    getConstraints(const cmapd::AmbientMapInstance &instance) const;
 
     /**
      * @brief add a new task in the best position and recompute path
@@ -61,28 +53,18 @@ public:
      * @param constraints
      */
     void
-    addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
-            const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
-            const std::vector<Task> &tasks, const std::vector<Assignment> &actualAssignments);
+    addTask(int taskId, const Status &status);
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
     inline explicit operator Coord() const { return getStartPosition(); }
 
-    inline explicit operator Path() const { return getPath(); }
-
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &constraints,
-                        const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance,
-                        bool newTasks, const std::vector<Assignment> &actualAssignments);
-
-    explicit operator std::string() const;
+    void internalUpdate(const std::vector<Task> &tasks, const Status &status);
 
     static bool conflictsWithPath(const Path &a, const Path &b);
     static bool checkConflictAtTime(const Path &a, const Path &b, TimeStep i);
     [[nodiscard]] bool conflictsWithOthers(const std::vector<Assignment>& actualAssignments) const;
-
-    Path multi_a_star(const cmapd::AmbientMapInstance& map_instance, const std::vector<Assignment> &actualAssignments);
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 private:
@@ -122,8 +104,6 @@ private:
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
-
-    Path getWaypointsCoords() const;
 
     static bool checkConflictAtTime(const Path &a, const std::pair<Coord, Coord> &b, TimeStep i);
 };

@@ -9,8 +9,6 @@
 #include <set>
 
 #include "Assignment.hpp"
-#include "a_star/Frontier.h"
-#include "a_star/Node.h"
 #include "AssignmentUpdate.hpp"
 
 Assignment::Assignment(Coord startPosition, int index, int capacity) :
@@ -40,15 +38,13 @@ bool Assignment::empty() const {
 }
 
 void
-Assignment::addTask(const cmapd::AmbientMapInstance &ambientMapInstance,
-                    const std::vector<std::vector<cmapd::Constraint>> &constraints, int taskId,
-                    const std::vector<Task> &tasks, const std::vector<Assignment> &actualAssignments) {
+Assignment::addTask(int taskId, const Status &status) {
 
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
 
-    const auto& t = tasks[taskId];
+    const auto& t = status.getTask(taskId);
     oldTTD = newTTD;
     std::tie(waypoints, path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints, t);
 
@@ -198,49 +194,14 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
     return computeRealTTD(tasks, distanceMatrix, waypoints.begin(), waypoints.end());
 }
 
-const Path &Assignment::getPath() const {
-    return path;
+Path && Assignment::extractPath() {
+    return std::move(path);
 }
 
 void
-Assignment::internalUpdate(const std::vector<std::vector<cmapd::Constraint>> &constraints,
-                           const std::vector<Task> &tasks, const cmapd::AmbientMapInstance &ambientMapInstance,
-                           bool newTasks, const std::vector<Assignment> &actualAssignments) {
+Assignment::internalUpdate(const std::vector<Task> &tasks, const Status &status) {
     std::tie(path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints);
     assert(!conflictsWithOthers(actualAssignments));
-}
-
-std::vector<cmapd::Constraint>
-Assignment::getConstraints(const cmapd::AmbientMapInstance &instance) const {
-    std::vector<cmapd::Constraint> constraints;
-
-    for (int timestep = 0 ; timestep < path.size(); ++timestep) {
-        const auto& point = path.at(timestep);
-        for (const auto& move : moves) {
-            auto from_where{point + move};
-            if (instance.is_valid(from_where)) {
-                // if this is the last timestep, final should equal to true
-                constraints.push_back({timestep, from_where, point, timestep == path.size() - 1});
-            }
-        }
-    }
-
-    return constraints;
-}
-
-Assignment::operator std::string() const{
-    auto [firstDiv, lastDiv] = utils::buildDivider("Assignment");
-
-    return fmt::format(
-        "{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
-        firstDiv,
-        fmt::format("Index: {}", index),
-        fmt::format("Waypoints: {}", utils::objContainerString(waypoints)),
-        fmt::format("Path: {}", utils::objContainerString(path)),
-        fmt::format("Path Length: {}", path.size()),
-        fmt::format("newTTD - oldTTD = {} - {} = {}", newTTD, oldTTD, getMCA()),
-        lastDiv
-    );
 }
 
 bool Assignment::checkConflictAtTime(const Path &a, const Path &b, TimeStep i) {
@@ -291,77 +252,6 @@ bool Assignment::conflictsWithOthers(const std::vector<Assignment>& actualAssign
         }
     }
     return false;
-}
-
-Path Assignment::multi_a_star(const cmapd::AmbientMapInstance& map_instance, const std::vector<Assignment> &actualAssignments) {
-    using namespace cmapd;
-
-    // if the goal sequence is empty, the path is the starting point
-    if (waypoints.empty()) {
-        return path_t{startPosition};
-    }
-
-    Path wpCoords = getWaypointsCoords();
-
-    auto isConstrained = [&actualAssignments, this](const multi_a_star::Node& child, const multi_a_star::Node& parent){
-        for(const auto& a : actualAssignments){
-            if(a.index == index){
-                continue;
-            }
-            if(checkConflictAtTime(a.path, std::pair{parent.get_location(), child.get_location()}, child.get_g_value())){
-                return true;
-            }
-        }
-        return false;
-    };
-
-    // frontier definition
-    multi_a_star::Frontier frontier;
-    // explore set definition
-    std::set<multi_a_star::Node> explored;
-    // generation of root node in the frontier
-    frontier.push(multi_a_star::Node{startPosition, map_instance.h_table(), wpCoords});
-    // main loop
-    while (!frontier.empty()) {
-        // get top node
-        auto top_node{frontier.pop()};
-        // Update label
-        if (top_node.get_location() == static_cast<Coord>(wpCoords[top_node.get_label()])) {
-            top_node.increment_label();
-        }
-        // Goal test
-        if (top_node.get_label() == waypoints.size()) {
-            return top_node.get_path();
-        }
-        // Remember that we visited this location
-        explored.insert(top_node);
-        // Populate frontier
-        for (const auto& child : top_node.get_children(map_instance)) {
-            // Check if child is constrained
-            if (!isConstrained(child, top_node)) {
-                if (!explored.contains(child) && !frontier.contains(child)) {
-                    frontier.push(child);
-                } else if (auto costly_child_opt
-                        = frontier.contains_more_expensive(child, child.get_f_value())) {
-                    frontier.replace(costly_child_opt.value(), child);
-                }
-            }
-        }
-    }
-    // No solution is found
-    throw std::runtime_error("[multiastar] No solution  for agent " + std::to_string(index));
-}
-
-Path Assignment::getWaypointsCoords() const{
-    Path coords{};
-    coords.reserve(waypoints.size());
-    std::transform(
-        waypoints.begin(),
-        waypoints.end(),
-        std::back_inserter(coords),
-        [](const Waypoint& w){return w.position;}
-    );
-    return coords;
 }
 
 const WaypointsList &Assignment::getWaypoints() const {

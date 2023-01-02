@@ -7,8 +7,11 @@
 
 #include <filesystem>
 #include <array>
+#include <optional>
 #include "TypeDefs.hpp"
 #include "Coord.hpp"
+#include "DistanceMatrix.hpp"
+#include <boost/iterator/counting_iterator.hpp>
 
 enum class CellType: char {
     ENDPOINT = 'G',
@@ -18,9 +21,10 @@ enum class CellType: char {
 
 class AmbientMap {
 public:
-    static constexpr std::array<Movement,5> moves{{{0, -1}, {1, 0}, {0, 1}, {-1, 0}, {0, 0}}};
+    static constexpr std::array<Direction,5> directionVector{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0, 0}}};
+    static constexpr int nDirections = directionVector.size();
 
-    explicit AmbientMap(const std::filesystem::path& gridPath);
+    AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm);
 
     [[nodiscard]] bool isValid(Coord coord) const;
     CellType operator[](const Coord& coord) const;
@@ -29,15 +33,16 @@ public:
 
     [[nodiscard]] int getNCols() const;
 
-    [[nodiscard]] std::vector<Coord> getNeighbors(const Coord& coord) const;
+    [[nodiscard]] std::optional<Coord> movement(const Coord &coord, int directionIndex) const;
+
+    [[nodiscard]] int getDistance(const Coord& a, const Coord& b) const;
 
 private:
-    int nRows = 0;
-    int nCols = 0;
+    const DistanceMatrix& distanceMatrix;
     std::vector<std::vector<CellType>> grid;
 
-    void fillMatrix(std::fstream& data);
+    static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);
+    static std::fstream openGridFile(const std::filesystem::path &gridPath);
 };
-
 
 #endif //SIMULTANEOUS_CMAPD_AMBIENTMAP_HPP

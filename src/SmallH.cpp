@@ -16,7 +16,7 @@ std::vector<Assignment> SmallH::initializePASet(const Status &status, int taskId
 
     for (const auto& a : status.getAssignments()){
         Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
-        pa.addTask(status.getAmbientMapInstance(), status.getConstraints(), taskId, status.getTasks(), status.getAssignments());
+        pa.addTask(taskId, status.getAssignments());
         partialAssignments.push_back(std::move(pa));
     }
 
@@ -39,9 +39,8 @@ void SmallH::updateTopElements(const Assignment &a, const Status &status) {
             continue;
         }
 
-        if(Assignment::conflictsWithPath(targetIt->getPath(), a.getPath())){
-            targetIt->internalUpdate(status.getConstraints(), status.getTasks(), status.getAmbientMapInstance(), false,
-                                     status.getAssignments());
+        if(Assignment::conflictsWithPath(targetIt->extractPath(), a.extractPath())){
+            targetIt->internalUpdate(status.getTasks(), <#initializer#>);
             sortVTop();
             // restart
             i = 0;
@@ -71,7 +70,7 @@ Assignment &SmallH::find(int id) {
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     auto& target = find(k);
     assert(target.getIndex() == k);
-    target.addTask(status.getAmbientMapInstance(), status.getConstraints(), otherTaskId, status.getTasks(),
+    target.addTask(otherTaskId,
                    status.getAssignments());
     sortVTop();
 }

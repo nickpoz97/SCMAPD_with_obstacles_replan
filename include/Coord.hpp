@@ -7,16 +7,21 @@
 
 
 #include <vector>
+#include <string>
 
 struct Coord {
     int row;
     int col;
+
+    using Direction = Coord;
+    friend Coord operator+(const Coord& coord, const Direction& movement);
+    friend bool operator==(const Coord& a, const Coord& b) = default;
+
+    explicit operator std::string() const;
 };
+using Direction = Coord::Direction;
+
 using CompressedCoord = int;
-
-using Movement = Coord;
-
-Coord operator+(const Coord& coord, const Movement& movement);
 
 using Path = std::vector<Coord>;
 using CompressedPath = std::vector<CompressedCoord>;

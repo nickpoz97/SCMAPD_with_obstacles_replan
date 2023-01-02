@@ -1,6 +1,7 @@
 #include <fstream>
 #include <cnpy.h>
 #include "DistanceMatrix.hpp"
+#include "Coord.hpp"
 
 DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
     rawDistanceMatrix{std::move(data)},
@@ -31,7 +32,7 @@ int DistanceMatrix::getDistance(CompressedCoord from, CompressedCoord to) const 
 }
 
 int
-DistanceMatrix::computeCumulatedValue(cmapd::Point x, int label, const cmapd::path_t &goal_sequence) const {
+DistanceMatrix::computeCumulatedValue(Coord x, int label, const Path &goal_sequence) const {
     auto h_value{getDistance(x, goal_sequence[label])};
     for (int j{label + 1}; j < goal_sequence.size(); ++j) {
         h_value += getDistance(goal_sequence[j - 1], goal_sequence[j]);
@@ -39,6 +40,6 @@ DistanceMatrix::computeCumulatedValue(cmapd::Point x, int label, const cmapd::pa
     return h_value;
 }
 
-CompressedCoord DistanceMatrix::from2Dto1D(cmapd::Point point, size_t nCols) {
+CompressedCoord DistanceMatrix::from2Dto1D(Coord point, size_t nCols) {
     return from2Dto1D(point.col, point.row, nCols);
 }
