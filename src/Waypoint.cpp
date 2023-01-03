@@ -1,15 +1,15 @@
 #include "Waypoint.hpp"
 
-Waypoint::operator const Coord&() const {return position;}
+Waypoint::operator CompressedCoord() const {return position;}
 
 Waypoint::operator std::string() const {
         return fmt::format("[pos: {}, demand: {}, taskId: {}]",
-            static_cast<std::string>(position), static_cast<int>(demand), taskIndex);
+            position, static_cast<int>(demand), taskIndex);
 }
 
-Waypoint::Waypoint(const Coord &position, Demand demand, int taskIndex) : position(position),
-                                                                          demand(demand),
-                                                                          taskIndex(taskIndex) {}
+Waypoint::Waypoint(const CompressedCoord &position, Demand demand, int taskIndex) : position(position),
+                                                                                    demand(demand),
+                                                                                    taskIndex(taskIndex) {}
 
 void Waypoint::setDelay(TimeStep t) {
     delay.emplace(t);

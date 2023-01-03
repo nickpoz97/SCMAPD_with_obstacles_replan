@@ -12,13 +12,13 @@
 #include "utils.hpp"
 
 struct Waypoint{
-    const Coord position;
+    const CompressedCoord position;
     const Demand demand;
     const int taskIndex;
 
-    Waypoint(const Coord &position, Demand demand, int taskIndex);
+    Waypoint(const CompressedCoord &position, Demand demand, int taskIndex);
 
-    explicit operator const Coord&() const;
+    explicit operator CompressedCoord() const;
 
     explicit operator std::string() const;
 

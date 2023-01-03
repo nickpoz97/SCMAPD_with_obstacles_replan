@@ -6,10 +6,10 @@
 #include "utils.hpp"
 
 struct Task {
-    Task(Coord startLoc, Coord goalLoc, const DistanceMatrix& dm);
+    Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm);
 
-    const Coord startLoc;
-    const Coord goalLoc;
+    const CompressedCoord startLoc;
+    const CompressedCoord goalLoc;
     const TimeStep releaseTime;
     const int index;
 
@@ -17,10 +17,10 @@ struct Task {
 
     friend bool operator==(const Task& t1, const Task& t2);
 
-    [[nodiscard]] std::pair<Coord, Coord> getCoordinates() const;
+    [[nodiscard]] std::pair<CompressedCoord, CompressedCoord> getCoordinates() const;
 
     explicit operator std::string() const;
-    explicit operator std::pair<Coord, Coord>() const{return getCoordinates();}
+    explicit operator std::pair<CompressedCoord, CompressedCoord>() const{return getCoordinates();}
 
 private:
     static int generateId();

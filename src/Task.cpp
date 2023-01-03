@@ -5,7 +5,7 @@ bool operator==(const Task &t1, const Task &t2) {
         return t1.index == t2.index;
 }
 
-std::pair<Coord, Coord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
+std::pair<CompressedCoord, CompressedCoord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
 
 Task::operator std::string() const {
     auto [firstDiv, lastDiv] = utils::buildDivider("Task");
@@ -13,15 +13,15 @@ Task::operator std::string() const {
     return fmt::format(
             "{}\n{}\n{}\n{}\n{}\n{}\n",
             firstDiv,
-            fmt::format("Start Coord: {}", static_cast<std::string>(startLoc)),
-            fmt::format("Goal Coord: {}", static_cast<std::string>(goalLoc)),
+            fmt::format("Start Coord: {}", startLoc),
+            fmt::format("Goal Coord: {}", goalLoc),
             fmt::format("Release Timew: {}", releaseTime),
             fmt::format("Index: {}", index),
             lastDiv
     );
 }
 
-Task::Task(Coord startLoc, Coord goalLoc, const DistanceMatrix& dm) :
+Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm) :
     startLoc{startLoc},
     goalLoc{goalLoc},
     releaseTime{},
@@ -65,7 +65,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const Di
         std::getline(taskString, value, horizontalSep);
         int xEnd = std::stoi(value);
 
-        tasks.push_back({{yBegin, xBegin}, {yEnd, xEnd}, dm});
+        tasks.emplace_back(dm.from2Dto1D({yBegin, xBegin}), dm.from2Dto1D(yEnd, xEnd), dm);
     }
 
     return tasks;

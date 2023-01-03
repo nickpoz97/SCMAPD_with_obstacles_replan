@@ -131,7 +131,7 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
         if(path[i] == wpIt->position){
             if(wpIt->demand == Demand::GOAL){
                 const Task& task = tasks[wpIt->taskIndex];
-                auto delay = i - task.getIdealGoalTime();
+                auto delay = i - task.idealGoalTime;
                 cumulatedTTD += delay;
                 wpIt->setDelay(delay);
             }
@@ -175,12 +175,12 @@ TimeStep Assignment::computeApproxTTD(
             if (wpIt == goalWaypoint) {
                 iApprox += distanceMatrix.getDistance(prevWpIt(goalWaypoint)->position, goalWaypoint->position);
                 // todo check this
-                ttd += (i + iApprox) - task.getIdealGoalTime();
+                ttd += (i + iApprox) - task.idealGoalTime;
                 iApprox += distanceMatrix.getDistance(goalWaypoint->position, nextWpIt(goalWaypoint)->position);
                 ++wpIt;
             }
             if (wpIt->demand == Demand::GOAL) {
-                ttd += (i + iApprox) - task.getIdealGoalTime();
+                ttd += (i + iApprox) - task.idealGoalTime;
             }
             ++wpIt;
         }
