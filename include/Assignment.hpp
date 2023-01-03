@@ -24,7 +24,7 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    explicit Assignment(Coord startPosition, int index, int capacity);
+    explicit Assignment(CompressedCoord startPosition, int index, int capacity);
 
     /// @return agent capacity
     [[nodiscard]] int getCapacity() const;
@@ -36,7 +36,7 @@ public:
     [[nodiscard]] int getIndex() const;
 
     /// @return agent initial position
-    [[nodiscard]] Coord getStartPosition() const;
+    [[nodiscard]] CompressedCoord getStartPosition() const;
 
     /// @return actual path
     /// @warning actual path is cleared
@@ -68,7 +68,7 @@ public:
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 private:
-    Coord startPosition;
+    CompressedCoord startPosition;
     int index;
     int capacity;
 

@@ -96,3 +96,11 @@ AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& d
 int AmbientMap::getDistance(const Coord& a, const Coord& b) const{
     return distanceMatrix.getDistance(a,b);
 }
+
+CompressedCoord AmbientMap::toCompressedCoord(const Coord &coord) const{
+    return distanceMatrix.from2Dto1D(coord);
+}
+
+Coord AmbientMap::toCoord(CompressedCoord c) const{
+    return distanceMatrix.from1Dto2D(c);
+}

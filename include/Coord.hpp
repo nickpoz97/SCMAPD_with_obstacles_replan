@@ -23,7 +23,7 @@ using Direction = Coord::Direction;
 
 using CompressedCoord = int;
 
-using Path = std::vector<Coord>;
+using Path = std::vector<CompressedCoord>;
 using CompressedPath = std::vector<CompressedCoord>;
 
 

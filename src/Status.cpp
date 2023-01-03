@@ -35,13 +35,13 @@ void Status::update(Path &&path, int agentId) {
     paths[agentId] = std::move(path);
 }
 
-std::vector<Coord> Status::getValidNeighbors(const Coord &c, TimeStep t) const {
+std::vector<Coord> Status::getValidNeighbors(int agentId, const Coord &c, TimeStep t) const {
     std::vector<Coord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !occupiedByOtherAgent(result.value(), t+1)){
+        if(result.has_value() && !occupiedByOtherAgent(0, result.value(), t + 1)){
             neighbors.push_back(result.value());
         }
     }
@@ -49,15 +49,32 @@ std::vector<Coord> Status::getValidNeighbors(const Coord &c, TimeStep t) const {
     return neighbors;
 }
 
-bool Status::occupiedByOtherAgent(const Coord &coord, TimeStep t) const{
+bool Status::occupiedByOtherAgent(int agentId, const Coord &coord, TimeStep t) const{
+    assert(agentId > 0 && agentId < paths.size());
+
     auto predicate = [t, &coord](const Path& p){
+        // if path is empty than there are no conflicts
         return !p.empty() && coord == p[std::min(t+1, static_cast<int>(p.size()-1))];
     };
-    return std::ranges::any_of(paths.begin(), paths.end(), predicate);
+
+    // skipping path of actual agent
+    return std::ranges::any_of(paths.begin(), paths.begin() + agentId, predicate) ||
+        std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
 }
 
 const std::vector<Path>& Status::getPaths() const {
     return paths;
 }
 
+int Status::getDistance(const Coord& from, const Coord& to) const {
+    return ambient.getDistance(from, to);
+}
+
+CompressedCoord Status::toCompressedCoord(const Coord &c) const {
+    return ambient.toCompressedCoord(c);
+}
+
+Coord Status::toCoord(CompressedCoord c) const{
+    return ambient.toCoord(c);
+}
 

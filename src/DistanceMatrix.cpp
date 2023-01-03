@@ -17,11 +17,11 @@ DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
 
 int DistanceMatrix::getDistance(Coord from, Coord to) const {
     return getDistance(
-            from2Dto1D(from.col, from.row, nCols), from2Dto1D(to.col, to.row, nCols)
+        from2Dto1D(from.col, from.row), from2Dto1D(to.col, to.row)
     );
 }
 
-CompressedCoord DistanceMatrix::from2Dto1D(int col, int row, size_t nCols) {
+CompressedCoord DistanceMatrix::from2Dto1D(int col, int row) const{
     return row * static_cast<int>(nCols) + col;
 }
 
@@ -40,6 +40,10 @@ DistanceMatrix::computeCumulatedValue(Coord x, int label, const Path &goal_seque
     return h_value;
 }
 
-CompressedCoord DistanceMatrix::from2Dto1D(Coord point, size_t nCols) {
-    return from2Dto1D(point.col, point.row, nCols);
+CompressedCoord DistanceMatrix::from2Dto1D(const Coord &point) const{
+    return from2Dto1D(point.col, point.row);
+}
+
+Coord DistanceMatrix::from1Dto2D(CompressedCoord point) const {
+    return {point / nCols, point % nCols};
 }

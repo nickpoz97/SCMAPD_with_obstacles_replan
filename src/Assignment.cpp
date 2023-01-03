@@ -9,13 +9,16 @@
 #include <set>
 
 #include "Assignment.hpp"
-#include "AssignmentUpdate.hpp"
+#include "Pathfinding.hpp"
 
-Assignment::Assignment(Coord startPosition, int index, int capacity) :
+Assignment::Assignment(CompressedCoord startPosition, int index, int capacity) :
         startPosition{startPosition},
         index{index},
-        capacity{capacity}
-    {}
+        capacity{capacity},
+        path{startPosition}
+    {
+        assert(path.size() == 1 && path[0] == startPosition);
+    }
 
 int Assignment::getCapacity() const {
     return capacity;
@@ -29,7 +32,7 @@ int Assignment::getIndex() const {
     return index;
 }
 
-Coord Assignment::getStartPosition() const {
+CompressedCoord Assignment::getStartPosition() const {
     return startPosition;
 }
 
@@ -46,7 +49,7 @@ Assignment::addTask(int taskId, const Status &status) {
 
     const auto& t = status.getTask(taskId);
     oldTTD = newTTD;
-    std::tie(waypoints, path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints, t);
+    std::tie(waypoints, path, newTTD) = PathFinding::computeUpdatedResults(waypoints, t);
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
@@ -200,7 +203,7 @@ Path && Assignment::extractPath() {
 
 void
 Assignment::internalUpdate(const std::vector<Task> &tasks, const Status &status) {
-    std::tie(path, newTTD) = AssignmentUpdate::computeUpdatedResults(waypoints);
+    std::tie(path, newTTD) = PathFinding::computeUpdatedResults(waypoints);
     assert(!conflictsWithOthers(actualAssignments));
 }
 

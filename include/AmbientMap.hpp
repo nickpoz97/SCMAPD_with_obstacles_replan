@@ -37,6 +37,10 @@ public:
 
     [[nodiscard]] int getDistance(const Coord& a, const Coord& b) const;
 
+    CompressedCoord toCompressedCoord(const Coord &coord) const;
+
+    Coord toCoord(CompressedCoord c) const;
+
 private:
     const DistanceMatrix& distanceMatrix;
     std::vector<std::vector<CellType>> grid;

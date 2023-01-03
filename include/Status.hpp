@@ -17,7 +17,9 @@ public:
            std::vector<Task> && tasks);
 
     // t is the time when agent does the action
-    std::vector<Coord> getValidNeighbors(const Coord& c, TimeStep t) const;
+    std::vector<Coord> getValidNeighbors(int agentId, const Coord &c, TimeStep t) const;
+
+    int getDistance(const Coord& from, const Coord& to) const;
 
     const std::vector<Task> &getTasks() const;
 
@@ -31,6 +33,10 @@ public:
 
     void update(Path &&path, int agentId);
 
+    CompressedCoord toCompressedCoord(const Coord& c) const;
+
+    Coord toCoord(CompressedCoord c) const;
+
     bool printCollisions() const;
 
 private:
@@ -39,7 +45,7 @@ private:
     std::vector<Path> paths;
     std::unordered_set<int> unassignedTasksIndices;
 
-    bool occupiedByOtherAgent(const Coord &coord, TimeStep t) const;
+    bool occupiedByOtherAgent(int agentId, const Coord &coord, TimeStep t) const;
 };
 
 

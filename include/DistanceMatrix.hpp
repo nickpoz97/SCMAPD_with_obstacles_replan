@@ -15,8 +15,10 @@ struct DistanceMatrix {
     [[nodiscard]] int getDistance(CompressedCoord from, CompressedCoord to) const;
     [[nodiscard]] int getDistance(Coord from, Coord to) const;
 
-    static CompressedCoord from2Dto1D(int col, int row, size_t nCols);
-    static CompressedCoord from2Dto1D(Coord point, size_t nCols);
+    [[nodiscard]] CompressedCoord from2Dto1D(int col, int row) const;
+    [[nodiscard]] CompressedCoord from2Dto1D(const Coord &point) const;
+
+    [[nodiscard]] Coord from1Dto2D(CompressedCoord point) const;
 
     [[nodiscard]] int computeCumulatedValue(Coord x,
                                    int label,
