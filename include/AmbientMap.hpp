@@ -26,16 +26,17 @@ public:
 
     AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm);
 
-    [[nodiscard]] bool isValid(Coord coord) const;
+    [[nodiscard]] bool isValid(const Coord &coord) const;
     CellType operator[](const Coord& coord) const;
 
     [[nodiscard]] int getNRows() const;
 
     [[nodiscard]] int getNCols() const;
 
-    [[nodiscard]] std::optional<Coord> movement(const Coord &coord, int directionIndex) const;
+    [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
 
     [[nodiscard]] int getDistance(const Coord& a, const Coord& b) const;
+    [[nodiscard]] int getDistance(CompressedCoord a, CompressedCoord b) const;
 
     CompressedCoord toCompressedCoord(const Coord &coord) const;
 

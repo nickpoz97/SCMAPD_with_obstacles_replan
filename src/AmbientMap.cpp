@@ -58,7 +58,7 @@ std::vector<std::vector<CellType>> AmbientMap::getGrid(std::fstream &&data) {
     }
 }
 
-bool AmbientMap::isValid(Coord coord) const {
+bool AmbientMap::isValid(const Coord &coord) const {
     bool isInsideGrid = coord.row <= getNRows() && coord.col <= getNCols() &&
         coord.row >= 0 && coord.col >= 0;
 
@@ -77,11 +77,11 @@ int AmbientMap::getNCols() const {
     return distanceMatrix.nCols;
 }
 
-std::optional<Coord> AmbientMap::movement(const Coord &coord, int directionIndex) const{
+std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int directionIndex) const{
     assert(directionIndex >= 0 && directionIndex < directionVector.size());
-    auto neighbor = coord + directionVector[directionIndex];
+    auto neighbor = coord + toCompressedCoord(directionVector[directionIndex]);
 
-    return isValid(neighbor) ? std::optional{neighbor} : std::nullopt;
+    return isValid(toCoord(neighbor)) ? std::optional{neighbor} : std::nullopt;
 }
 
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm) :
@@ -103,4 +103,8 @@ CompressedCoord AmbientMap::toCompressedCoord(const Coord &coord) const{
 
 Coord AmbientMap::toCoord(CompressedCoord c) const{
     return distanceMatrix.from1Dto2D(c);
+}
+
+int AmbientMap::getDistance(CompressedCoord a, CompressedCoord b) const {
+    return distanceMatrix.getDistance(a,b);
 }

@@ -2,21 +2,29 @@
 #define SIMULTANEOUS_CMAPD_MULTIASTAR_HPP
 
 #include <boost/heap/fibonacci_heap.hpp>
-#include <unordered_set>
+#include <set>
 #include "Status.hpp"
 #include "Node.hpp"
 #include "Waypoint.hpp"
+#include "ExploredSet.hpp"
+
+using FrontierHeap = boost::heap::fibonacci_heap<Node, boost::heap::compare<std::greater<>>>;
+using FrontierHandle = FrontierHeap::handle_type;
+using FrontierHandlesMap = std::unordered_map<CompressedCoord, FrontierHandle>;
 
 class MultiAStar {
 public:
     MultiAStar() = default;
-    Path solve(const std::vector<Waypoint> &waypoints, const Coord &startLoc, const Status &status, int agentId);
+    Path solve(const std::vector<Waypoint> &waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 private:
-    auto nodeHasher = [](const Node& n){return n.;}
-
     WaypointsList wp;
-    std::unordered_set<Node, > exploredSet;
-    boost::heap::fibonacci_heap<Node, boost::heap::compare<std::greater<>>> frontier;
+    ExploredSet exploredSet;
+    std::set<std::shared_ptr<Node>> frontier;
+
+    void updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const Status &status,
+                        CompressedCoord targetPos);
+
+    void fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList);
 };
 
 

@@ -12,26 +12,26 @@
 
 class Node {
 public:
-    Node(CompressedCoord loc, TimeStep t, int hScore, const Node *parent = nullptr);
+    Node(CompressedCoord loc, TimeStep t, int hScore, std::shared_ptr<Node> parentPtr = nullptr);
 
     [[nodiscard]] int getFScore() const;
 
     bool operator==(const Node& other) const;
 
-    void update(Node const *newFather, int newG);
+    [[nodiscard]] std::forward_list<CompressedCoord> getPathList() const;
 
-    [[nodiscard]] Path getPath(const Status &status) const;
+    friend bool operator<(const Node& a, const Node& b);
 
-    friend bool operator>(const Node& a, const Node& b);
+    [[nodiscard]] CompressedCoord getLocation() const;
 
-    CompressedCoord getLocation() const;
+    [[nodiscard]] TimeStep getGScore() const;
+
 private:
-    const Node* father;
+    const std::shared_ptr<Node> father;
     const CompressedCoord location;
-    const TimeStep time;
 
-    int g;
-    int h;
+    const int g;
+    const int h;
 };
 
 

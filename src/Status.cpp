@@ -35,13 +35,14 @@ void Status::update(Path &&path, int agentId) {
     paths[agentId] = std::move(path);
 }
 
-std::vector<Coord> Status::getValidNeighbors(int agentId, const Coord &c, TimeStep t) const {
-    std::vector<Coord> neighbors;
+std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const {
+    std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
+    // todo chech edge collisions
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !occupiedByOtherAgent(0, result.value(), t + 1)){
+        if(result.has_value() && !occupiedByOtherAgent(agentId, result.value(), t + 1)){
             neighbors.push_back(result.value());
         }
     }
@@ -49,7 +50,7 @@ std::vector<Coord> Status::getValidNeighbors(int agentId, const Coord &c, TimeSt
     return neighbors;
 }
 
-bool Status::occupiedByOtherAgent(int agentId, const Coord &coord, TimeStep t) const{
+bool Status::occupiedByOtherAgent(int agentId, CompressedCoord coord, TimeStep t) const{
     assert(agentId > 0 && agentId < paths.size());
 
     auto predicate = [t, &coord](const Path& p){
@@ -67,6 +68,10 @@ const std::vector<Path>& Status::getPaths() const {
 }
 
 int Status::getDistance(const Coord& from, const Coord& to) const {
+    return ambient.getDistance(from, to);
+}
+
+int Status::getDistance(CompressedCoord from, CompressedCoord to) const {
     return ambient.getDistance(from, to);
 }
 
