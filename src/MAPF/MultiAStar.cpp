@@ -4,18 +4,21 @@
 
 #include "MAPF/MultiAStar.hpp"
 
-Path MultiAStar::solve(const std::vector<Waypoint> &waypoints, CompressedCoord agentLoc, const Status &status, int agentId) {
+std::tuple<Path, TimeStep, WaypointsList>
+MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId) {
     if(waypoints.empty()){
-        return {agentLoc};
+        return {{agentLoc}, 0};
     }
     std::list<CompressedCoord> pathList{};
 
     auto startLoc = agentLoc;
     TimeStep t = 0;
 
+    TimeStep ttd = 0;
+
     // todo check this (due to code complexity)
-    for(const auto & waypoint : waypoints){
-        auto goalLoc = waypoint.position;
+    for(auto & w : waypoints){
+        auto goalLoc = w.position;
 
         frontier.emplace(new Node{startLoc, t, status.getDistance(startLoc, goalLoc)});
         fillPath(status, agentId, goalLoc, pathList);
@@ -25,9 +28,14 @@ Path MultiAStar::solve(const std::vector<Waypoint> &waypoints, CompressedCoord a
 
         startLoc = goalLoc;
         t = pathList.size() - 1;
+        w.updateDelay(t, status.getTasks());
+
+        if (w.demand == Demand::GOAL){
+            ttd += w.getDelay();
+        }
     }
 
-    return {pathList.begin(), pathList.end()};
+    return {{pathList.begin(), pathList.end()}, ttd, waypoints};
 }
 
 void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList) {

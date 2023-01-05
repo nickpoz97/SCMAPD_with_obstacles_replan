@@ -15,7 +15,7 @@ std::vector<Assignment> SmallH::initializePASet(const Status &status, int taskId
     partialAssignments.reserve(tasks.size());
 
     for (const auto& a : status.getAssignments()){
-        Assignment pa {a.getStartPosition(), a.getIndex(), a.getCapacity()};
+        Assignment pa{a.getStartPosition(), a.getIndex(), a.getCapacity(), <#initializer#>};
         pa.addTask(taskId, status.getAssignments());
         partialAssignments.push_back(std::move(pa));
     }

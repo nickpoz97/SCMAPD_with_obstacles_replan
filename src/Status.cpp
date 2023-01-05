@@ -39,10 +39,9 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
     std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
-    // todo chech edge collisions
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !occupiedByOtherAgent(agentId, result.value(), t + 1)){
+        if(result.has_value() && !checkConstraints(agentId, c, result.value(), t)){
             neighbors.push_back(result.value());
         }
     }
@@ -50,17 +49,25 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
     return neighbors;
 }
 
-bool Status::occupiedByOtherAgent(int agentId, CompressedCoord coord, TimeStep t) const{
+bool Status::checkConstraints(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
     assert(agentId > 0 && agentId < paths.size());
+    auto t2 = t1 + 1;
 
-    auto predicate = [t, &coord](const Path& p){
-        // if path is empty than there are no conflicts
-        return !p.empty() && coord == p[std::min(t+1, static_cast<int>(p.size()-1))];
+    auto predicate = [t1, t2, coord1, coord2](const Path& p){
+        // if path is empty there are no conflicts
+        if(p.empty()){
+            return false;
+        }
+
+        bool nodeConflict = coord2 == p[std::min(t2, static_cast<int>(p.size()-1))];
+        bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
+
+        return nodeConflict || edgeConflict;
     };
 
     // skipping path of actual agent
     return std::ranges::any_of(paths.begin(), paths.begin() + agentId, predicate) ||
-        std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
+           std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
 }
 
 const std::vector<Path>& Status::getPaths() const {

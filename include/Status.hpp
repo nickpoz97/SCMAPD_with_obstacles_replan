@@ -47,7 +47,8 @@ private:
     std::vector<Path> paths;
     std::unordered_set<int> unassignedTasksIndices;
 
-    bool occupiedByOtherAgent(int agentId, CompressedCoord coord, TimeStep t) const;
+    bool checkConstraints(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
+
 };
 
 

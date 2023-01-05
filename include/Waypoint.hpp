@@ -10,6 +10,7 @@
 #include "TypeDefs.hpp"
 #include "Coord.hpp"
 #include "utils.hpp"
+#include "Task.hpp"
 
 struct Waypoint{
     const CompressedCoord position;
@@ -22,7 +23,7 @@ struct Waypoint{
 
     explicit operator std::string() const;
 
-    void setDelay(TimeStep t);
+    void updateDelay(TimeStep arrivalTime, const std::vector<Task> &tasks);
 
     [[nodiscard]] TimeStep getDelay() const;
 

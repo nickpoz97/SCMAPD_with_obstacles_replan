@@ -10,14 +10,15 @@
 
 #include "Assignment.hpp"
 #include "Pathfinding.hpp"
+#include "MAPF/MultiAStar.hpp"
 
-Assignment::Assignment(CompressedCoord startPosition, int index, int capacity) :
-        startPosition{startPosition},
+Assignment::Assignment(Coord startPosition, int index, int capacity, const DistanceMatrix &dm) :
+        startPos{dm.from2Dto1D(startPosition)},
         index{index},
         capacity{capacity},
-        path{startPosition}
+        path{startPos}
     {
-        assert(path.size() == 1 && path[0] == startPosition);
+        assert(path.size() == 1 && path[0] == startPos);
     }
 
 int Assignment::getCapacity() const {
@@ -33,7 +34,7 @@ int Assignment::getIndex() const {
 }
 
 CompressedCoord Assignment::getStartPosition() const {
-    return startPosition;
+    return startPos;
 }
 
 bool Assignment::empty() const {
@@ -133,7 +134,7 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
                 const Task& task = tasks[wpIt->taskIndex];
                 auto delay = i - task.idealGoalTime;
                 cumulatedTTD += delay;
-                wpIt->setDelay(delay);
+                wpIt->updateDelay(delay, <#initializer#>);
             }
             ++wpIt;
         }
@@ -203,58 +204,8 @@ Path && Assignment::extractPath() {
 
 void
 Assignment::internalUpdate(const std::vector<Task> &tasks, const Status &status) {
-    std::tie(path, newTTD) = PathFinding::computeUpdatedResults(waypoints);
-    assert(!conflictsWithOthers(actualAssignments));
-}
-
-bool Assignment::checkConflictAtTime(const Path &a, const Path &b, TimeStep i) {
-    auto getPosition = [](const Path& p, int i){
-        int lastTimeStep = p.size()-1;
-        return p[std::min(i, lastTimeStep)];
-    };
-
-    auto nodeCollision = getPosition(a,i) == getPosition(b,i);
-    auto edgeCollision = i > 0 && getPosition(a,i) == getPosition(b,i-1) && getPosition(a,i-1) == getPosition(b,i);
-
-    return nodeCollision || edgeCollision;
-}
-
-bool Assignment::checkConflictAtTime(const Path &a, const std::pair<Coord, Coord> &b, TimeStep i) {
-    if(a.empty()){
-        return false;
-    }
-
-    auto getPosition = [](const Path& p, int i){
-        int lastTimeStep = p.size()-1;
-        return p[std::min(i, lastTimeStep)];
-    };
-
-    auto nodeCollision = getPosition(a,i) == b.second;
-    auto edgeCollision = i > 0 && getPosition(a,i) == b.first && getPosition(a,i-1) == b.second;
-
-    return nodeCollision || edgeCollision;
-}
-
-bool Assignment::conflictsWithPath(const Path &a, const Path &b) {
-    if(a.empty() || b.empty()){
-        return false;
-    }
-
-    for(int t = 0 ; t < std::max(a.size(), b.size()); ++t){
-        if(checkConflictAtTime(a,b,t)){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Assignment::conflictsWithOthers(const std::vector<Assignment>& actualAssignments) const {
-    for(const auto& a: actualAssignments){
-        if(this->index != a.index && conflictsWithPath(this->path, a.path)){
-            return true;
-        }
-    }
-    return false;
+    MultiAStar pathfinder{};
+    std::tie(path, newTTD, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
 }
 
 const WaypointsList &Assignment::getWaypoints() const {
@@ -262,7 +213,8 @@ const WaypointsList &Assignment::getWaypoints() const {
 }
 
 std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep, int capacity) {
+loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
+                int capacity) {
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 
@@ -284,7 +236,7 @@ loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep,
         //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
         Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
-        agents.emplace_back(position, i, capacity);
+        agents.emplace_back(position, i, capacity, dm);
     }
 
     return agents;

@@ -15,9 +15,9 @@ using FrontierHandlesMap = std::unordered_map<CompressedCoord, FrontierHandle>;
 class MultiAStar {
 public:
     MultiAStar() = default;
-    Path solve(const std::vector<Waypoint> &waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
+    std::tuple<Path, TimeStep, WaypointsList>
+    solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 private:
-    WaypointsList wp;
     ExploredSet exploredSet;
     std::set<std::shared_ptr<Node>> frontier;
 

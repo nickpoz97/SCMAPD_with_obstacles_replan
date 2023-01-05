@@ -24,7 +24,7 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    explicit Assignment(CompressedCoord startPosition, int index, int capacity);
+    explicit Assignment(Coord startPosition, int index, int capacity, const DistanceMatrix &dm);
 
     /// @return agent capacity
     [[nodiscard]] int getCapacity() const;
@@ -57,18 +57,14 @@ public:
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
-    inline explicit operator Coord() const { return getStartPosition(); }
+    inline explicit operator CompressedCoord() const { return getStartPosition(); }
 
     // this should be called when waypoints and/or constraints are changed
     void internalUpdate(const std::vector<Task> &tasks, const Status &status);
 
-    static bool conflictsWithPath(const Path &a, const Path &b);
-    static bool checkConflictAtTime(const Path &a, const Path &b, TimeStep i);
-    [[nodiscard]] bool conflictsWithOthers(const std::vector<Assignment>& actualAssignments) const;
-
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 private:
-    CompressedCoord startPosition;
+    CompressedCoord startPos;
     int index;
     int capacity;
 
@@ -105,8 +101,9 @@ private:
     std::pair<WaypointsList::iterator, WaypointsList::iterator>
     findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
 
-    static bool checkConflictAtTime(const Path &a, const std::pair<Coord, Coord> &b, TimeStep i);
 };
-std::vector<Assignment> loadAssignments(const std::filesystem::path &agentsFilePath, char horizontalSep=',', int capacity=3);
+std::vector<Assignment>
+loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep = ',',
+                int capacity = 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP
