@@ -11,7 +11,7 @@
 
 class SCMAPD {
 public:
-    SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
+    SCMAPD(std::vector<Assignment> &&robots,
            std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug);
 
     void solve(TimeStep cutOffTime);

@@ -41,7 +41,7 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
 
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !checkConstraints(agentId, c, result.value(), t)){
+        if(result.has_value() && !checkDynamicObstacle(agentId, c, result.value(), t)){
             neighbors.push_back(result.value());
         }
     }
@@ -49,25 +49,25 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
     return neighbors;
 }
 
-bool Status::checkConstraints(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
+bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
     assert(agentId > 0 && agentId < paths.size());
-    auto t2 = t1 + 1;
 
-    auto predicate = [t1, t2, coord1, coord2](const Path& p){
+    auto predicate = [t1, coord1, coord2](const Path& p){
         // if path is empty there are no conflicts
         if(p.empty()){
             return false;
         }
+        auto t2 = std::min(t1 + 1, static_cast<int>(p.size()-1));
 
-        bool nodeConflict = coord2 == p[std::min(t2, static_cast<int>(p.size()-1))];
+        // todo check this
+        bool nodeConflict = coord2 == p[t2];
         bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
 
         return nodeConflict || edgeConflict;
     };
 
-    // skipping path of actual agent
     return std::ranges::any_of(paths.begin(), paths.begin() + agentId, predicate) ||
-           std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
+        std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
 }
 
 const std::vector<Path>& Status::getPaths() const {
@@ -88,5 +88,43 @@ CompressedCoord Status::toCompressedCoord(const Coord &c) const {
 
 Coord Status::toCoord(CompressedCoord c) const{
     return ambient.toCoord(c);
+}
+
+bool Status::checkAllConflicts(bool printConflicts) const {
+    bool conflictFound = false;
+
+    for(int i = 0 ; i < paths.size() ; ++i){
+        for(int j = i+1 ; j < paths.size() ; ++j){
+            const auto& pA = paths[i];
+            const auto& pB = paths[j];
+
+            if(pA.empty() || pB.empty()){
+                continue;
+            }
+            for(int t = 0 ; t < std::max(paths[i].size(), paths[j].size()) ; ++t){
+                auto tA = std::min(t, static_cast<int>(pA.size()-1));
+                auto tB = std::min(t, static_cast<int>(pB.size()-1));
+
+                bool nodeConflict = pA[std::min(t, static_cast<int>(pA.size()-1))] == pB[std::min(t, static_cast<int>(pB.size()-1))];
+                bool edgeConflict = t < pA.size()-1 && t < pB.size() && pA[t] == pB[t+1] && pA[t+1] == pB[t];
+
+                if(printConflicts && nodeConflict){
+                    auto posString = static_cast<std::string>(toCoord(pA[std::min(t, static_cast<int>(pA.size()-1))]));
+                    fmt::print("Node conflict between agents {}-{} at t = {} in pos = {}", i,j,t, posString);
+                }
+
+                if(printConflicts && edgeConflict){
+                    auto pos1String = static_cast<std::string>(toCoord(pA[t]));
+                    auto pos2String = static_cast<std::string>(toCoord(pA[t+1]));
+
+                    fmt::print("Edge conflict between agents {}-{} at t = {} and {} in pos = {} and {}",
+                        i,j,t,t+1, pos1String, pos2String);
+                }
+
+                conflictFound = conflictFound || nodeConflict || edgeConflict;
+            }
+        }
+    }
+    return conflictFound;
 }
 

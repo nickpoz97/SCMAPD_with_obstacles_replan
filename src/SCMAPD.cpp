@@ -5,14 +5,13 @@
 #include "fmt/color.h"
 #include "BigH.hpp"
 
-SCMAPD::SCMAPD(cmapd::AmbientMapInstance &&ambientMapInstance, std::vector<Assignment> &&robots,
+SCMAPD::SCMAPD(AmbientMap&& ambientMap, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
-    status(std::move(ambientMapInstance), std::move(robots), std::move(tasksVector)),
+    status(std::move(ambientMap), robots.size(), std::move(tasksVector)),
     bigH{status, heuristic},
     debug{debug}
     {
-    if(debug)
-        status.print();
+        assert(status.checkAllConflicts(true));
     }
 
 void SCMAPD::solve(TimeStep cutOffTime) {

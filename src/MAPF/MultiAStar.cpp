@@ -7,7 +7,7 @@
 std::tuple<Path, TimeStep, WaypointsList>
 MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId) {
     if(waypoints.empty()){
-        return {{agentLoc}, 0};
+        return {{agentLoc}, 0, waypoints};
     }
     std::list<CompressedCoord> pathList{};
 
