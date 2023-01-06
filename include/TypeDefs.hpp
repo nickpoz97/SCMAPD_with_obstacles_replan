@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include "Coord.hpp"
 
 using TimeStep = int;
 
@@ -17,6 +18,12 @@ enum class Heuristic{
     MCA,
     RMCA_A,
     RMCA_R
+};
+
+struct AgentInfo{
+    CompressedCoord startPos;
+    int capacity;
+    int index;
 };
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

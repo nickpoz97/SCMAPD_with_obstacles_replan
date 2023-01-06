@@ -62,7 +62,7 @@ BigH::buildPartialAssignmentHeap(const Status &status, int v) {
     bigH.reserve(tasks.size());
 
     for(const auto& t : status.getTasks()){
-        SmallH smallH(status, t, v);
+        SmallH smallH(status, t, v, <#initializer#>);
         bigH.push_back(std::move(smallH));
     }
     return bigH;

@@ -24,7 +24,8 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    explicit Assignment(Coord startPosition, int index, int capacity, const DistanceMatrix &dm);
+    explicit Assignment(CompressedCoord startPosition, int index, int capacity, int firstTaskId,
+                        const Status &status);
 
     /// @return agent capacity
     [[nodiscard]] int getCapacity() const;

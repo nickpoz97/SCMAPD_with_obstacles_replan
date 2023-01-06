@@ -12,13 +12,14 @@
 #include "Pathfinding.hpp"
 #include "MAPF/MultiAStar.hpp"
 
-Assignment::Assignment(Coord startPosition, int index, int capacity, const DistanceMatrix &dm) :
-        startPos{dm.from2Dto1D(startPosition)},
+Assignment::Assignment(CompressedCoord startPosition, int index, int capacity, int firstTaskId,
+                       const Status &status) :
+        startPos{startPosition},
         index{index},
-        capacity{capacity},
-        path{startPos}
+        capacity{capacity}
     {
-        assert(path.size() == 1 && path[0] == startPos);
+        addTask(firstTaskId, status);
+        assert(path.size() > 2 && path[0] == startPos);
     }
 
 int Assignment::getCapacity() const {
@@ -47,10 +48,8 @@ Assignment::addTask(int taskId, const Status &status) {
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
-
-    const auto& t = status.getTask(taskId);
     oldTTD = newTTD;
-    std::tie(waypoints, path, newTTD) = PathFinding::computeUpdatedResults(waypoints, t);
+    std::tie(waypoints, path, newTTD) = PathFinding::computeUpdatedResults(waypoints, status.getTask(taskId));
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);

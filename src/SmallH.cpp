@@ -1,23 +1,20 @@
 #include <algorithm>
 #include "SmallH.hpp"
 
-SmallH::SmallH(const Status &status, const Task &task, int v) :
-        paVec{initializePASet(status, task.index, v)},
-        taskId{task.index},
+SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
+        heap{initializePASet(agentsInfos, taskId, status)},
+        taskId{taskId},
         v{v}
     {
         sortVTop();
     }
 
-std::vector<Assignment> SmallH::initializePASet(const Status &status, int taskId, int v) {
-    const auto& tasks = status.getTasks();
-    std::vector<Assignment> partialAssignments{};
-    partialAssignments.reserve(tasks.size());
+SmallHFibHeap
+SmallH::initializePASet(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
+    SmallHFibHeap partialAssignments{};
 
-    for (const auto& a : status.getAssignments()){
-        Assignment pa{a.getStartPosition(), a.getIndex(), a.getCapacity(), <#initializer#>};
-        pa.addTask(taskId, status.getAssignments());
-        partialAssignments.push_back(std::move(pa));
+    for (const auto& aInfo : agentsInfos){
+        partialAssignments.emplace(aInfo.startPos, aInfo.index, aInfo.capacity, taskId, status);
     }
 
     return partialAssignments;
