@@ -40,6 +40,7 @@ public:
     Coord toCoord(CompressedCoord c) const;
 
     bool checkAllConflicts(bool printConflicts) const;
+    bool checkPathConflicts(int i, int j, bool printConflicts) const;
 
 private:
     const AmbientMap ambient;
@@ -48,7 +49,6 @@ private:
     std::unordered_set<int> unassignedTasksIndices;
 
     bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
-
 };
 
 

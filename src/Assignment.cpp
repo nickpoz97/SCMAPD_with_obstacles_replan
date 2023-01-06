@@ -205,7 +205,7 @@ std::pair<int, Path> Assignment::extractAndReset() {
 }
 
 void
-Assignment::internalUpdate(const std::vector<Task> &tasks, const Status &status) {
+Assignment::internalUpdate(const Status &status) {
     MultiAStar pathfinder{};
     std::tie(path, newTTD, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
 }

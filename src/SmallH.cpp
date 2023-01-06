@@ -2,22 +2,26 @@
 #include "SmallH.hpp"
 
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
-        heap{initializePASet(agentsInfos, taskId, status)},
         taskId{taskId},
         v{v}
     {
-        sortVTop();
+        std::tie(heap, heapHandles) = initializeHeap(agentsInfos, taskId, status);
     }
 
-SmallHFibHeap
-SmallH::initializePASet(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
-    SmallHFibHeap partialAssignments{};
+std::pair<SmallHFibHeap, SmallHHandles>
+SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
+    SmallHFibHeap heap{};
+
+    SmallHHandles handles{};
+    handles.reserve(agentsInfos.size());
 
     for (const auto& aInfo : agentsInfos){
-        partialAssignments.emplace(aInfo.startPos, aInfo.index, aInfo.capacity, taskId, status);
+        handles.push_back(
+            heap.emplace(aInfo.startPos, aInfo.index, aInfo.capacity, taskId, status)
+        );
     }
 
-    return partialAssignments;
+    return {heap, handles};
 }
 
 std::pair<int, Path> SmallH::extractTopAndReset() {
@@ -31,18 +35,18 @@ std::pair<int, Path> SmallH::extractTopAndReset() {
 }
 
 void SmallH::updateTopElements(const Assignment &a, const Status &status) {
-    // todo fix this
-    for (auto targetIt = heap.ordered_begin() ; targetIt < std::next(heap.ordered_begin(), v) || targetIt != heap.end()) {
-        auto targetIt = heap.begin() + i;
+    // todo check this
+    for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
+        auto targetIt = std::next(heap.begin(), i);
 
-        // same agent
-        if(a.getIndex() == targetIt->getIndex()){
-            continue;
-        }
+        if(status.checkPathConflicts(a.getIndex(), targetIt->getIndex(), false)){
+            auto handle = heapHandles[targetIt->getIndex()];
 
-        if(Assignment::conflictsWithPath(targetIt->extractAndReset(), a.extractAndReset())){
-            targetIt->internalUpdate(status.getTasks(), <#initializer#>);
-            sortVTop();
+            // todo check if it is possible to use increase or decrease
+            // atomic
+            (*handle).internalUpdate(status);
+            heap.update(handle);
+
             // restart
             i = 0;
         }
@@ -50,28 +54,21 @@ void SmallH::updateTopElements(const Assignment &a, const Status &status) {
 }
 
 TimeStep SmallH::getTopMCA() const{
-    assert(!paVec.empty());
-    return paVec.cbegin()->getMCA();
-}
-
-void SmallH::sortVTop() {
-    for (int i = 0 ; i < std::min(v, static_cast<int>(paVec.size())) ; ++i) {
-        auto it = paVec.begin() + i;
-        auto minElIt = std::min_element(it, paVec.end());
-        std::iter_swap(it, minElIt);
-    }
-}
-
-Assignment &SmallH::find(int id) {
-    auto result = std::find_if(paVec.begin(), paVec.end(), [&id](const Assignment& el){return el.getIndex() == id;});
-    assert(result != paVec.end());
-    return *result;
+    assert(!heap.empty());
+    return heap.top().getMCA();
 }
 
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
-    auto& target = find(k);
-    assert(target.getIndex() == k);
-    target.addTask(otherTaskId,
-                   status.getAssignments());
-    sortVTop();
+    auto& targetHandle = heapHandles[k];
+    assert((*targetHandle).getIndex() == k);
+
+    //atomic
+    (*targetHandle).addTask(otherTaskId, status);
+
+    // todo check if can use increase
+    heap.update(targetHandle);
+}
+
+int SmallH::getTaskId() const {
+    return taskId;
 }

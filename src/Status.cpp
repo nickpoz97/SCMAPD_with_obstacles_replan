@@ -95,36 +95,42 @@ bool Status::checkAllConflicts(bool printConflicts) const {
 
     for(int i = 0 ; i < paths.size() ; ++i){
         for(int j = i+1 ; j < paths.size() ; ++j){
-            const auto& pA = paths[i];
-            const auto& pB = paths[j];
-
-            if(pA.empty() || pB.empty()){
-                continue;
-            }
-            for(int t = 0 ; t < std::max(paths[i].size(), paths[j].size()) ; ++t){
-                auto tA = std::min(t, static_cast<int>(pA.size()-1));
-                auto tB = std::min(t, static_cast<int>(pB.size()-1));
-
-                bool nodeConflict = pA[std::min(t, static_cast<int>(pA.size()-1))] == pB[std::min(t, static_cast<int>(pB.size()-1))];
-                bool edgeConflict = t < pA.size()-1 && t < pB.size() && pA[t] == pB[t+1] && pA[t+1] == pB[t];
-
-                if(printConflicts && nodeConflict){
-                    auto posString = static_cast<std::string>(toCoord(pA[std::min(t, static_cast<int>(pA.size()-1))]));
-                    fmt::print("Node conflict between agents {}-{} at t = {} in pos = {}", i,j,t, posString);
-                }
-
-                if(printConflicts && edgeConflict){
-                    auto pos1String = static_cast<std::string>(toCoord(pA[t]));
-                    auto pos2String = static_cast<std::string>(toCoord(pA[t+1]));
-
-                    fmt::print("Edge conflict between agents {}-{} at t = {} and {} in pos = {} and {}",
-                        i,j,t,t+1, pos1String, pos2String);
-                }
-
-                conflictFound = conflictFound || nodeConflict || edgeConflict;
-            }
+                conflictFound = checkPathConflicts(i, j, printConflicts);
         }
     }
     return conflictFound;
+}
+
+bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
+    const auto& pA = paths[i];
+    const auto& pB = paths[j];
+
+    if(i == j || pA.empty() || pB.empty()){
+        return false;
+    }
+
+    for(int t = 0 ; t < std::max(paths[i].size(), paths[j].size()) ; ++t) {
+        bool nodeConflict =
+                pA[std::min(t, static_cast<int>(pA.size() - 1))] == pB[std::min(t, static_cast<int>(pB.size() - 1))];
+        bool edgeConflict = t < pA.size() - 1 && t < pB.size() && pA[t] == pB[t + 1] && pA[t + 1] == pB[t];
+
+        if(!printConflicts && (nodeConflict || edgeConflict)){
+            return true;
+        }
+
+        if (nodeConflict) {
+            auto posString = static_cast<std::string>(toCoord(pA[std::min(t, static_cast<int>(pA.size() - 1))]));
+            fmt::print("Node conflict between agents {}-{} at t = {} in pos = {}", i, j, t, posString);
+        }
+
+        if (edgeConflict) {
+            auto pos1String = static_cast<std::string>(toCoord(pA[t]));
+            auto pos2String = static_cast<std::string>(toCoord(pA[t + 1]));
+
+            fmt::print("Edge conflict between agents {}-{} at t = {} and {} in pos = {} and {}",
+                       i, j, t, t + 1, pos1String, pos2String);
+        }
+    }
+    return false;
 }
 

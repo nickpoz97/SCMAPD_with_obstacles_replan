@@ -8,6 +8,7 @@
 
 // todo add comapre
 using SmallHFibHeap = boost::heap::fibonacci_heap<Assignment>;
+using SmallHHandles = std::vector<boost::heap::fibonacci_heap<Assignment>::handle_type>;
 
 class SmallH {
 public:
@@ -17,18 +18,19 @@ public:
     [[nodiscard]] TimeStep getTopMCA() const;
 
     void updateTopElements(const Assignment &a, const Status &status);
-    Assignment& find(int id);
 
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
 
+    int getTaskId() const;
+
 private:
+    SmallHHandles heapHandles;
     SmallHFibHeap heap;
     int taskId;
     int v;
 
-    static SmallHFibHeap
-    initializePASet(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
-    void sortVTop();
+    static std::pair<SmallHFibHeap, std::vector<boost::heap::fibonacci_heap<Assignment>::handle_type>>
+    initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
 };
 
 

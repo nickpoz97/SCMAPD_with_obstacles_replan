@@ -61,7 +61,7 @@ public:
     inline explicit operator CompressedCoord() const { return getStartPosition(); }
 
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const std::vector<Task> &tasks, const Status &status);
+    void internalUpdate(const Status &status);
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 private:
