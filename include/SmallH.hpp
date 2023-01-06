@@ -13,7 +13,7 @@ class SmallH {
 public:
     SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status);
 
-    std::pair<int, Assignment> extractTopAndDestroy();
+    std::pair<int, Path> extractTopAndReset();
     [[nodiscard]] TimeStep getTopMCA() const;
 
     void updateTopElements(const Assignment &a, const Status &status);

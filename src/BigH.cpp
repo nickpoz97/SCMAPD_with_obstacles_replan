@@ -34,7 +34,7 @@ BigH::BigH(const Status &status, Heuristic h) :
 std::pair<int, Assignment> BigH::extractAndDestroy() {
     assert(!smallHVec.empty());
     auto topElement = smallHVec.begin();
-    auto tmp{topElement->extractTopAndDestroy()};
+    auto tmp{topElement->extractTopAndReset()};
     smallHVec.erase(topElement);
     restoreHeapTop();
     return tmp;

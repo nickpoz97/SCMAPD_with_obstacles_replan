@@ -41,7 +41,7 @@ public:
 
     /// @return actual path
     /// @warning actual path is cleared
-    [[nodiscard]] Path && extractPath();
+    [[nodiscard]] std::pair<int, Path> extractAndReset();
 
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
@@ -103,8 +103,8 @@ private:
     findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
 
 };
-std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep = ',',
-                int capacity = 3);
+std::vector<AgentInfo>
+loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep = ',',
+           int capacity = 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

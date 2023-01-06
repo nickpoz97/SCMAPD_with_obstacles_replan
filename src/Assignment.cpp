@@ -197,8 +197,11 @@ TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const Distan
     return computeRealTTD(tasks, distanceMatrix, waypoints.begin(), waypoints.end());
 }
 
-Path && Assignment::extractPath() {
-    return std::move(path);
+std::pair<int, Path> Assignment::extractAndReset() {
+    waypoints.clear();
+    newTTD = 0;
+    oldTTD = 0;
+    return {index, std::exchange(path, {})};
 }
 
 void
@@ -211,9 +214,9 @@ const WaypointsList &Assignment::getWaypoints() const {
     return waypoints;
 }
 
-std::vector<Assignment>
-loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
-                int capacity) {
+std::vector<AgentInfo>
+loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
+           int capacity) {
     std::ifstream fs (agentsFilePath, std::ios::in);
     std::string line;
 
@@ -221,7 +224,7 @@ loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatri
     std::getline(fs, line);
     size_t nAgents = std::stoi(line);
 
-    std::vector<Assignment> agents;
+    std::vector<AgentInfo> agents;
     agents.reserve(nAgents);
 
     for (int i = 0 ; i < nAgents; ++i){
@@ -235,7 +238,7 @@ loadAssignments(const std::filesystem::path &agentsFilePath, const DistanceMatri
         //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
 
         Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
-        agents.emplace_back(position, i, capacity, dm);
+        agents.push_back({dm.from2Dto1D(position), capacity, i});
     }
 
     return agents;

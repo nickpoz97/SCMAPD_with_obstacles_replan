@@ -46,7 +46,7 @@ void SCMAPD::printResult() const{
 
     fmt::print("agent\tcost\tpath\n");
     for(const auto& a: status.getAssignments()){
-        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.extractPath().size(), buildPathString(a.extractPath()));
+        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.extractAndReset().size(), buildPathString(a.extractAndReset()));
     }
 }
 
@@ -61,7 +61,7 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
                        Heuristic heuristic) {
     DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
 
-    auto robots{loadAssignments(agentsFile, <#initializer#>, 0, 0)};
+    auto robots{loadAgents(agentsFile, <#initializer#>, 0, 0)};
     auto tasks{loadTasks(tasksFile, dm)};
 
     cmapd::AmbientMapInstance instance(

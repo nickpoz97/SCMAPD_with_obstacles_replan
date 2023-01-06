@@ -20,23 +20,27 @@ SmallH::initializePASet(const std::vector<AgentInfo> &agentsInfos, int taskId, c
     return partialAssignments;
 }
 
-std::pair<int, Assignment> SmallH::extractTopAndDestroy() {
-    assert(!paVec.empty());
-    std::pair<int, Assignment> tmp {taskId, std::move(*paVec.begin())};
-    paVec.clear();
-    return tmp;
+std::pair<int, Path> SmallH::extractTopAndReset() {
+    assert(!heap.empty());
+
+    // atomic block
+    auto topAssignment = std::move(const_cast<Assignment&>(heap.top()));
+    heap.clear();
+
+    return topAssignment.extractAndReset();
 }
 
 void SmallH::updateTopElements(const Assignment &a, const Status &status) {
-    for (int i = 0 ; i < v ; ++i) {
-        auto targetIt = paVec.begin() + i;
+    // todo fix this
+    for (auto targetIt = heap.ordered_begin() ; targetIt < std::next(heap.ordered_begin(), v) || targetIt != heap.end()) {
+        auto targetIt = heap.begin() + i;
 
         // same agent
         if(a.getIndex() == targetIt->getIndex()){
             continue;
         }
 
-        if(Assignment::conflictsWithPath(targetIt->extractPath(), a.extractPath())){
+        if(Assignment::conflictsWithPath(targetIt->extractAndReset(), a.extractAndReset())){
             targetIt->internalUpdate(status.getTasks(), <#initializer#>);
             sortVTop();
             // restart
