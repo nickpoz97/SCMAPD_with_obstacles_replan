@@ -119,27 +119,13 @@ bool Assignment::checkCapacityConstraint() {
     return true;
 }
 
-TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                    const std::_List_iterator<Waypoint> &firstWaypoint,
-                                    const std::_List_iterator<Waypoint> &lastWaypoint){
-    TimeStep cumulatedTTD = 0;
-    auto wpIt = firstWaypoint;
-
-    // i is the timestep, if lastWaypoint is reached, break
-    for(int i = 0 ; i < path.size() && wpIt != lastWaypoint; ++i){
-        // reached waypoint
-        if(path[i] == wpIt->position){
-            if(wpIt->demand == Demand::GOAL){
-                const Task& task = tasks[wpIt->taskIndex];
-                auto delay = i - task.idealGoalTime;
-                cumulatedTTD += delay;
-                wpIt->updateDelay(delay, <#initializer#>);
-            }
-            ++wpIt;
-        }
-    }
-
-    return cumulatedTTD;
+TimeStep Assignment::computeRealTTD() {
+    return std::accumulate(
+        waypoints.cbegin(),
+        waypoints.cend(),
+        0,
+        [](int sum, const Waypoint& w){return sum + w.getDelay();}
+    );
 }
 
 TimeStep Assignment::computeApproxTTD(
@@ -194,7 +180,7 @@ bool operator<(const Assignment& a, const Assignment& b){
 }
 
 TimeStep Assignment::computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix) {
-    return computeRealTTD(tasks, distanceMatrix, waypoints.begin(), waypoints.end());
+    return computeRealTTD();
 }
 
 std::pair<int, Path> Assignment::extractAndReset() {

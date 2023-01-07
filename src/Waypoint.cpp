@@ -14,7 +14,8 @@ Waypoint::Waypoint(const CompressedCoord &position, Demand demand, int taskIndex
 
 void Waypoint::updateDelay(TimeStep arrivalTime, const std::vector<Task> &tasks) {
     const Task& t = tasks[taskIndex];
-    delay.emplace(demand == Demand::GOAL ? arrivalTime - t.idealGoalTime : arrivalTime - t.releaseTime);
+    // for performance reasons, if START the delay is set to 0
+    delay.emplace(demand == Demand::GOAL ? arrivalTime - t.idealGoalTime : 0);
 }
 
 TimeStep Waypoint::getDelay() const {

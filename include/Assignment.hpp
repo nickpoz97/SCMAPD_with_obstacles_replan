@@ -83,9 +83,7 @@ private:
     void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
                                   std::_List_iterator<Waypoint> waypointGoal);
 
-    [[nodiscard]] TimeStep computeRealTTD(const std::vector<Task> &tasks, const DistanceMatrix &distanceMatrix,
-                                          const std::_List_iterator<Waypoint> &firstWaypoint,
-                                          const std::_List_iterator<Waypoint> &lastWaypoint);
+    [[nodiscard]] TimeStep computeRealTTD();
 
     [[nodiscard]] TimeStep computeRealTTD(
             const std::vector<Task> &tasks,
