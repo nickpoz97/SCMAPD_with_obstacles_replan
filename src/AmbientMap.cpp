@@ -79,32 +79,20 @@ int AmbientMap::getNCols() const {
 
 std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int directionIndex) const{
     assert(directionIndex >= 0 && directionIndex < directionVector.size());
-    auto neighbor = coord + toCompressedCoord(directionVector[directionIndex]);
+    auto neighbor = coord + distanceMatrix.from2Dto1D(directionVector[directionIndex]);
 
-    return isValid(toCoord(neighbor)) ? std::optional{neighbor} : std::nullopt;
+    return isValid(distanceMatrix.from1Dto2D(neighbor)) ? std::optional{neighbor} : std::nullopt;
 }
 
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm) :
     distanceMatrix{dm},
     grid{getGrid(openGridFile(gridPath))}
 {
-    if(dm.nRows != grid.size() || (grid.size() > 0 && dm.nCols != grid[0].size())){
+    if(dm.nRows != grid.size() || (!grid.empty() && dm.nCols != grid[0].size())){
         throw std::runtime_error("Grid file and distance matrix file do not refer to same ambient");
     }
 }
 
-int AmbientMap::getDistance(const Coord& a, const Coord& b) const{
-    return distanceMatrix.getDistance(a,b);
-}
-
-CompressedCoord AmbientMap::toCompressedCoord(const Coord &coord) const{
-    return distanceMatrix.from2Dto1D(coord);
-}
-
-Coord AmbientMap::toCoord(CompressedCoord c) const{
-    return distanceMatrix.from1Dto2D(c);
-}
-
-int AmbientMap::getDistance(CompressedCoord a, CompressedCoord b) const {
-    return distanceMatrix.getDistance(a,b);
-}
+const DistanceMatrix& AmbientMap::getDistanceMatrix() const{
+    return distanceMatrix;
+};

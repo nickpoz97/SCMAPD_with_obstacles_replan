@@ -23,12 +23,12 @@ struct Waypoint{
 
     explicit operator std::string() const;
 
-    void updateDelay(TimeStep arrivalTime, const std::vector<Task> &tasks);
+    TimeStep updateCumulatedDelay(TimeStep arrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay);
 
-    [[nodiscard]] TimeStep getDelay() const;
+    [[nodiscard]] TimeStep getCumulatedDelay() const;
 
 private:
-    std::optional<TimeStep> delay{};
+    TimeStep cumulatedDelay{};
 };
 
 using WaypointsList = std::list<Waypoint>;

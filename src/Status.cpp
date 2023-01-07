@@ -74,20 +74,8 @@ const std::vector<Path>& Status::getPaths() const {
     return paths;
 }
 
-int Status::getDistance(const Coord& from, const Coord& to) const {
-    return ambient.getDistance(from, to);
-}
-
-int Status::getDistance(CompressedCoord from, CompressedCoord to) const {
-    return ambient.getDistance(from, to);
-}
-
-CompressedCoord Status::toCompressedCoord(const Coord &c) const {
-    return ambient.toCompressedCoord(c);
-}
-
-Coord Status::toCoord(CompressedCoord c) const{
-    return ambient.toCoord(c);
+const DistanceMatrix& Status::getDistanceMatrix() const{
+    return ambient.getDistanceMatrix();
 }
 
 bool Status::checkAllConflicts(bool printConflicts) const {
@@ -105,6 +93,8 @@ bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
     const auto& pA = paths[i];
     const auto& pB = paths[j];
 
+    const auto& dm = getDistanceMatrix();
+
     if(i == j || pA.empty() || pB.empty()){
         return false;
     }
@@ -119,13 +109,13 @@ bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
         }
 
         if (nodeConflict) {
-            auto posString = static_cast<std::string>(toCoord(pA[std::min(t, static_cast<int>(pA.size() - 1))]));
+            auto posString = static_cast<std::string>(dm.from1Dto2D(pA[std::min(t, static_cast<int>(pA.size() - 1))]));
             fmt::print("Node conflict between agents {}-{} at t = {} in pos = {}", i, j, t, posString);
         }
 
         if (edgeConflict) {
-            auto pos1String = static_cast<std::string>(toCoord(pA[t]));
-            auto pos2String = static_cast<std::string>(toCoord(pA[t + 1]));
+            auto pos1String = static_cast<std::string>(dm.from1Dto2D(pA[t]));
+            auto pos2String = static_cast<std::string>(dm.from1Dto2D(pA[t + 1]));
 
             fmt::print("Edge conflict between agents {}-{} at t = {} and {} in pos = {} and {}",
                        i, j, t, t + 1, pos1String, pos2String);

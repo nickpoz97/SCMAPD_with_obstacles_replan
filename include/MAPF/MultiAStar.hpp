@@ -15,13 +15,13 @@ using FrontierHandlesMap = std::unordered_map<CompressedCoord, FrontierHandle>;
 class MultiAStar {
 public:
     MultiAStar() = default;
-    std::tuple<Path, TimeStep, WaypointsList>
+    std::pair<Path, WaypointsList>
     solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 private:
     ExploredSet exploredSet;
     std::set<std::shared_ptr<Node>> frontier;
 
-    void updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const Status &status,
+    void updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const DistanceMatrix &dm,
                         CompressedCoord targetPos);
 
     void fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList);

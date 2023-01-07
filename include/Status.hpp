@@ -19,10 +19,6 @@ public:
     // t is the time when agent does the action
     std::vector<CompressedCoord> getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
 
-    int getDistance(const Coord& from, const Coord& to) const;
-
-    int getDistance(CompressedCoord from, CompressedCoord to) const;
-
     const std::vector<Task> &getTasks() const;
 
     const std::vector<Path> &getPaths() const;
@@ -35,13 +31,10 @@ public:
 
     void update(Path &&path, int agentId);
 
-    CompressedCoord toCompressedCoord(const Coord& c) const;
-
-    Coord toCoord(CompressedCoord c) const;
-
     bool checkAllConflicts(bool printConflicts) const;
     bool checkPathConflicts(int i, int j, bool printConflicts) const;
 
+    const DistanceMatrix &getDistanceMatrix() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

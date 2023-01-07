@@ -35,12 +35,7 @@ public:
 
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
 
-    [[nodiscard]] int getDistance(const Coord& a, const Coord& b) const;
-    [[nodiscard]] int getDistance(CompressedCoord a, CompressedCoord b) const;
-
-    CompressedCoord toCompressedCoord(const Coord &coord) const;
-
-    Coord toCoord(CompressedCoord c) const;
+    [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
 private:
     const DistanceMatrix& distanceMatrix;
@@ -48,6 +43,7 @@ private:
 
     static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);
     static std::fstream openGridFile(const std::filesystem::path &gridPath);
+
 };
 
 #endif //SIMULTANEOUS_CMAPD_AMBIENTMAP_HPP

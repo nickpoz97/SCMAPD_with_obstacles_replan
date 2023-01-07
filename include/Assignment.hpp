@@ -70,7 +70,6 @@ private:
     int capacity;
 
     TimeStep oldTTD = 0;
-    TimeStep newTTD = 0;
 
     WaypointsList waypoints{};
     Path path{};
@@ -83,22 +82,13 @@ private:
     void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
                                   std::_List_iterator<Waypoint> waypointGoal);
 
-    [[nodiscard]] TimeStep computeRealTTD();
+    [[nodiscard]] TimeStep getActualTTD() const;
 
-    [[nodiscard]] TimeStep computeRealTTD(
-            const std::vector<Task> &tasks,
-            const DistanceMatrix &distanceMatrix
-    );
+    [[nodiscard]] TimeStep computeApproxTTD(const Status &status, WaypointsList::iterator newPickupWpIt,
+                                            WaypointsList::iterator newDeliveryWpIt) const ;
 
-    [[nodiscard]] TimeStep computeApproxTTD(
-            const Task &task,
-            const DistanceMatrix &distanceMatrix,
-            std::_List_iterator<Waypoint> startWaypoint,
-            std::_List_iterator<Waypoint> goalWaypoint
-    )const ;
-
-    std::pair<WaypointsList::iterator, WaypointsList::iterator>
-    findBestPositions(const Task &task, const DistanceMatrix &distanceMatrix);
+    void
+    insertTaskWaypoints(int taskId, const Status &status);
 
 };
 std::vector<AgentInfo>

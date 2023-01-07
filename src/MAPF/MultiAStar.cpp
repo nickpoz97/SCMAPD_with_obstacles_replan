@@ -4,23 +4,26 @@
 
 #include "MAPF/MultiAStar.hpp"
 
-std::tuple<Path, TimeStep, WaypointsList>
+std::pair<Path, WaypointsList>
 MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId) {
     if(waypoints.empty()){
-        return {{agentLoc}, 0, waypoints};
+        return {{agentLoc}, waypoints};
     }
+
     std::list<CompressedCoord> pathList{};
 
     auto startLoc = agentLoc;
     TimeStep t = 0;
 
-    TimeStep ttd = 0;
+    TimeStep cumulatedDelay = 0;
+
+    const auto& distanceMatrix = status.getDistanceMatrix();
 
     // todo check this (due to code complexity)
     for(auto & w : waypoints){
         auto goalLoc = w.position;
 
-        frontier.emplace(new Node{startLoc, t, status.getDistance(startLoc, goalLoc)});
+        frontier.emplace(new Node{startLoc, t, distanceMatrix.getDistance(startLoc, goalLoc)});
         fillPath(status, agentId, goalLoc, pathList);
 
         frontier.clear();
@@ -28,14 +31,10 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
 
         startLoc = goalLoc;
         t = pathList.size() - 1;
-        w.updateDelay(t, status.getTasks());
-
-        if (w.demand == Demand::GOAL){
-            ttd += w.getDelay();
-        }
+        cumulatedDelay = w.updateCumulatedDelay(t, status.getTasks(), cumulatedDelay);
     }
 
-    return {{pathList.begin(), pathList.end()}, ttd, waypoints};
+    return {{pathList.begin(), pathList.end()}, waypoints};
 }
 
 void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList) {
@@ -52,7 +51,7 @@ void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goa
 
         auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore());
 
-        updateFrontier(topNodePtr, neighbors, status, goalLoc);
+        updateFrontier(topNodePtr, neighbors, status.getDistanceMatrix(), goalLoc);
 
         exploredSet.add(*topNodePtr);
     }
@@ -60,12 +59,12 @@ void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goa
 }
 
 void
-MultiAStar::updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const Status &status,
+MultiAStar::updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const DistanceMatrix &dm,
                            CompressedCoord targetPos) {
     auto newT = parentPtr->getGScore() + 1;
     for(auto loc : neighbors){
         if(!exploredSet.contains(loc, newT)){
-            frontier.emplace(new Node{loc, newT, status.getDistance(loc, targetPos), parentPtr});
+            frontier.emplace(new Node{loc, newT, dm.getDistance(loc, targetPos), parentPtr});
         }
     }
 }

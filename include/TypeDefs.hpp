@@ -10,8 +10,8 @@ using TimeStep = int;
 using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
 enum class Demand : int{
-    START = 1,
-    GOAL = -1
+    PICKUP = 1,
+    DELIVERY = -1
 };
 
 enum class Heuristic{
