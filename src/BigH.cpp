@@ -31,13 +31,13 @@ BigH::BigH(const Status &status, Heuristic h) :
         restoreHeapTop();
     }
 
-std::pair<int, Assignment> BigH::extractAndDestroy() {
+ExtractedPath BigH::extractAndDestroy() {
     assert(!smallHVec.empty());
     auto topElement = smallHVec.begin();
-    auto tmp{topElement->extractTopAndReset()};
+    auto taskId = topElement->getTaskId();
+    auto pathWrapper{topElement->extractTopAndReset()};
     smallHVec.erase(topElement);
-    restoreHeapTop();
-    return tmp;
+    return {taskId, std::move(pathWrapper)};
 }
 
 bool BigH::empty() const {

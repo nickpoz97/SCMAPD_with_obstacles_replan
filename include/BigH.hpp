@@ -9,7 +9,7 @@ using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
 class BigH {
 public:
     BigH(const Status &status, Heuristic h);
-    std::pair<int, Assignment> extractAndDestroy();
+    ExtractedPath extractAndDestroy();
     [[nodiscard]] bool empty() const;
 
     void update(int k, int taskId, const Status &status);

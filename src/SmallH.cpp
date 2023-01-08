@@ -24,7 +24,7 @@ SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, co
     return {heap, handles};
 }
 
-std::pair<int, Path> SmallH::extractTopAndReset() {
+PathWrapper SmallH::extractTopAndReset() {
     assert(!heap.empty());
 
     // atomic block

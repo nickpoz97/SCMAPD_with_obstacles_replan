@@ -26,4 +26,14 @@ struct AgentInfo{
     int index;
 };
 
+struct PathWrapper{
+    int agentId;
+    Path path;
+};
+
+struct ExtractedPath{
+    int taskId;
+    PathWrapper pathWrapper;
+};
+
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

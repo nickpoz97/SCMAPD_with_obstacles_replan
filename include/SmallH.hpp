@@ -14,7 +14,7 @@ class SmallH {
 public:
     SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status);
 
-    std::pair<int, Path> extractTopAndReset();
+    PathWrapper extractTopAndReset();
     [[nodiscard]] TimeStep getTopMCA() const;
 
     void updateTopElements(const Assignment &a, const Status &status);

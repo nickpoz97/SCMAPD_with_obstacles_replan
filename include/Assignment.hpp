@@ -41,7 +41,7 @@ public:
 
     /// @return actual path
     /// @warning actual path is cleared
-    [[nodiscard]] std::pair<int, Path> extractAndReset();
+    [[nodiscard]] PathWrapper extractAndReset();
 
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;

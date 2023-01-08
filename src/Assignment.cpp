@@ -150,7 +150,7 @@ bool operator<(const Assignment& a, const Assignment& b){
     return a.getMCA() < b.getMCA();
 }
 
-std::pair<int, Path> Assignment::extractAndReset() {
+PathWrapper Assignment::extractAndReset() {
     waypoints.clear();
     oldTTD = 0;
     return {index, std::exchange(path, {})};
