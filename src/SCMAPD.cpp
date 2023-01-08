@@ -8,7 +8,7 @@
 SCMAPD::SCMAPD(AmbientMap&& ambientMap, std::vector<Assignment> &&robots,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
     status(std::move(ambientMap), robots.size(), std::move(tasksVector)),
-    bigH{status, heuristic},
+    bigH{<#initializer#>, status, heuristic},
     debug{debug}
     {
         assert(status.checkAllConflicts(true));
@@ -17,7 +17,7 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, std::vector<Assignment> &&robots,
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        auto [taskId, candidateAssignment] = bigH.extractAndDestroy();
+        auto [taskId, candidateAssignment] = bigH.extractTop();
         auto k = status.update(std::move(candidateAssignment), 0);
 
         bigH.update(k, taskId, status);

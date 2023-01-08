@@ -23,56 +23,50 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(const Status &status, Heuristic h) :
-    v{h == Heuristic::MCA ? 1 : 2},
-    comparator{getComparator(h)},
-    smallHVec{buildPartialAssignmentHeap(status, v)}
+BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
+    v{h == Heuristic::MCA ? 1 : 2}
     {
-        restoreHeapTop();
+        std::tie(heap, heapHandles) = buildPartialAssignmentHeap(agentInfos, status, v, h);
     }
 
-ExtractedPath BigH::extractAndDestroy() {
-    assert(!smallHVec.empty());
-    auto topElement = smallHVec.begin();
-    auto taskId = topElement->getTaskId();
-    auto pathWrapper{topElement->extractTopAndReset()};
-    smallHVec.erase(topElement);
+ExtractedPath BigH::extractTop() {
+    assert(!heap.empty());
+
+    // atomic block (and order is important)
+    auto topSmallH = std::move(const_cast<SmallH&>(heap.top()));
+    auto taskId = topSmallH.getTaskId();
+    auto pathWrapper = topSmallH.extractTopAndReset();
+    heap.pop();
+
     return {taskId, std::move(pathWrapper)};
 }
 
 bool BigH::empty() const {
-    return smallHVec.empty();
+    return heap.empty();
 }
 
 void BigH::update(int k, int taskId, const Status &status) {
     const auto& fixedAgent = status.getAssignment(k);
 
-    for(auto& sH : smallHVec){
+    for(auto& sH : heap){
+        auto sHHandle = heapHandles[sH.getTaskId()];
+        // todo fix this
         sH.addTaskToAgent(k, taskId, status);
         sH.updateTopElements(fixedAgent, status);
     }
-    restoreHeapTop();
 }
 
-std::vector<SmallH>
-BigH::buildPartialAssignmentHeap(const Status &status, int v) {
+std::pair<BigHFibHeap, BigHHandles>
+BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h) {
     const auto& tasks = status.getTasks();
 
-    decltype(BigH::smallHVec) bigH{};
-    bigH.reserve(tasks.size());
+    BigHFibHeap heap(getComparator(h));
+    BigHHandles handles(status.getTasks().size(), {});
 
-    for(const auto& t : status.getTasks()){
-        SmallH smallH(status, t, v, <#initializer#>);
-        bigH.push_back(std::move(smallH));
+    for(const auto& task : status.getTasks()){
+        auto taskId = task.index;
+        assert(task.index >= 0 && task.index < handles.size());
+        handles[taskId] = heap.emplace(agentsInfos, taskId, v, status);
     }
-    return bigH;
-}
-
-void BigH::restoreHeapTop() {
-    if(smallHVec.empty()){
-        return;
-    }
-    auto firstElIt = smallHVec.begin();
-    auto minElIt = std::min_element(smallHVec.begin(), smallHVec.end(), comparator);
-    std::iter_swap(firstElIt, minElIt);
+    return {heap, handles};
 }

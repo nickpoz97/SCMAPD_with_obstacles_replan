@@ -4,24 +4,28 @@
 #include <vector>
 #include "SmallH.hpp"
 
+// todo check if heap is max or min
 using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
+using BigHFibHeap = boost::heap::fibonacci_heap<SmallH, boost::heap::compare<SmallHComp>>;
+using BigHHandles = std::vector<BigHFibHeap::handle_type>;
 
 class BigH {
 public:
-    BigH(const Status &status, Heuristic h);
-    ExtractedPath extractAndDestroy();
+    BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h);
+    ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
 
     void update(int k, int taskId, const Status &status);
 
 private:
     int v;
-    SmallHComp comparator;
-    std::vector<SmallH> smallHVec;
+
+    BigHHandles heapHandles;
+    BigHFibHeap heap;
 
     static SmallHComp getComparator(Heuristic h);
-    static std::vector<SmallH> buildPartialAssignmentHeap(const Status &status, int v);
-    void restoreHeapTop();
+    static std::pair<BigHFibHeap, BigHHandles>
+    buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h);
 };
 
 

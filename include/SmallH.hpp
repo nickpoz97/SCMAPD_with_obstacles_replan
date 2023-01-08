@@ -6,9 +6,9 @@
 #include "Assignment.hpp"
 #include "Status.hpp"
 
-// todo add comapre
+// todo check if heap is max or min
 using SmallHFibHeap = boost::heap::fibonacci_heap<Assignment>;
-using SmallHHandles = std::vector<boost::heap::fibonacci_heap<Assignment>::handle_type>;
+using SmallHHandles = std::vector<SmallHFibHeap::handle_type>;
 
 class SmallH {
 public:
