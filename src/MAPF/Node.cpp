@@ -2,7 +2,7 @@
 // Created by nicco on 03/01/2023.
 //
 
-#include <forward_list>
+#include <list>
 #include <utility>
 #include "MAPF/Node.hpp"
 
@@ -21,8 +21,8 @@ int Node::getFScore() const {
     return g+h;
 }
 
-std::forward_list<CompressedCoord> Node::getPathList() const {
-    std::forward_list<CompressedCoord> pathList{};
+std::list<CompressedCoord> Node::getPathList() const {
+    std::list<CompressedCoord> pathList{};
 
     for(const Node* actualNode = this ; actualNode != nullptr ; actualNode = actualNode->father.get()){
         pathList.push_front(actualNode->location);

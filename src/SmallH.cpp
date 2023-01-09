@@ -11,12 +11,12 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
 std::pair<SmallHFibHeap, SmallHHandles>
 SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
     SmallHFibHeap heap{};
-    SmallHHandles handles(agentsInfos.size(), {});
+    SmallHHandles handles(agentsInfos.size());
 
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
         assert(agentIndex >= 0 && agentIndex < handles.size());
-        handles[agentIndex] = heap.emplace(aInfo.startPos, agentIndex, aInfo.capacity, taskId, status);
+        handles[agentIndex] = heap.emplace(aInfo, taskId, status);
     }
 
     return {heap, handles};

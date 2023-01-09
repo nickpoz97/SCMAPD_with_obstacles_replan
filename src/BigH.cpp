@@ -4,8 +4,6 @@
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){
-        case Heuristic::MCA:
-            return [](const SmallH& a, const SmallH& b) -> bool {return a.getTopMCA() < b.getTopMCA();};
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
                         auto aVal = a.getTopMCA() - a.getTopMCA();
@@ -20,6 +18,9 @@ SmallHComp BigH::getComparator(Heuristic h) {
 
                 return aVal > bVal;
             };
+        // MCA
+        default:
+            return [](const SmallH& a, const SmallH& b) -> bool {return a.getTopMCA() < b.getTopMCA();};
     }
 }
 
@@ -63,7 +64,7 @@ BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, cons
     const auto& tasks = status.getTasks();
 
     BigHFibHeap heap(getComparator(h));
-    BigHHandles handles(status.getTasks().size(), {});
+    BigHHandles handles(status.getTasks().size());
 
     for(const auto& task : status.getTasks()){
         auto taskId = task.index;

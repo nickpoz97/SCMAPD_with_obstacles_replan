@@ -25,11 +25,7 @@ public:
 
     const Task & getTask(int i) const;
 
-    const std::unordered_set<int>& getUnassignedTasksIndices() const;
-
-    void removeTaskIndex(int i);
-
-    void update(Path &&path, int agentId);
+    void updatePaths(Path &&path, int agentId);
 
     bool checkAllConflicts(bool printConflicts) const;
     bool checkPathConflicts(int i, int j, bool printConflicts) const;
@@ -40,7 +36,6 @@ private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
-    std::unordered_set<int> unassignedTasksIndices;
 
     bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 };

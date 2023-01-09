@@ -2,7 +2,6 @@
 // Created by nicco on 05/12/2022.
 //
 
-#include <boost/iterator/counting_iterator.hpp>
 #include <fmt/core.h>
 #include "Status.hpp"
 #include "fmt/color.h"
@@ -11,27 +10,18 @@ Status::Status(AmbientMap &&ambientMap, int nRobots,
                std::vector<Task> &&tasks) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        paths(nRobots),
-        unassignedTasksIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(tasksVector.size()))
-    {}
+        paths(nRobots)
+        {}
 
 const Task & Status::getTask(int i) const {
     return tasksVector[i];
-}
-
-const std::unordered_set<int> &Status::getUnassignedTasksIndices() const{
-    return unassignedTasksIndices;
 }
 
 const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-void Status::removeTaskIndex(int i) {
-    unassignedTasksIndices.erase(i);
-}
-
-void Status::update(Path &&path, int agentId) {
+void Status::updatePaths(Path &&path, int agentId) {
     paths[agentId] = std::move(path);
 }
 

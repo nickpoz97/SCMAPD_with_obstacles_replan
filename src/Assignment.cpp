@@ -11,12 +11,11 @@
 #include "Assignment.hpp"
 #include "MAPF/MultiAStar.hpp"
 
-Assignment::Assignment(CompressedCoord startPosition, int index, int capacity, int firstTaskId,
-                       const Status &status) :
-        startPos{startPosition},
+Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status) :
+        startPos{agentInfo.startPos},
         waypoints{},
-        index{index},
-        capacity{capacity}
+        index{agentInfo.index},
+        capacity{agentInfo.capacity}
     {
         addTask(firstTaskId, status);
         assert(path.size() > 2 && path[0] == startPos && waypoints.size() == 2);
@@ -168,34 +167,4 @@ const WaypointsList &Assignment::getWaypoints() const {
 
 const Path &Assignment::getPath() const {
     return path;
-}
-
-std::vector<AgentInfo>
-loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
-           int capacity) {
-    std::ifstream fs (agentsFilePath, std::ios::in);
-    std::string line;
-
-    // nAgents line
-    std::getline(fs, line);
-    size_t nAgents = std::stoi(line);
-
-    std::vector<AgentInfo> agents;
-    agents.reserve(nAgents);
-
-    for (int i = 0 ; i < nAgents; ++i){
-        std::getline(fs, line);
-
-        std::string xCoordString, yCoordString;
-        auto coordStream = std::stringstream(line);
-        std::getline(coordStream, yCoordString, horizontalSep);
-        std::getline(coordStream, xCoordString, horizontalSep);
-
-        //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
-
-        Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
-        agents.push_back({dm.from2Dto1D(position), capacity, i});
-    }
-
-    return agents;
 }

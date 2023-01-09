@@ -5,6 +5,7 @@
 #include <boost/heap/fibonacci_heap.hpp>
 #include "Assignment.hpp"
 #include "Status.hpp"
+#include "AgentInfo.hpp"
 
 // todo check if heap is max or min
 using SmallHFibHeap = boost::heap::fibonacci_heap<Assignment>;

@@ -45,7 +45,7 @@ void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goa
         if(topNodePtr->getLocation() == goalLoc){
             auto partialPathList = topNodePtr->getPathList();
             // merge
-            pathList.splice(pathList, partialPathList);
+            pathList.splice(pathList.end(), partialPathList);
             return;
         }
 

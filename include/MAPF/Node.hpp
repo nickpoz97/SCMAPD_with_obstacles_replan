@@ -5,7 +5,6 @@
 #ifndef SIMULTANEOUS_CMAPD_NODE_HPP
 #define SIMULTANEOUS_CMAPD_NODE_HPP
 
-
 #include "Coord.hpp"
 #include "TypeDefs.hpp"
 #include "Status.hpp"
@@ -18,7 +17,7 @@ public:
 
     bool operator==(const Node& other) const;
 
-    [[nodiscard]] std::forward_list<CompressedCoord> getPathList() const;
+    [[nodiscard]] std::list<CompressedCoord> getPathList() const;
 
     friend bool operator<(const Node& a, const Node& b);
 

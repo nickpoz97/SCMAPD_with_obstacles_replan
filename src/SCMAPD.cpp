@@ -5,10 +5,10 @@
 #include "fmt/color.h"
 #include "BigH.hpp"
 
-SCMAPD::SCMAPD(AmbientMap&& ambientMap, std::vector<Assignment> &&robots,
+SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
-    status(std::move(ambientMap), robots.size(), std::move(tasksVector)),
-    bigH{<#initializer#>, status, heuristic},
+    status(std::move(ambientMap), agents.size(), std::move(tasksVector)),
+    bigH{agents, status, heuristic},
     debug{debug}
     {
         assert(status.checkAllConflicts(true));
@@ -17,25 +17,24 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, std::vector<Assignment> &&robots,
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        auto [taskId, candidateAssignment] = bigH.extractTop();
-        auto k = status.update(std::move(candidateAssignment), 0);
+        auto [taskId, pathWrapper] = bigH.extractTop();
+        auto k = pathWrapper.agentId;
 
+        status.updatePaths(std::move(pathWrapper.path), k);
         bigH.update(k, taskId, status);
-        if(debug){
-            status.print();
-        }
     }
 }
 
 void SCMAPD::printResult() const{
-    auto buildPathString = [](const std::vector<Coord>& path){
+    auto buildPathString = [this](const Path& path){
         static constexpr std::string_view pattern = "({},{})->";
 
         std::string result{};
         result.reserve(pattern.size() * path.size());
 
         for(const auto& pos : path){
-            result.append(fmt::format(pattern, pos.row, pos.col));
+            auto pos2D = status.getDistanceMatrix().from1Dto2D(pos);
+            result.append(fmt::format(pattern, pos2D.row, pos2D.col));
         }
 
         if(!result.empty()){
@@ -45,13 +44,13 @@ void SCMAPD::printResult() const{
     };
 
     fmt::print("agent\tcost\tpath\n");
-    for(const auto& a: status.getAssignments()){
-        fmt::print("{}\t{}\t{}\n", a.getIndex(), a.extractAndReset().size(), buildPathString(a.extractAndReset()));
+    for(int i = 0 ; i < status.getPaths().size() ; ++i){
+        fmt::print("{}\t{}\t{}\n", i, status.getPaths()[i].size(), buildPathString(status.getPaths()[i]));
     }
 }
 
 void SCMAPD::printCheckMessage() const{
-    if(!status.printCollisions()){
+    if(!status.checkAllConflicts(true)){
         fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
     }
 }
@@ -60,28 +59,10 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
                        const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                        Heuristic heuristic) {
     DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
+    AmbientMap ambientMap(gridFile, std::move(dm));
 
-    auto robots{loadAgents(agentsFile, <#initializer#>, 0, 0)};
+    auto robots{loadAgents(agentsFile, dm)};
     auto tasks{loadTasks(tasksFile, dm)};
 
-    cmapd::AmbientMapInstance instance(
-            cmapd::AmbientMap(gridFile, dm.nRows, dm.nCols),
-            {robots.begin(), robots.end()},
-            {tasks.begin(), tasks.end()},
-            std::move(dm)
-    );
-
-#ifndef NDEBUG
-    assert(instance.agents().size() == robots.size());
-    for (int i = 0 ; i < instance.agents().size() ; ++i){
-        assert(instance.agents()[i] == robots[i].getStartPosition());
-    }
-    assert(instance.tasksVector().size() == tasks.size());
-    for (int i = 0 ; i < instance.tasksVector().size() ; ++i){
-        const auto& t = tasks[i].getCoordinates();
-        assert(instance.tasksVector()[i] == t);
-    }
-#endif
-
-    return {std::move(instance), std::move(robots), std::move(tasks), heuristic, false};
+    return {std::move(ambientMap), robots, std::move(tasks), heuristic, false};
 }

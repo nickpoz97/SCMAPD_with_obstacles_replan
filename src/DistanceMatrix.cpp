@@ -31,15 +31,6 @@ int DistanceMatrix::getDistance(CompressedCoord from, CompressedCoord to) const 
     return static_cast<int>(ptr[from * endCoordsSize + to]);
 }
 
-int
-DistanceMatrix::computeCumulatedValue(Coord x, int label, const Path &goal_sequence) const {
-    auto h_value{getDistance(x, goal_sequence[label])};
-    for (int j{label + 1}; j < goal_sequence.size(); ++j) {
-        h_value += getDistance(goal_sequence[j - 1], goal_sequence[j]);
-    }
-    return h_value;
-}
-
 CompressedCoord DistanceMatrix::from2Dto1D(const Coord &point) const{
     return from2Dto1D(point.col, point.row);
 }

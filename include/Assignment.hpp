@@ -10,6 +10,12 @@
 #include "TypeDefs.hpp"
 #include "Waypoint.hpp"
 #include "Status.hpp"
+#include "AgentInfo.hpp"
+
+struct PathWrapper{
+    int agentId;
+    Path path;
+};
 
 /**
  * @class Assignment
@@ -24,8 +30,7 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    explicit Assignment(CompressedCoord startPosition, int index, int capacity, int firstTaskId,
-                        const Status &status);
+    explicit Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status);
 
     /// @return agent capacity
     [[nodiscard]] int getCapacity() const;
@@ -56,7 +61,7 @@ public:
     void
     addTask(int taskId, const Status &status);
 
-    const Path& getPath() const;
+    [[nodiscard]] const Path& getPath() const;
 
     friend bool operator<(const Assignment &a, const Assignment &b);
 
@@ -93,8 +98,5 @@ private:
     insertTaskWaypoints(int taskId, const Status &status);
 
 };
-std::vector<AgentInfo>
-loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep = ',',
-           int capacity = 3);
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

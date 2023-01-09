@@ -20,10 +20,6 @@ struct DistanceMatrix {
 
     [[nodiscard]] Coord from1Dto2D(CompressedCoord point) const;
 
-    [[nodiscard]] int computeCumulatedValue(Coord x,
-                                   int label,
-                                   const Path& goal_sequence) const;
-
     const cnpy::NpyArray rawDistanceMatrix;
     const int nRows;
     const int nCols;
