@@ -18,8 +18,12 @@ public:
     std::pair<Path, WaypointsList>
     solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 private:
+    static inline auto compareNodesPtr = [](const std::shared_ptr<Node>& nA, const std::shared_ptr<Node>& nB){
+        return *nA < *nB;
+    };
+
     ExploredSet exploredSet;
-    std::set<std::shared_ptr<Node>> frontier;
+    std::set<std::shared_ptr<Node>, decltype(compareNodesPtr)> frontier;
 
     void updateFrontier(const std::shared_ptr<Node>& parentPtr, const std::vector<CompressedCoord> &neighbors, const DistanceMatrix &dm,
                         CompressedCoord targetPos);

@@ -13,7 +13,6 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
     std::list<CompressedCoord> pathList{};
 
     auto startLoc = agentLoc;
-    TimeStep t = 0;
 
     TimeStep cumulatedDelay = 0;
 
@@ -23,14 +22,14 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
     for(auto & w : waypoints){
         auto goalLoc = w.position;
 
-        frontier.emplace(new Node{startLoc, t, distanceMatrix.getDistance(startLoc, goalLoc)});
+        frontier.emplace(new Node{startLoc, 0, distanceMatrix.getDistance(startLoc, goalLoc)});
         fillPath(status, agentId, goalLoc, pathList);
 
         frontier.clear();
         exploredSet.clear();
 
         startLoc = goalLoc;
-        t = pathList.size() - 1;
+        TimeStep t = pathList.size() - 1;
         cumulatedDelay = w.updateCumulatedDelay(t, status.getTasks(), cumulatedDelay);
     }
 

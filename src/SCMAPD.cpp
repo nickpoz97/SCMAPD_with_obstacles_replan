@@ -11,7 +11,7 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
     bigH{agents, status, heuristic},
     debug{debug}
     {
-        assert(status.checkAllConflicts(true));
+        assert(!status.checkAllConflicts(true));
     }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
@@ -58,11 +58,11 @@ void SCMAPD::printCheckMessage() const{
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                        const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                        Heuristic heuristic) {
-    DistanceMatrix dm(cnpy::npy_load(distanceMatrixFile));
+    DistanceMatrix dm{cnpy::npy_load(distanceMatrixFile)};
     AmbientMap ambientMap(gridFile, std::move(dm));
 
-    auto robots{loadAgents(agentsFile, dm)};
-    auto tasks{loadTasks(tasksFile, dm)};
+    auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
+    auto tasks{loadTasks(tasksFile, ambientMap.getDistanceMatrix())};
 
     return {std::move(ambientMap), robots, std::move(tasks), heuristic, false};
 }

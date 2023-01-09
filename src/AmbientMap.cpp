@@ -16,33 +16,14 @@ std::fstream AmbientMap::openGridFile(const std::filesystem::path &gridPath){
 
 
 std::vector<std::vector<CellType>> AmbientMap::getGrid(std::fstream &&data) {
-    std::string line;
-    std::getline(data, line);
-
-    if(line.empty()){
-        throw std::runtime_error("Empty grid file");
-    }
-
-    char horizontalSep = ',';
-
-    std::stringstream lineStream{line};
-    std::string token;
-
-    std::getline(lineStream, token, horizontalSep);
-    int nRows = std::stoi(token);
-
-    std::getline(lineStream, token, horizontalSep);
-    int nCols = std::stoi(token);
-
-    std::vector<std::vector<CellType>> grid;
-    grid.reserve(nRows);
+    std::list<std::list<CellType>> tmpGrid;
 
     using namespace boost::algorithm;
-    for(int i = 0 ; i < nRows ; ++i){
-        std::vector<CellType> row;
-        row.reserve(nCols);
 
-        std::getline(data, line);
+    std::string line;
+    while(std::getline(data, line)){
+        std::list<CellType> row;
+
         trim(line);
 
         auto charConverter = [](char c){
@@ -51,15 +32,31 @@ std::vector<std::vector<CellType>> AmbientMap::getGrid(std::fstream &&data) {
             }
             return CellType::FLOOR;
         };
-
         std::transform(line.cbegin(), line.cend(), std::back_inserter(row), charConverter);
 
+        tmpGrid.push_back(row);
+    }
+
+    if(tmpGrid.empty()){
+        throw std::runtime_error("Grid file is empty");
+    }
+
+    int nRows = tmpGrid.size();
+    int nCols = tmpGrid.cbegin()->size();
+
+    std::vector<std::vector<CellType>> grid{};
+    grid.reserve(nRows);
+
+    for(const auto& tmpRow : tmpGrid){
+        std::vector<CellType> row{tmpRow.begin(), tmpRow.end()};
         grid.push_back(row);
     }
+
+    return grid;
 }
 
 bool AmbientMap::isValid(const Coord &coord) const {
-    bool isInsideGrid = coord.row <= getNRows() && coord.col <= getNCols() &&
+    bool isInsideGrid = coord.row < getNRows() && coord.col < getNCols() &&
         coord.row >= 0 && coord.col >= 0;
 
     return isInsideGrid && operator[](coord) != CellType::OBSTACLE;
@@ -85,7 +82,7 @@ std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int d
 }
 
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm) :
-    distanceMatrix{dm},
+    distanceMatrix{std::move(dm)},
     grid{getGrid(openGridFile(gridPath))}
 {
     if(dm.nRows != grid.size() || (!grid.empty() && dm.nCols != grid[0].size())){

@@ -13,7 +13,7 @@
 struct DistanceMatrix {
     explicit DistanceMatrix(cnpy::NpyArray&& data);
     [[nodiscard]] int getDistance(CompressedCoord from, CompressedCoord to) const;
-    [[nodiscard]] int getDistance(Coord from, Coord to) const;
+    [[nodiscard]] int getDistance(const Coord &from, const Coord &to) const;
 
     [[nodiscard]] CompressedCoord from2Dto1D(int col, int row) const;
     [[nodiscard]] CompressedCoord from2Dto1D(const Coord &point) const;

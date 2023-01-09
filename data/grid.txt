@@ -1,21 +1,21 @@
-                                   
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO ########## ########## OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO                       OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO ########## ########## OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO                       OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO ########## ########## OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO                       OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO ########## ########## OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO                       OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
- OO OO ########## ########## OO OO 
- OO OO OOOOOOOOOO OOOOOOOOOO OO OO 
-                                   
+...................................
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.@@@@@@@@@@.@@@@@@@@@@.GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.......................GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.@@@@@@@@@@.@@@@@@@@@@.GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.......................GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.@@@@@@@@@@.@@@@@@@@@@.GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.......................GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.@@@@@@@@@@.@@@@@@@@@@.GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.......................GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+.GG.GG.@@@@@@@@@@.@@@@@@@@@@.GG.GG.
+.GG.GG.GGGGGGGGGG.GGGGGGGGGG.GG.GG.
+...................................

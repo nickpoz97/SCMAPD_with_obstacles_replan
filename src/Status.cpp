@@ -40,7 +40,7 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
 }
 
 bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
-    assert(agentId > 0 && agentId < paths.size());
+    assert(agentId >= 0 && agentId < paths.size());
 
     auto predicate = [t1, coord1, coord2](const Path& p){
         // if path is empty there are no conflicts
