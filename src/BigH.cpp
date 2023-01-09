@@ -46,13 +46,15 @@ bool BigH::empty() const {
 }
 
 void BigH::update(int k, int taskId, const Status &status) {
-    const auto& fixedAgent = status.getAssignment(k);
+    const auto& fixedPath = status.getPaths()[k];
 
     for(auto& sH : heap){
         auto sHHandle = heapHandles[sH.getTaskId()];
         // todo fix this
-        sH.addTaskToAgent(k, taskId, status);
-        sH.updateTopElements(fixedAgent, status);
+        // atomic
+        (*sHHandle).addTaskToAgent(k, taskId, status);
+        (*sHHandle).updateTopElements(fixedPath, status);
+        heap.update(sHHandle);
     }
 }
 

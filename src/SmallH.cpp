@@ -32,12 +32,12 @@ PathWrapper SmallH::extractTopAndReset() {
     return topAssignment.extractAndReset();
 }
 
-void SmallH::updateTopElements(const Assignment &a, const Status &status) {
+void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
     // todo check this
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
         auto targetIt = std::next(heap.begin(), i);
 
-        if(status.checkPathConflicts(a.getIndex(), targetIt->getIndex(), false)){
+        if(status.checkPathConflicts(fixedPath, targetIt->getPath(), false)){
             auto handle = heapHandles[targetIt->getIndex()];
 
             // todo check if it is possible to use increase or decrease

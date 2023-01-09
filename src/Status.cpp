@@ -90,16 +90,25 @@ bool Status::checkAllConflicts(bool printConflicts) const {
 }
 
 bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
-    const auto& pA = paths[i];
-    const auto& pB = paths[j];
-
-    const auto& dm = getDistanceMatrix();
-
-    if(i == j || pA.empty() || pB.empty()){
+    if(i == j){
         return false;
     }
 
-    for(int t = 0 ; t < std::max(paths[i].size(), paths[j].size()) ; ++t) {
+    bool result = checkPathConflicts(paths[i], paths[j], printConflicts);
+    if(result && printConflicts){
+        fmt::print("Between agents {}, {}", i, j);
+    }
+    return result;
+}
+
+bool Status::checkPathConflicts(const Path & pA, const Path& pB, bool printConflicts) const {
+    const auto& dm = getDistanceMatrix();
+
+    if(pA.empty() || pB.empty()){
+        return false;
+    }
+
+    for(int t = 0 ; t < std::max(pA.size(), pB.size()) ; ++t) {
         bool nodeConflict =
                 pA[std::min(t, static_cast<int>(pA.size() - 1))] == pB[std::min(t, static_cast<int>(pB.size() - 1))];
         bool edgeConflict = t < pA.size() - 1 && t < pB.size() && pA[t] == pB[t + 1] && pA[t + 1] == pB[t];
@@ -110,15 +119,15 @@ bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
 
         if (nodeConflict) {
             auto posString = static_cast<std::string>(dm.from1Dto2D(pA[std::min(t, static_cast<int>(pA.size() - 1))]));
-            fmt::print("Node conflict between agents {}-{} at t = {} in pos = {}", i, j, t, posString);
+            fmt::print("Node conflict at t = {} in pos = {}", t, posString);
         }
 
         if (edgeConflict) {
             auto pos1String = static_cast<std::string>(dm.from1Dto2D(pA[t]));
             auto pos2String = static_cast<std::string>(dm.from1Dto2D(pA[t + 1]));
 
-            fmt::print("Edge conflict between agents {}-{} at t = {} and {} in pos = {} and {}",
-                       i, j, t, t + 1, pos1String, pos2String);
+            fmt::print("Edge conflict at t = {} and {} in pos = {} and {}",
+                       t, t + 1, pos1String, pos2String);
         }
     }
     return false;

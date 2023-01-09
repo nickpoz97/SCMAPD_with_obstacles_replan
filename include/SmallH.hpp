@@ -17,7 +17,7 @@ public:
     PathWrapper extractTopAndReset();
     [[nodiscard]] TimeStep getTopMCA() const;
 
-    void updateTopElements(const Assignment &a, const Status &status);
+    void updateTopElements(const Path &fixedPath, const Status &status);
 
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
 

@@ -33,6 +33,7 @@ public:
 
     bool checkAllConflicts(bool printConflicts) const;
     bool checkPathConflicts(int i, int j, bool printConflicts) const;
+    bool checkPathConflicts(const Path & pA, const Path& pB, bool printConflicts) const;
 
     const DistanceMatrix &getDistanceMatrix() const;
 private:

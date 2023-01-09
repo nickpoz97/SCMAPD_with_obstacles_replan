@@ -56,6 +56,8 @@ public:
     void
     addTask(int taskId, const Status &status);
 
+    const Path& getPath() const;
+
     friend bool operator<(const Assignment &a, const Assignment &b);
 
     inline explicit operator CompressedCoord() const { return getStartPosition(); }

@@ -166,6 +166,10 @@ const WaypointsList &Assignment::getWaypoints() const {
     return waypoints;
 }
 
+const Path &Assignment::getPath() const {
+    return path;
+}
+
 std::vector<AgentInfo>
 loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
            int capacity) {
