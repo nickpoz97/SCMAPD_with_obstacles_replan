@@ -25,10 +25,10 @@ SmallHComp BigH::getComparator(Heuristic h) {
 }
 
 BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
-    v{h == Heuristic::MCA ? 1 : 2}
+    v{h == Heuristic::MCA ? 1 : 2},
+    heap{buildPartialAssignmentHeap(agentInfos, status, v, h)},
+    heapHandles{getHandles(heap)}
     {
-        std::tie(heap, heapHandles) = buildPartialAssignmentHeap(agentInfos, status, v, h);
-
         #ifndef NDEBUG
         for(int i = 0 ; i < heapHandles.size() ; ++i){
             assert((*heapHandles[i]).getTaskId() == i);
@@ -56,7 +56,7 @@ void BigH::update(int k, int taskId, const Status &status) {
     const auto& fixedPath = status.getPaths()[k];
 
     for(auto& sH : heap){
-        auto& sHHandle = heapHandles[taskId];
+        auto& sHHandle = heapHandles[k];
         // todo fix this
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
@@ -65,19 +65,26 @@ void BigH::update(int k, int taskId, const Status &status) {
     }
 }
 
-std::pair<BigHFibHeap, BigHHandles>
+BigHFibHeap
 BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h) {
     const auto& tasks = status.getTasks();
 
     BigHFibHeap heap(getComparator(h));
-    BigHHandles handles;
-    handles.reserve(status.getTasks().size());
 
     for(const auto& task : status.getTasks()){
         auto taskId = task.index;
-        assert(task.index >= 0 && task.index < status.getTasks().size());
-        handles.push_back(heap.emplace(agentsInfos, taskId, v, status));
+        assert(taskId >= 0 && taskId < status.getTasks().size());
+        heap.emplace(agentsInfos, taskId, v, status);
     }
 
-    return {heap, handles};
+    return heap;
+}
+
+BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
+    BigHHandles heapHandles{};
+
+    for(auto it = heap.begin(); it != heap.end() ; ++it){
+        heapHandles.emplace(it->getTaskId(), BigHFibHeap::s_handle_from_iterator(it));
+    }
+    return heapHandles;
 }

@@ -9,7 +9,7 @@
 
 // todo check if heap is max or min
 using SmallHFibHeap = boost::heap::fibonacci_heap<Assignment, boost::heap::compare<std::greater<>>>;
-using SmallHHandles = std::vector<SmallHFibHeap::handle_type>;
+using SmallHHandles = std::unordered_map<int, SmallHFibHeap::handle_type>;
 
 class SmallH {
 public:
@@ -25,13 +25,15 @@ public:
     int getTaskId() const;
 
 private:
-    SmallHHandles heapHandles;
-    SmallHFibHeap heap;
     int taskId;
     int v;
+    SmallHFibHeap heap;
+    SmallHHandles heapHandles;
 
-    static std::pair<SmallHFibHeap, SmallHHandles>
+    static SmallHFibHeap
     initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
+
+    static SmallHHandles getHandles(const SmallHFibHeap& heap);
 };
 
 

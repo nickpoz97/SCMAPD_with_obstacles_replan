@@ -7,7 +7,7 @@
 // todo check if heap is max or min
 using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
 using BigHFibHeap = boost::heap::fibonacci_heap<SmallH, boost::heap::compare<SmallHComp>>;
-using BigHHandles = std::vector<BigHFibHeap::handle_type>;
+using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
 
 struct ExtractedPath{
     int taskId;
@@ -25,12 +25,15 @@ public:
 private:
     int v;
 
-    BigHHandles heapHandles;
     BigHFibHeap heap;
+    BigHHandles heapHandles;
 
     static SmallHComp getComparator(Heuristic h);
-    static std::pair<BigHFibHeap, BigHHandles>
+
+    static BigHFibHeap
     buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h);
+
+    static BigHHandles getHandles(const BigHFibHeap& heap);
 };
 
 

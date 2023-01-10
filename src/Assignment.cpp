@@ -30,7 +30,7 @@ TimeStep Assignment::getMCA() const {
     return getActualTTD() - oldTTD;
 }
 
-int Assignment::getIndex() const {
+int Assignment::getAgentId() const {
     return index;
 }
 

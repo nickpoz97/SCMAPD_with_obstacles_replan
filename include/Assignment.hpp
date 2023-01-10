@@ -39,7 +39,7 @@ public:
     [[nodiscard]] TimeStep getMCA() const;
 
     /// @return agent numerical id
-    [[nodiscard]] int getIndex() const;
+    [[nodiscard]] int getAgentId() const;
 
     /// @return agent initial position
     [[nodiscard]] CompressedCoord getStartPosition() const;

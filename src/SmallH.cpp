@@ -3,30 +3,28 @@
 
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
         taskId{taskId},
-        v{v}
+        v{v},
+        heap{initializeHeap(agentsInfos, taskId, status)},
+        heapHandles{getHandles(heap)}
     {
-        std::tie(heap, heapHandles) = initializeHeap(agentsInfos, taskId, status);
-
         #ifndef NDEBUG
         for(int i = 0 ; i < heapHandles.size() ; ++i){
-            assert((*heapHandles[i]).getIndex() == i);
+            assert((*heapHandles[i]).getAgentId() == i);
         }
         #endif
     }
 
-std::pair<SmallHFibHeap, SmallHHandles>
+SmallHFibHeap
 SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
     SmallHFibHeap heap{};
-    SmallHHandles handles;
-    handles.reserve(agentsInfos.size());
 
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
+        heap.emplace(aInfo, taskId, status);
         assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
-        handles.push_back(heap.emplace(aInfo, taskId, status));
     }
 
-    return {heap, handles};
+    return heap;
 }
 
 PathWrapper SmallH::extractTopAndReset() {
@@ -45,8 +43,8 @@ void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
         auto targetIt = std::next(heap.begin(), i);
 
         if(status.checkPathConflicts(fixedPath, targetIt->getPath(), false)){
-            auto& handle = heapHandles[targetIt->getIndex()];
-            assert((*handle).getIndex() == targetIt->getIndex());
+            auto& handle = heapHandles[targetIt->getAgentId()];
+            assert((*handle).getAgentId() == targetIt->getAgentId());
 
             // todo check if it is possible to use increase or decrease
             // atomic
@@ -66,7 +64,7 @@ TimeStep SmallH::getTopMCA() const{
 
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     auto& targetHandle = heapHandles[k];
-    assert((*targetHandle).getIndex() == k);
+    assert((*targetHandle).getAgentId() == k);
 
     //atomic
     (*targetHandle).addTask(otherTaskId, status);
@@ -77,4 +75,13 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
 
 int SmallH::getTaskId() const {
     return taskId;
+}
+
+SmallHHandles SmallH::getHandles(const SmallHFibHeap& heap){
+    SmallHHandles heapHandles{};
+
+    for(auto it = heap.begin(); it != heap.end() ; ++it){
+        heapHandles.emplace(it->getAgentId(), SmallHFibHeap::s_handle_from_iterator(it));
+    }
+    return heapHandles;
 }
