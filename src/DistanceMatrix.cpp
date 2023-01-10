@@ -3,8 +3,8 @@
 #include "DistanceMatrix.hpp"
 #include "Coord.hpp"
 
-DistanceMatrix::DistanceMatrix(cnpy::NpyArray &&data) :
-    rawDistanceMatrix{std::move(data)},
+DistanceMatrix::DistanceMatrix(const std::filesystem::path& data) :
+    rawDistanceMatrix{cnpy::npy_load(data)},
     nRows{static_cast<int>(rawDistanceMatrix.shape[0])},
     nCols{static_cast<int>(rawDistanceMatrix.shape[1])},
     startCoordsSize{static_cast<int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},

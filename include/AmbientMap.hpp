@@ -38,7 +38,7 @@ public:
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
 private:
-    const DistanceMatrix& distanceMatrix;
+    const DistanceMatrix distanceMatrix;
     std::vector<std::vector<CellType>> grid;
 
     static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);

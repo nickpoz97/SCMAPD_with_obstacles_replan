@@ -11,7 +11,7 @@
 #include "Coord.hpp"
 
 struct DistanceMatrix {
-    explicit DistanceMatrix(cnpy::NpyArray&& data);
+    explicit DistanceMatrix(const std::filesystem::path& data);
     [[nodiscard]] int getDistance(CompressedCoord from, CompressedCoord to) const;
     [[nodiscard]] int getDistance(const Coord &from, const Coord &to) const;
 

@@ -58,7 +58,7 @@ void SCMAPD::printCheckMessage() const{
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                        const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                        Heuristic heuristic) {
-    DistanceMatrix dm{cnpy::npy_load(distanceMatrixFile)};
+    DistanceMatrix dm{distanceMatrixFile};
     AmbientMap ambientMap(gridFile, std::move(dm));
 
     auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
