@@ -8,10 +8,6 @@
 #include "Waypoint.hpp"
 #include "ExploredSet.hpp"
 
-using FrontierHeap = boost::heap::fibonacci_heap<Node, boost::heap::compare<std::greater<>>>;
-using FrontierHandle = FrontierHeap::handle_type;
-using FrontierHandlesMap = std::unordered_map<CompressedCoord, FrontierHandle>;
-
 class MultiAStar {
 public:
     MultiAStar() = default;

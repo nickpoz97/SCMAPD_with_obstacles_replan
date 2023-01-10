@@ -19,6 +19,7 @@ Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status
     {
         addTask(firstTaskId, status);
         assert(path.size() > 2 && path[0] == startPos && waypoints.size() == 2);
+        assert(agentInfo.index == index);
     }
 
 int Assignment::getCapacity() const {
@@ -167,4 +168,8 @@ const WaypointsList &Assignment::getWaypoints() const {
 
 const Path &Assignment::getPath() const {
     return path;
+}
+
+bool operator>(const Assignment &a, const Assignment &b) {
+    return a.getMCA() > b.getMCA();
 }

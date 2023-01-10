@@ -6,17 +6,24 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         v{v}
     {
         std::tie(heap, heapHandles) = initializeHeap(agentsInfos, taskId, status);
+
+        #ifndef NDEBUG
+        for(int i = 0 ; i < heapHandles.size() ; ++i){
+            assert((*heapHandles[i]).getIndex() == i);
+        }
+        #endif
     }
 
 std::pair<SmallHFibHeap, SmallHHandles>
 SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
     SmallHFibHeap heap{};
-    SmallHHandles handles(agentsInfos.size());
+    SmallHHandles handles;
+    handles.reserve(agentsInfos.size());
 
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
-        assert(agentIndex >= 0 && agentIndex < handles.size());
-        handles[agentIndex] = heap.emplace(aInfo, taskId, status);
+        assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
+        handles.push_back(heap.emplace(aInfo, taskId, status));
     }
 
     return {heap, handles};
@@ -38,7 +45,8 @@ void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
         auto targetIt = std::next(heap.begin(), i);
 
         if(status.checkPathConflicts(fixedPath, targetIt->getPath(), false)){
-            auto handle = heapHandles[targetIt->getIndex()];
+            auto& handle = heapHandles[targetIt->getIndex()];
+            assert((*handle).getIndex() == targetIt->getIndex());
 
             // todo check if it is possible to use increase or decrease
             // atomic
