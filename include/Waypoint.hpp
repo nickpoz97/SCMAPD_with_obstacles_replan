@@ -23,14 +23,17 @@ struct Waypoint{
 
     explicit operator std::string() const;
 
-    TimeStep updateCumulatedDelay(TimeStep arrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay);
+    TimeStep update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay);
 
     [[nodiscard]] TimeStep getCumulatedDelay() const;
+    [[nodiscard]] TimeStep getArrivalTime() const;
 
 private:
-    TimeStep cumulatedDelay{};
+    std::optional<TimeStep> cumulatedDelay{};
+    std::optional<TimeStep> arrivalTime{};
 };
 
 using WaypointsList = std::list<Waypoint>;
+WaypointsList getTaskWaypoints(const Task& task);
 
 #endif //SIMULTANEOUS_CMAPD_WAYPOINT_HPP

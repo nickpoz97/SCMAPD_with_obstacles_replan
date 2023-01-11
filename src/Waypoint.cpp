@@ -13,16 +13,25 @@ Waypoint::Waypoint(const CompressedCoord &position, Demand demand, int taskIndex
                                                                                     taskIndex(taskIndex) {}
 
 TimeStep
-Waypoint::updateCumulatedDelay(TimeStep arrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay) {
-    // for performance reasons, if START the delay is set to 0
-    auto localDelay = (demand == Demand::DELIVERY) ? arrivalTime - tasks[taskIndex].idealGoalTime : 0;
-    cumulatedDelay = previousCumulatedDelay + localDelay;
+Waypoint::update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay) {
+    arrivalTime = newArrivalTime;
+    auto localDelay = (demand == Demand::DELIVERY) ? newArrivalTime - tasks[taskIndex].idealGoalTime : 0;
+    cumulatedDelay.emplace(previousCumulatedDelay + localDelay);
 
-    return cumulatedDelay;
+    return cumulatedDelay.value();
 }
 
 TimeStep Waypoint::getCumulatedDelay() const {
-    return cumulatedDelay;
+    return cumulatedDelay.value();
 }
 
+TimeStep Waypoint::getArrivalTime() const {
+    return arrivalTime.value();
+}
 
+WaypointsList getTaskWaypoints(const Task& task){
+    return {
+        {task.startLoc, Demand::PICKUP, task.index},
+        {task.goalLoc, Demand::DELIVERY, task.index}
+    };
+}

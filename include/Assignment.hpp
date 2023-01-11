@@ -92,8 +92,7 @@ private:
 
     [[nodiscard]] TimeStep getActualTTD() const;
 
-    [[nodiscard]] TimeStep computeApproxTTD(const Status &status, WaypointsList::iterator newPickupWpIt,
-                                            WaypointsList::iterator newDeliveryWpIt) const ;
+    [[nodiscard]] TimeStep computeApproxTTD(const Status &status, WaypointsList::iterator newPickupWpIt) const ;
 
     void
     insertTaskWaypoints(int taskId, const Status &status);

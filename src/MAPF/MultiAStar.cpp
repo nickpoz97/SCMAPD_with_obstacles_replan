@@ -30,7 +30,7 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
 
         startLoc = goalLoc;
         TimeStep t = pathList.size() - 1;
-        cumulatedDelay = w.updateCumulatedDelay(t, status.getTasks(), cumulatedDelay);
+        cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
     }
 
     return {{pathList.begin(), pathList.end()}, waypoints};
