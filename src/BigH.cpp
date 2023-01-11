@@ -27,7 +27,8 @@ SmallHComp BigH::getComparator(Heuristic h) {
 BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
     v{h == Heuristic::MCA ? 1 : 2},
     heap{buildPartialAssignmentHeap(agentInfos, status, v, h)},
-    heapHandles{getHandles(heap)}
+    heapHandles{getHandles(heap)},
+    unassignedTaskIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(status.getTasks().size()))
     {
         #ifndef NDEBUG
         for(int i = 0 ; i < heapHandles.size() ; ++i){
@@ -45,6 +46,7 @@ ExtractedPath BigH::extractTop() {
     auto pathWrapper = topSmallH.extractTopAndReset();
     heap.pop();
 
+    unassignedTaskIndices.erase(taskId);
     return {taskId, std::move(pathWrapper)};
 }
 
@@ -55,8 +57,8 @@ bool BigH::empty() const {
 void BigH::update(int k, int taskId, const Status &status) {
     const auto& fixedPath = status.getPaths()[k];
 
-    for(auto& sH : heap){
-        auto& sHHandle = heapHandles[k];
+    for(int validHandleId : unassignedTaskIndices){
+        auto& sHHandle = heapHandles[validHandleId];
         // todo fix this
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
