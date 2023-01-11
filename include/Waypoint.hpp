@@ -34,6 +34,8 @@ private:
 };
 
 using WaypointsList = std::list<Waypoint>;
-WaypointsList getTaskWaypoints(const Task& task);
+
+Waypoint getTaskPickupWaypoint(const Task& task);
+Waypoint getTaskDeliveryWaypoint(const Task& task);
 
 #endif //SIMULTANEOUS_CMAPD_WAYPOINT_HPP

@@ -29,9 +29,10 @@ TimeStep Waypoint::getArrivalTime() const {
     return arrivalTime.value();
 }
 
-WaypointsList getTaskWaypoints(const Task& task){
-    return {
-        {task.startLoc, Demand::PICKUP, task.index},
-        {task.goalLoc, Demand::DELIVERY, task.index}
-    };
+Waypoint getTaskPickupWaypoint(const Task& task){
+    return {task.startLoc, Demand::PICKUP, task.index};
+}
+
+Waypoint getTaskDeliveryWaypoint(const Task& task){
+    return {task.goalLoc, Demand::DELIVERY, task.index};
 }

@@ -69,7 +69,7 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
     const Task& task = status.getTask(taskId);
 
     if(waypoints.empty()){
-        waypoints = getTaskWaypoints(task);
+        waypoints = WaypointsList{getTaskPickupWaypoint(task), getTaskDeliveryWaypoint(task)};
         return;
     }
 
@@ -87,7 +87,7 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
     // todo fix this waypoints continuously grow
     // search for best position for task start and goal
     for(int i = 0; i < lastIteration ; ++wpPickupIt, ++i){
-        for (int j = i+1; j < lastIteration; ++wpDeliveryIt, ++j){
+        for (int j = i; j < lastIteration; ++wpDeliveryIt, ++j){
             auto [newStartIt, newGoalIt] = insertNewWaypoints(task, wpPickupIt, wpDeliveryIt);
             if(checkCapacityConstraint()){
                 auto newApproxTtd = computeApproxTTD(status, newStartIt);
@@ -112,8 +112,8 @@ void Assignment::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypoint
 std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
                                                                                            std::_List_iterator<Waypoint> waypointGoal) {
     return {
-        waypoints.insert(waypointStart, {task.startLoc, Demand::PICKUP, task.index}),
-        waypoints.insert(waypointGoal, {task.goalLoc, Demand::DELIVERY, task.index})
+        waypoints.insert(waypointStart, getTaskPickupWaypoint(task)),
+        waypoints.insert(waypointGoal, getTaskDeliveryWaypoint(task))
     };
 }
 
@@ -144,15 +144,17 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
     auto prevArrivalTime = newPickupWpIt == waypoints.begin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != waypoints.end() ; ++wpIt){
+        auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->position);
         if(wpIt->demand == Demand::DELIVERY){
             // using ideal path
             // todo fix this (ttd is negative)
-            auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->position);
             ttd += arrivalTime - status.getTask(wpIt->taskIndex).idealGoalTime;
-            prevWpPos = wpIt->position;
-            prevArrivalTime = arrivalTime;
+            assert(ttd > 0);
         }
+        prevWpPos = wpIt->position;
+        prevArrivalTime = arrivalTime;
     }
+
 
     return ttd;
 }
