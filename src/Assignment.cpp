@@ -174,7 +174,7 @@ void
 Assignment::internalUpdate(const Status &status) {
     MultiAStar pathfinder{};
     std::tie(path, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
-    assert(status.checkPathWithStatus(path, index));
+    assert(!status.checkPathWithStatus(path, index));
 }
 
 const WaypointsList &Assignment::getWaypoints() const {

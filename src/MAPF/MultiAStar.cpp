@@ -12,7 +12,7 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
 
     std::list<CompressedCoord> pathList{};
 
-    auto startLoc = agentLoc;
+    auto actualLoc = agentLoc;
 
     TimeStep cumulatedDelay = 0;
 
@@ -20,18 +20,19 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
 
     TimeStep t = 0;
 
-    // todo check this (due to code complexity)
+    // todo fix possible loop
     for(auto & w : waypoints){
         auto goalLoc = w.position;
 
-        frontier.emplace(new Node{startLoc, t, distanceMatrix.getDistance(startLoc, goalLoc)});
+        frontier.emplace(new Node{actualLoc, t, distanceMatrix.getDistance(actualLoc, goalLoc)});
         t = fillPath(status, agentId, goalLoc, pathList);
         assert(!status.checkPathWithStatus({pathList.begin(), pathList.end()}, agentId));
 
         frontier.clear();
         exploredSet.clear();
 
-        startLoc = goalLoc;
+        // old goal is new start position
+        actualLoc = goalLoc;
         cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
     }
 
@@ -45,8 +46,9 @@ TimeStep MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord
 
         if(topNodePtr->getLocation() == goalLoc){
             auto partialPathList = topNodePtr->getPathList();
-            // merge
-            pathList.splice(pathList.end(), partialPathList);
+            // merge (without std::prev there would be duplicates)
+            auto attachIt = pathList.empty() ? pathList.cend() :  std::prev(pathList.cend());
+            pathList.splice(attachIt, partialPathList);
             return topNodePtr->getGScore();
         }
 
