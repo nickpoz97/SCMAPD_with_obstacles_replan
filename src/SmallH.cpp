@@ -42,7 +42,7 @@ void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
         auto targetIt = std::next(heap.begin(), i);
 
-        if(status.checkPathConflicts(fixedPath, targetIt->getPath(), false)){
+        if(status.checkPathConflicts(fixedPath, targetIt->getPath())){
             auto& handle = heapHandles[targetIt->getAgentId()];
             assert((*handle).getAgentId() == targetIt->getAgentId());
 

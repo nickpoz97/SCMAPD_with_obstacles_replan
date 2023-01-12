@@ -18,25 +18,27 @@ MultiAStar::solve(WaypointsList &&waypoints, CompressedCoord agentLoc, const Sta
 
     const auto& distanceMatrix = status.getDistanceMatrix();
 
+    TimeStep t = 0;
+
     // todo check this (due to code complexity)
     for(auto & w : waypoints){
         auto goalLoc = w.position;
 
-        frontier.emplace(new Node{startLoc, 0, distanceMatrix.getDistance(startLoc, goalLoc)});
-        fillPath(status, agentId, goalLoc, pathList);
+        frontier.emplace(new Node{startLoc, t, distanceMatrix.getDistance(startLoc, goalLoc)});
+        t = fillPath(status, agentId, goalLoc, pathList);
+        assert(!status.checkPathWithStatus({pathList.begin(), pathList.end()}, agentId));
 
         frontier.clear();
         exploredSet.clear();
 
         startLoc = goalLoc;
-        TimeStep t = pathList.size() - 1;
         cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
     }
 
     return {{pathList.begin(), pathList.end()}, waypoints};
 }
 
-void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList) {
+TimeStep MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goalLoc, std::list<CompressedCoord> &pathList) {
     while (!frontier.empty()){
         auto topNodePtr = *frontier.cbegin();
         frontier.erase(frontier.cbegin());
@@ -45,7 +47,7 @@ void MultiAStar::fillPath(const Status &status, int agentId, CompressedCoord goa
             auto partialPathList = topNodePtr->getPathList();
             // merge
             pathList.splice(pathList.end(), partialPathList);
-            return;
+            return topNodePtr->getGScore();
         }
 
         auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore());

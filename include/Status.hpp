@@ -27,10 +27,11 @@ public:
 
     void updatePaths(Path &&path, int agentId);
 
-    bool checkAllConflicts(bool printConflicts) const;
-    bool checkPathConflicts(int i, int j, bool printConflicts) const;
-    bool checkPathConflicts(const Path & pA, const Path& pB, bool printConflicts) const;
+    bool checkAllConflicts() const;
+    bool checkPathConflicts(int i, int j) const;
+    bool checkPathWithStatus(const Path &path, int agentId) const;
 
+    static bool checkPathConflicts(const Path &pA, const Path &pB) ;
     const DistanceMatrix &getDistanceMatrix() const;
 private:
     const AmbientMap ambient;

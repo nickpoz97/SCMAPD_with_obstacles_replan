@@ -11,7 +11,7 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
     bigH{agents, status, heuristic},
     debug{debug}
     {
-        assert(!status.checkAllConflicts(true));
+        assert(!status.checkAllConflicts());
     }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
@@ -50,7 +50,7 @@ void SCMAPD::printResult() const{
 }
 
 void SCMAPD::printCheckMessage() const{
-    if(!status.checkAllConflicts(true)){
+    if(!status.checkAllConflicts()){
         fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
     }
 }

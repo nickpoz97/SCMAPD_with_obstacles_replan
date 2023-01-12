@@ -53,6 +53,7 @@ Assignment::addTask(int taskId, const Status &status) {
 
     MultiAStar pathfinder{};
     std::tie(path, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
+    assert(!status.checkPathWithStatus(path, index));
 
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
@@ -173,6 +174,7 @@ void
 Assignment::internalUpdate(const Status &status) {
     MultiAStar pathfinder{};
     std::tie(path, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
+    assert(status.checkPathWithStatus(path, index));
 }
 
 const WaypointsList &Assignment::getWaypoints() const {

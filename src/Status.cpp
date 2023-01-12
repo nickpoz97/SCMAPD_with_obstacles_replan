@@ -68,32 +68,39 @@ const DistanceMatrix& Status::getDistanceMatrix() const{
     return ambient.getDistanceMatrix();
 }
 
-bool Status::checkAllConflicts(bool printConflicts) const {
-    bool conflictFound = false;
-
-    for(int i = 0 ; i < paths.size() ; ++i){
-        for(int j = i+1 ; j < paths.size() ; ++j){
-                conflictFound = checkPathConflicts(i, j, printConflicts);
-        }
-    }
-    return conflictFound;
+bool Status::checkPathWithStatus(const Path &path, int agentId) const{
+    return std::ranges::any_of(
+        paths.begin(),
+        paths.begin() + agentId,
+        [&](const Path& other){return checkPathConflicts(path, other);}
+    ) ||
+    std::ranges::any_of(
+        paths.begin() + agentId + 1,
+        paths.end(),
+        [&](const Path& other){return checkPathConflicts(path, other);}
+    );
 }
 
-bool Status::checkPathConflicts(int i, int j, bool printConflicts) const{
+bool Status::checkAllConflicts() const {
+    for(int i = 0 ; i < paths.size() ; ++i){
+        for(int j = i+1 ; j < paths.size() ; ++j){
+            if(checkPathConflicts(i, j)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Status::checkPathConflicts(int i, int j) const{
     if(i == j){
         return false;
     }
 
-    bool result = checkPathConflicts(paths[i], paths[j], printConflicts);
-    if(result && printConflicts){
-        fmt::print("Between agents {}, {}", i, j);
-    }
-    return result;
+    return checkPathConflicts(paths[i], paths[j]);
 }
 
-bool Status::checkPathConflicts(const Path & pA, const Path& pB, bool printConflicts) const {
-    const auto& dm = getDistanceMatrix();
-
+bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
     if(pA.empty() || pB.empty()){
         return false;
     }
@@ -103,21 +110,8 @@ bool Status::checkPathConflicts(const Path & pA, const Path& pB, bool printConfl
                 pA[std::min(t, static_cast<int>(pA.size() - 1))] == pB[std::min(t, static_cast<int>(pB.size() - 1))];
         bool edgeConflict = t < pA.size() - 1 && t < pB.size() && pA[t] == pB[t + 1] && pA[t + 1] == pB[t];
 
-        if(!printConflicts && (nodeConflict || edgeConflict)){
+        if(nodeConflict || edgeConflict){
             return true;
-        }
-
-        if (nodeConflict) {
-            auto posString = static_cast<std::string>(dm.from1Dto2D(pA[std::min(t, static_cast<int>(pA.size() - 1))]));
-            fmt::print("Node conflict at t = {} in pos = {}", t, posString);
-        }
-
-        if (edgeConflict) {
-            auto pos1String = static_cast<std::string>(dm.from1Dto2D(pA[t]));
-            auto pos2String = static_cast<std::string>(dm.from1Dto2D(pA[t + 1]));
-
-            fmt::print("Edge conflict at t = {} and {} in pos = {} and {}",
-                       t, t + 1, pos1String, pos2String);
         }
     }
     return false;
