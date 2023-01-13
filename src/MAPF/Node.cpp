@@ -31,14 +31,14 @@ std::list<CompressedCoord> Node::getPathList() const {
     return pathList;
 }
 
-bool operator<(const Node &a, const Node &b) {
-    return a.getFScore() < b.getFScore();
-}
-
 CompressedCoord Node::getLocation() const {
     return location;
 }
 
 TimeStep Node::getGScore() const {
     return g;
+}
+
+int operator<=>(const Node &a, const Node &b) {
+    return a.getFScore() - b.getFScore();
 }

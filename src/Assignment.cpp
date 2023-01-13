@@ -9,7 +9,7 @@
 #include <set>
 
 #include "Assignment.hpp"
-#include "MAPF/MultiAStar.hpp"
+#include "MAPF/PathFinder.hpp"
 
 Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status) :
         startPos{agentInfo.startPos},
@@ -51,8 +51,7 @@ Assignment::addTask(int taskId, const Status &status) {
     oldTTD = getActualTTD();
     insertTaskWaypoints(taskId, status);
 
-    MultiAStar pathfinder{};
-    std::tie(path, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
+    std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
     assert(!status.checkPathWithStatus(path, index));
 
 #ifndef NDEBUG
@@ -172,8 +171,7 @@ PathWrapper Assignment::extractAndReset() {
 
 void
 Assignment::internalUpdate(const Status &status) {
-    MultiAStar pathfinder{};
-    std::tie(path, waypoints) = pathfinder.solve(std::move(waypoints), startPos, status, index);
+    std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
     assert(!status.checkPathWithStatus(path, index));
 }
 

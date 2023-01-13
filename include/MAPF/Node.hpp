@@ -19,7 +19,7 @@ public:
 
     [[nodiscard]] std::list<CompressedCoord> getPathList() const;
 
-    friend bool operator<(const Node& a, const Node& b);
+    friend int operator<=>(const Node& a, const Node& b);
 
     [[nodiscard]] CompressedCoord getLocation() const;
 
