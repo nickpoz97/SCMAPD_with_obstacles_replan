@@ -30,12 +30,10 @@ public:
     CellType operator[](const Coord& coord) const;
 
     [[nodiscard]] int getNRows() const;
-
     [[nodiscard]] int getNCols() const;
+    [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
-
-    [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
 private:
     const DistanceMatrix distanceMatrix;
@@ -43,7 +41,6 @@ private:
 
     static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);
     static std::fstream openGridFile(const std::filesystem::path &gridPath);
-
 };
 
 #endif //SIMULTANEOUS_CMAPD_AMBIENTMAP_HPP

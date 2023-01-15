@@ -74,7 +74,7 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
     }
 
     // we must use end iterator position to explore all possible combinations
-    auto lastIteration = waypoints.size() + 1;
+    auto nIterations = waypoints.size() + 1;
 
     auto wpPickupIt = waypoints.begin();
     auto wpDeliveryIt = wpPickupIt;
@@ -86,8 +86,8 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
 
     // todo fix this waypoints continuously grow
     // search for best position for task start and goal
-    for(int i = 0; i < lastIteration ; ++wpPickupIt, ++i){
-        for (int j = i; j < lastIteration; ++wpDeliveryIt, ++j){
+    for(int i = 0; i < nIterations ; ++wpPickupIt, ++i){
+        for (int j = i; j < nIterations; ++wpDeliveryIt, ++j){
             auto [newStartIt, newGoalIt] = insertNewWaypoints(task, wpPickupIt, wpDeliveryIt);
             if(checkCapacityConstraint()){
                 auto newApproxTtd = computeApproxTTD(status, newStartIt);
@@ -147,14 +147,12 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->position);
         if(wpIt->demand == Demand::DELIVERY){
             // using ideal path
-            // todo fix this (ttd is negative)
             ttd += arrivalTime - status.getTask(wpIt->taskIndex).idealGoalTime;
             assert(ttd > 0);
         }
         prevWpPos = wpIt->position;
         prevArrivalTime = arrivalTime;
     }
-
 
     return ttd;
 }

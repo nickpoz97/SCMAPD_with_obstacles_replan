@@ -23,7 +23,7 @@ struct Task {
     explicit operator std::pair<CompressedCoord, CompressedCoord>() const{return getCoordinates();}
 
 private:
-    static int generateId();
+    static int getNextId();
 };
 
 std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep=',');

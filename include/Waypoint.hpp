@@ -20,10 +20,13 @@ struct Waypoint{
     Waypoint(const CompressedCoord &position, Demand demand, int taskIndex);
 
     explicit operator CompressedCoord() const;
-
     explicit operator std::string() const;
 
-    TimeStep update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay);
+    TimeStep update(
+        TimeStep newArrivalTime,
+        const std::vector<Task> &tasks,
+        TimeStep previousCumulatedDelay
+    );
 
     [[nodiscard]] TimeStep getCumulatedDelay() const;
     [[nodiscard]] TimeStep getArrivalTime() const;

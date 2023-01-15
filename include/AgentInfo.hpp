@@ -14,7 +14,10 @@ struct AgentInfo{
 };
 
 std::vector<AgentInfo>
-loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep=',',
-           int capacity=3);
+loadAgents(const std::filesystem::path &agentsFilePath,
+           const DistanceMatrix &dm,
+           char horizontalSep=',',
+           int capacity=3
+);
 
 #endif //SIMULTANEOUS_CMAPD_AGENTINFO_HPP

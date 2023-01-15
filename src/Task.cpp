@@ -25,11 +25,11 @@ Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatr
     startLoc{startLoc},
     goalLoc{goalLoc},
     releaseTime{},
-    index{generateId()},
+    index{getNextId()},
     idealGoalTime{releaseTime + dm.getDistance(startLoc, goalLoc)}
 {}
 
-int Task::generateId() {
+int Task::getNextId() {
     static int id = 0;
     auto newId = id;
     ++id;

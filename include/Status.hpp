@@ -17,28 +17,27 @@ public:
            std::vector<Task> && tasks);
 
     // t is the time when agent does the action
-    std::vector<CompressedCoord> getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
+    [[nodiscard]] std::vector<CompressedCoord> getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
 
-    const std::vector<Task> &getTasks() const;
+    [[nodiscard]] const std::vector<Task> &getTasks() const;
+    [[nodiscard]] const std::vector<Path> &getPaths() const;
 
-    const std::vector<Path> &getPaths() const;
-
-    const Task & getTask(int i) const;
+    [[nodiscard]] const Task & getTask(int i) const;
 
     void updatePaths(Path &&path, int agentId);
 
-    bool checkAllConflicts() const;
-    bool checkPathConflicts(int i, int j) const;
-    bool checkPathWithStatus(const Path &path, int agentId) const;
+    [[nodiscard]] bool checkAllConflicts() const;
+    [[nodiscard]] bool checkPathConflicts(int i, int j) const;
+    [[nodiscard]] bool checkPathWithStatus(const Path &path, int agentId) const;
 
     static bool checkPathConflicts(const Path &pA, const Path &pB) ;
-    const DistanceMatrix &getDistanceMatrix() const;
+    [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
 
-    bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
+    [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 };
 
 

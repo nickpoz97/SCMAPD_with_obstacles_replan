@@ -24,8 +24,8 @@ struct DistanceMatrix {
     const int nRows;
     const int nCols;
 
-    const int startCoordsSize;
-    const int endCoordsSize;
+    const int startCoordsSize;  // debug variable
+    const int endCoordsSize;    // debug variable
 };
 
 #endif //SIMULTANEOUS_CMAPD_DISTANCEMATRIX_HPP
