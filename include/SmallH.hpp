@@ -7,7 +7,6 @@
 #include "Status.hpp"
 #include "AgentInfo.hpp"
 
-// todo check if heap is max or min
 using SmallHFibHeap = boost::heap::fibonacci_heap<Assignment, boost::heap::compare<std::greater<>>>;
 using SmallHHandles = std::unordered_map<int, SmallHFibHeap::handle_type>;
 
@@ -19,9 +18,7 @@ public:
     [[nodiscard]] TimeStep getTopMCA() const;
 
     void updateTopElements(const Path &fixedPath, const Status &status);
-
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
-
     int getTaskId() const;
 
 private:

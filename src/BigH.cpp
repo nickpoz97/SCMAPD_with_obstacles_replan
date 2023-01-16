@@ -59,7 +59,7 @@ void BigH::update(int k, int taskId, const Status &status) {
 
     for(int validHandleId : unassignedTaskIndices){
         auto& sHHandle = heapHandles[validHandleId];
-        // todo fix this
+
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
         (*sHHandle).updateTopElements(fixedPath, status);

@@ -29,12 +29,12 @@ private:
     BigHHandles heapHandles;
 
     std::unordered_set<int> unassignedTaskIndices;
-
     static SmallHComp getComparator(Heuristic h);
 
     static BigHFibHeap
-    buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h);
-
+    buildPartialAssignmentHeap(
+        const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h
+    );
     static BigHHandles getHandles(const BigHFibHeap& heap);
 };
 
