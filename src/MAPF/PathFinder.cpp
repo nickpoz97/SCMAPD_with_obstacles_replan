@@ -15,6 +15,13 @@ static std::list<CompressedCoord> getPartialPath(
     TimeStep t
 );
 
+static void
+holdPosition(
+    const Status &status,
+    int agentId,
+    std::list<CompressedCoord> &pathList
+);
+
 std::pair<Path, WaypointsList>
 PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
     if(waypoints.empty()){
@@ -33,8 +40,6 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
         auto attachIt = pathList.empty() ? pathList.cend() :  std::prev(pathList.cend());
         pathList.splice(attachIt, partialPath);
 
-        assert(!status.checkPathWithStatus({pathList.begin(), pathList.end()}, agentId));
-
         t = static_cast<int>(pathList.size()) - 1;
         // old goal is new start position
         actualLoc = goalLoc;
@@ -42,6 +47,9 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
         cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
     }
 
+    holdPosition(status, agentId, pathList);
+
+    assert(!status.checkPathWithStatus({pathList.begin(), pathList.end()}, agentId));
     return {{pathList.begin(), pathList.end()}, waypoints};
 }
 
@@ -69,7 +77,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
             return topNodePtr->getPathList();
         }
 
-        auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore());
+        auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore(), true);
 
         auto nextT = topNodePtr->getGScore() + 1;
         for(auto loc : neighbors){
@@ -81,3 +89,19 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
     throw std::runtime_error("Path not found");
 }
 
+static void
+holdPosition(const Status &status, int agentId, std::list<CompressedCoord> &pathList) {
+    if(pathList.empty()){
+        return;
+    }
+
+    auto totalTimeSteps = status.getLongestPathSize();
+    TimeStep firstTimeStep = pathList.size() - 1;
+    auto loc = *pathList.rbegin();
+
+    for(int t = firstTimeStep ; t < totalTimeSteps ; ++t){
+        auto nextLoc = status.holdOrAvailablePos(agentId, loc, t);
+        pathList.push_back(nextLoc);
+        loc = nextLoc;
+    }
+}

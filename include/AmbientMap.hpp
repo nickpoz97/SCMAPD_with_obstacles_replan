@@ -19,10 +19,12 @@ enum class CellType: char {
     FLOOR = '.',
 };
 
+
 class AmbientMap {
 public:
     static constexpr std::array<Direction,5> directionVector{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0, 0}}};
     static constexpr int nDirections = directionVector.size();
+    static constexpr int getHoldDirectionIndex();
 
     AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm);
 
@@ -34,13 +36,21 @@ public:
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
-
 private:
     const DistanceMatrix distanceMatrix;
     std::vector<std::vector<CellType>> grid;
 
     static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);
     static std::fstream openGridFile(const std::filesystem::path &gridPath);
+};
+
+constexpr int AmbientMap::getHoldDirectionIndex() {
+    for(int i = 0 ; i < nDirections ; ++i){
+        if(directionVector[i] == Direction{0,0}){
+            return i;
+        }
+    }
+    return -1;
 };
 
 #endif //SIMULTANEOUS_CMAPD_AMBIENTMAP_HPP

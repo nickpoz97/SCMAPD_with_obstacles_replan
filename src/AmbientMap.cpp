@@ -92,4 +92,4 @@ AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& d
 
 const DistanceMatrix& AmbientMap::getDistanceMatrix() const{
     return distanceMatrix;
-};
+}

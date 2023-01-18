@@ -22,14 +22,19 @@ const std::vector<Task> &Status::getTasks() const {
 }
 
 void Status::updatePaths(Path &&path, int agentId) {
+    longestPathSize = std::max(static_cast<int>(path.size()), longestPathSize);
     paths[agentId] = std::move(path);
 }
 
-std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const {
+std::vector<CompressedCoord>
+Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const {
     std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
+        if(!includeHoldAction && i == AmbientMap::getHoldDirectionIndex()){
+            continue;
+        }
         auto result = ambient.movement(c, i);
         if(result.has_value() && !checkDynamicObstacle(agentId, c, result.value(), t)){
             neighbors.push_back(result.value());
@@ -37,6 +42,18 @@ std::vector<CompressedCoord> Status::getValidNeighbors(int agentId, CompressedCo
     }
 
     return neighbors;
+}
+
+CompressedCoord Status::holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const{
+    // first check if agent can hold
+    if(checkDynamicObstacle(agentId, c, c, t)){
+        auto neighbors = getValidNeighbors(agentId, c, t, false);
+        if(!neighbors.empty()){
+            return neighbors[0];
+        }
+        throw std::runtime_error(fmt::format("Agent {} cannot move nor hold at timestep {}", agentId, t));
+    }
+    return c;
 }
 
 bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
@@ -115,5 +132,9 @@ bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
         }
     }
     return false;
+}
+
+TimeStep Status::getLongestPathSize() const {
+    return longestPathSize;
 }
 

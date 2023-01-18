@@ -17,7 +17,8 @@ public:
            std::vector<Task> && tasks);
 
     // t is the time when agent does the action
-    [[nodiscard]] std::vector<CompressedCoord> getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
+    [[nodiscard]] std::vector<CompressedCoord>
+    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
 
     [[nodiscard]] const std::vector<Task> &getTasks() const;
     [[nodiscard]] const std::vector<Path> &getPaths() const;
@@ -32,10 +33,14 @@ public:
 
     static bool checkPathConflicts(const Path &pA, const Path &pB) ;
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
+
+    [[nodiscard]] CompressedCoord holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const;
+    [[nodiscard]] TimeStep getLongestPathSize() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
+    TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 };
