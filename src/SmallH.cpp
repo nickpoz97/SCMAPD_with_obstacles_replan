@@ -40,7 +40,7 @@ PathWrapper SmallH::extractTopAndReset() {
 void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
     // todo check this
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
-        auto targetIt = std::next(heap.begin(), i);
+        auto targetIt = std::next(heap.ordered_begin(), i);
 
         if(Status::checkPathConflicts(fixedPath, targetIt->getPath())){
             auto& handle = heapHandles[targetIt->getAgentId()];

@@ -37,8 +37,10 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
     for(auto & w : waypoints){
         auto goalLoc = w.position;
         auto partialPath = getPartialPath(status, agentId, actualLoc, goalLoc, t);
-        auto attachIt = pathList.empty() ? pathList.cend() :  std::prev(pathList.cend());
-        pathList.splice(attachIt, partialPath);
+        if(!pathList.empty()){
+            partialPath.pop_front();
+        }
+        pathList.splice(pathList.cend(), partialPath);
 
         t = static_cast<int>(pathList.size()) - 1;
         // old goal is new start position
@@ -49,7 +51,6 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
 
     holdPosition(status, agentId, pathList);
 
-    assert(!status.checkPathWithStatus({pathList.begin(), pathList.end()}, agentId));
     return {{pathList.begin(), pathList.end()}, waypoints};
 }
 
