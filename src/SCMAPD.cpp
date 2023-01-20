@@ -7,7 +7,7 @@
 
 SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
-    status(std::move(ambientMap), agents.size(), std::move(tasksVector)),
+    status(std::move(ambientMap), agents, std::move(tasksVector)),
     bigH{agents, status, heuristic},
     debug{debug}
     {

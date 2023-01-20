@@ -13,11 +13,8 @@
 #include "Task.hpp"
 
 struct Waypoint{
-    const CompressedCoord position;
-    const Demand demand;
-    const int taskIndex;
-
-    Waypoint(const CompressedCoord &position, Demand demand, int taskIndex);
+    Waypoint(CompressedCoord position, Demand demand, int taskIndex);
+    explicit Waypoint(CompressedCoord robotStartPosition);
 
     explicit operator CompressedCoord() const;
     explicit operator std::string() const;
@@ -31,8 +28,18 @@ struct Waypoint{
     [[nodiscard]] TimeStep getCumulatedDelay() const;
     [[nodiscard]] TimeStep getArrivalTime() const;
 
+    [[nodiscard]] CompressedCoord getPosition() const;
+
+    [[nodiscard]] Demand getDemand() const;
+
+    [[nodiscard]] int getTaskIndex() const;
+
 private:
-    std::optional<TimeStep> cumulatedDelay{};
+    const CompressedCoord position;
+    const Demand demand;
+    const std::optional<int> taskIndex;
+
+    TimeStep cumulatedDelay = 0;
     std::optional<TimeStep> arrivalTime{};
 };
 

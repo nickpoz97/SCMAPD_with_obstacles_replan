@@ -11,7 +11,8 @@ using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
 
 enum class Demand : int{
     PICKUP = 1,
-    DELIVERY = -1
+    DELIVERY = -1,
+    END = 0
 };
 
 enum class Heuristic{
@@ -20,5 +21,10 @@ enum class Heuristic{
     RMCA_R
 };
 
+enum class Strategy{
+    AVOID_SPAWN,
+    HOLD_AND_DODGE,
+    WAIT_OTHERS
+};
 
 #endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP

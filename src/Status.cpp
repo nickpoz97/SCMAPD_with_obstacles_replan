@@ -2,15 +2,16 @@
 // Created by nicco on 05/12/2022.
 //
 
+#include <algorithm>
 #include <fmt/core.h>
-#include "Status.hpp"
-#include "fmt/color.h"
 
-Status::Status(AmbientMap &&ambientMap, int nRobots,
+#include "Status.hpp"
+
+Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents,
                std::vector<Task> &&tasks) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        paths(nRobots)
+        paths(initializePaths(agents))
         {}
 
 const Task & Status::getTask(int i) const {
@@ -69,8 +70,9 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
         // todo check this
         bool nodeConflict = coord2 == p[t2];
         bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
+        bool baseConflict = coord2 == *p.cbegin();
 
-        return nodeConflict || edgeConflict;
+        return nodeConflict || edgeConflict || baseConflict;
     };
 
     return std::ranges::any_of(paths.begin(), paths.begin() + agentId, predicate) ||
@@ -136,5 +138,13 @@ bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
 
 TimeStep Status::getLongestPathSize() const {
     return longestPathSize;
+}
+
+std::vector<Path> Status::initializePaths(const std::vector<AgentInfo> &agents) {
+    std::vector<Path> paths{};
+    paths.reserve(agents.size());
+
+    std::ranges::transform(agents, std::back_inserter(paths), [](const AgentInfo& a) -> Path {return {a.startPos};});
+    return paths;
 }
 

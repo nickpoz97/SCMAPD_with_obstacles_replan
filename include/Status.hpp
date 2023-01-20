@@ -9,11 +9,12 @@
 
 #include "Task.hpp"
 #include "AmbientMap.hpp"
+#include "AgentInfo.hpp"
 
 class Status{
 public:
     Status(AmbientMap &&ambientMap,
-           int nRobots,
+           const std::vector<AgentInfo> &agents,
            std::vector<Task> && tasks);
 
     // t is the time when agent does the action
@@ -43,6 +44,8 @@ private:
     TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
+
+    static std::vector<Path> initializePaths(const std::vector<AgentInfo> &agents);
 };
 
 

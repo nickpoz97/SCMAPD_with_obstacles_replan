@@ -25,21 +25,26 @@ holdPosition(
 std::pair<Path, WaypointsList>
 PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
     if(waypoints.empty()){
-        return {{agentLoc}, waypoints};
+        throw std::runtime_error("No waypoints");
     }
 
-    std::list<CompressedCoord> pathList{};
+    if(waypoints.crbegin()->getDemand() != Demand::END || waypoints.crbegin()->getPosition() != agentLoc){
+        throw std::runtime_error("Wrong end waypoint");
+    }
+
+    std::list<CompressedCoord> pathList{agentLoc};
 
     auto actualLoc = agentLoc;
     TimeStep cumulatedDelay = 0;
     TimeStep t = 0;
 
     for(auto & w : waypoints){
-        auto goalLoc = w.position;
+        auto goalLoc = w.getPosition();
         auto partialPath = getPartialPath(status, agentId, actualLoc, goalLoc, t);
-        if(!pathList.empty()){
-            partialPath.pop_front();
-        }
+
+        // remove first pos (already in pathlist)
+        partialPath.pop_front();
+
         pathList.splice(pathList.cend(), partialPath);
 
         t = static_cast<int>(pathList.size()) - 1;
@@ -48,8 +53,6 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
 
         cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
     }
-
-    holdPosition(status, agentId, pathList);
 
     return {{pathList.begin(), pathList.end()}, waypoints};
 }
@@ -100,6 +103,7 @@ holdPosition(const Status &status, int agentId, std::list<CompressedCoord> &path
     TimeStep firstTimeStep = pathList.size() - 1;
     auto loc = *pathList.rbegin();
 
+    // using t = 0 would not work
     for(int t = firstTimeStep ; t < totalTimeSteps ; ++t){
         auto nextLoc = status.holdOrAvailablePos(agentId, loc, t);
         pathList.push_back(nextLoc);
