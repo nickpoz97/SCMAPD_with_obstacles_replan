@@ -76,9 +76,9 @@ int AmbientMap::getNCols() const {
 
 std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int directionIndex) const{
     assert(directionIndex >= 0 && directionIndex < directionVector.size());
-    auto neighbor = coord + distanceMatrix.from2Dto1D(directionVector[directionIndex]);
+    auto neighbor = distanceMatrix.from1Dto2D(coord) + directionVector[directionIndex];
 
-    return isValid(distanceMatrix.from1Dto2D(neighbor)) ? std::optional{neighbor} : std::nullopt;
+    return isValid(neighbor) ? std::optional{distanceMatrix.from2Dto1D(neighbor)} : std::nullopt;
 }
 
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm) :

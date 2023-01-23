@@ -148,3 +148,43 @@ std::vector<Path> Status::initializePaths(const std::vector<AgentInfo> &agents) 
     return paths;
 }
 
+template<typename T>
+std::string Status::stringifyPath(const T& path) const {
+    static constexpr std::string_view pattern = "({},{})->";
+
+    std::string result{};
+
+    for(const auto& pos : path){
+        auto pos2D = ambient.getDistanceMatrix().from1Dto2D(pos);
+        result.append(fmt::format(pattern, pos2D.row, pos2D.col));
+    }
+
+    if(!result.empty()){
+        result.resize(result.size() - 2);
+    }
+    return result;
+}
+
+template
+std::string Status::stringifyPath<std::list<CompressedCoord>>(const std::list<CompressedCoord>& path) const;
+
+template
+std::string Status::stringifyPath<Path>(const Path& path) const;
+
+//std::string Status::stringifyPath(const Path& path) const {
+//    static constexpr std::string_view pattern = "({},{})->";
+//
+//    std::string result{};
+//    result.reserve(pattern.size() * path.size());
+//
+//    for(const auto& pos : path){
+//        auto pos2D = ambient.getDistanceMatrix().from1Dto2D(pos);
+//        result.append(fmt::format(pattern, pos2D.row, pos2D.col));
+//    }
+//
+//    if(!result.empty()){
+//        result.resize(result.size() - 2);
+//    }
+//    return result;
+//}
+

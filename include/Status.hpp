@@ -37,6 +37,9 @@ public:
 
     [[nodiscard]] CompressedCoord holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const;
     [[nodiscard]] TimeStep getLongestPathSize() const;
+
+    template<typename T>
+    [[nodiscard]] std::string stringifyPath(const T& path) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

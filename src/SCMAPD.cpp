@@ -27,26 +27,11 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 }
 
 void SCMAPD::printResult() const{
-    auto buildPathString = [this](const Path& path){
-        static constexpr std::string_view pattern = "({},{})->";
-
-        std::string result{};
-        result.reserve(pattern.size() * path.size());
-
-        for(const auto& pos : path){
-            auto pos2D = status.getDistanceMatrix().from1Dto2D(pos);
-            result.append(fmt::format(pattern, pos2D.row, pos2D.col));
-        }
-
-        if(!result.empty()){
-            result.resize(result.size() - 2);
-        }
-        return result;
-    };
-
     fmt::print("agent\tcost\tpath\n");
     for(int i = 0 ; i < status.getPaths().size() ; ++i){
-        fmt::print("{}\t{}\t{}\n", i, status.getPaths()[i].size(), buildPathString(status.getPaths()[i]));
+        auto& p = status.getPaths()[i];
+
+        fmt::print("{}\t{}\t{}\n", i, p.size(), status.stringifyPath(p));
     }
 }
 

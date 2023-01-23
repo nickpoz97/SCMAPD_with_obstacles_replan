@@ -23,7 +23,6 @@ private:
     Status status;
     BigH bigH;
     bool debug;
-
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

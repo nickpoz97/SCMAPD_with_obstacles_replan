@@ -50,8 +50,17 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
         t = static_cast<int>(pathList.size()) - 1;
         // old goal is new start position
         actualLoc = goalLoc;
-
-        cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
+#ifndef NDEBUG
+        try {
+#endif
+            cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
+#ifndef NDEBUG
+        }
+        catch (std::runtime_error& e){
+            std::cerr << status.stringifyPath(pathList);
+            throw std::runtime_error("runtime error in waypoint catched");
+        }
+#endif
     }
 
     return {{pathList.begin(), pathList.end()}, waypoints};
