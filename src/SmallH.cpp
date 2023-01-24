@@ -85,3 +85,10 @@ SmallHHandles SmallH::getHandles(const SmallHFibHeap& heap){
     }
     return heapHandles;
 }
+
+const Path &SmallH::getTopPath() const {
+    return heap.top().getPath();
+}
+int SmallH::getTopAgentId() const{
+    return heap.top().getAgentId();
+}

@@ -17,11 +17,11 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        assert(!status.checkAllConflicts());
         auto [taskId, pathWrapper] = bigH.extractTop();
         auto k = pathWrapper.agentId;
-
         status.updatePaths(std::move(pathWrapper.path), k);
+        assert(!status.checkAllConflicts());
+
         bigH.update(k, taskId, status);
     }
 }

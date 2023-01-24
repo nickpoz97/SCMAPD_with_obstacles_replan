@@ -21,6 +21,8 @@ public:
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
     int getTaskId() const;
 
+    const Path& getTopPath() const;
+    int getTopAgentId() const;
 private:
     int taskId;
     int v;

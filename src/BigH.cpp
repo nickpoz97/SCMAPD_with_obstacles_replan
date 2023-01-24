@@ -65,6 +65,11 @@ void BigH::update(int k, int taskId, const Status &status) {
         (*sHHandle).updateTopElements(fixedPath, status);
         heap.update(sHHandle);
     }
+#ifndef NDEBUG
+    for(const auto& sH : heap){
+        assert(!status.checkPathWithStatus(sH.getTopPath(), sH.getTopAgentId()));
+    }
+#endif
 }
 
 BigHFibHeap
@@ -73,9 +78,9 @@ BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, cons
 
     BigHFibHeap heap(getComparator(h));
 
-    for(const auto& task : status.getTasks()){
+    for(const auto& task : tasks){
         auto taskId = task.index;
-        assert(taskId >= 0 && taskId < status.getTasks().size());
+        assert(taskId >= 0 && taskId < tasks.size());
         heap.emplace(agentsInfos, taskId, v, status);
     }
 
