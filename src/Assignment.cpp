@@ -50,7 +50,7 @@ Assignment::addTask(int taskId, const Status &status) {
 #endif
     oldTTD = getActualTTD();
     insertTaskWaypoints(taskId, status);
-
+    idealGoalTime = computeIdealGoalTime(status);
     std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
     assert(!status.checkPathWithStatus(path, index));
 
@@ -155,10 +155,6 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
     return ttd;
 }
 
-bool operator<(const Assignment& a, const Assignment& b){
-    return a.getMCA() < b.getMCA();
-}
-
 PathWrapper Assignment::extractAndReset() {
     waypoints.clear();
     oldTTD = 0;
@@ -179,6 +175,35 @@ const Path &Assignment::getPath() const {
     return path;
 }
 
-bool operator>(const Assignment &a, const Assignment &b) {
-    return a.getMCA() > b.getMCA();
+bool operator<=>(const Assignment &a, const Assignment &b) {
+    // signum function
+    auto sgn = [](auto val){return (0 < val) - (val < 0);};
+
+    int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
+    int pathSizeScore = sgn(a.getPath().size() - b.getPath().size()) * 2;
+    int idealSpanScore = sgn(a.getIdealGoalTime() - b.getIdealGoalTime());
+
+    return mcaScore + pathSizeScore + idealSpanScore;
+}
+
+TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
+    assert(waypoints.size() > 0);
+    TimeStep igt = 0;
+    const auto& dm = status.getDistanceMatrix();
+
+    igt += dm.getDistance(startPos, waypoints.cbegin()->getPosition());
+
+    for(const auto& wp : waypoints){
+        if(wp.getDemand() == Demand::DELIVERY) { igt += status.getTask(wp.getTaskIndex()).idealGoalTime; }
+    }
+
+    if(waypoints.size() >= 3) {
+        igt += dm.getDistance(waypoints.crbegin()->getPosition(), (std::next(waypoints.crbegin()))->getPosition());
+    }
+
+    return igt;
+}
+
+TimeStep Assignment::getIdealGoalTime() const {
+    return idealGoalTime;
 }

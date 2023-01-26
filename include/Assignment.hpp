@@ -63,8 +63,7 @@ public:
 
     [[nodiscard]] const Path& getPath() const;
 
-    friend bool operator<(const Assignment &a, const Assignment &b);
-    friend bool operator>(const Assignment &a, const Assignment &b);
+    friend bool operator<=>(const Assignment &a, const Assignment &b);
 
     inline explicit operator CompressedCoord() const { return getStartPosition(); }
 
@@ -72,10 +71,13 @@ public:
     void internalUpdate(const Status &status);
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
+
+    [[nodiscard]] TimeStep getIdealGoalTime() const;
 private:
     CompressedCoord startPos;
     int index;
     int capacity;
+    int idealGoalTime = 0;
 
     TimeStep oldTTD = 0;
 
@@ -97,6 +99,7 @@ private:
     void
     insertTaskWaypoints(int taskId, const Status &status);
 
+    TimeStep computeIdealGoalTime(const Status &status) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP
