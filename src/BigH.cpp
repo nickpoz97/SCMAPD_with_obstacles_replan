@@ -55,15 +55,16 @@ bool BigH::empty() const {
 }
 
 void BigH::update(int k, int taskId, const Status &status) {
-    const auto& fixedPath = status.getPaths()[k];
-
-    for(int validHandleId : unassignedTaskIndices){
-        auto& sHHandle = heapHandles[validHandleId];
+    for(auto otherTaskId : unassignedTaskIndices){
+        auto& sHHandle = heapHandles[otherTaskId];
+        assert((*sHHandle).getTaskId() == otherTaskId);
 
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
-        (*sHHandle).updateTopElements(fixedPath, status);
+        (*sHHandle).updateTopElements(k, status);
         heap.update(sHHandle);
+        assert((*sHHandle).getTaskId() == otherTaskId);
+        assert(!status.checkPathWithStatus((*sHHandle).getTopPath(), (*sHHandle).getTopAgentId()));
     }
 #ifndef NDEBUG
     for(const auto& sH : heap){

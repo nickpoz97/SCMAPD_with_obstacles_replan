@@ -37,12 +37,12 @@ PathWrapper SmallH::extractTopAndReset() {
     return topAssignment.extractAndReset();
 }
 
-void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
+void SmallH::updateTopElements(int agentId, const Status &status) {
     // todo check this
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
         auto targetIt = std::next(heap.ordered_begin(), i);
 
-        if(Status::checkPathConflicts(fixedPath, targetIt->getPath())){
+        if(status.checkPathWithStatus(targetIt->getPath(), agentId)){
             auto& handle = heapHandles[targetIt->getAgentId()];
             assert((*handle).getAgentId() == targetIt->getAgentId());
 
@@ -52,9 +52,10 @@ void SmallH::updateTopElements(const Path &fixedPath, const Status &status) {
             heap.update(handle);
 
             // restart
-            i = 0;
+            i = -1;
         }
     }
+    assert(!status.checkPathWithStatus(getTopPath(), getTopAgentId()));
 }
 
 TimeStep SmallH::getTopMCA() const{
