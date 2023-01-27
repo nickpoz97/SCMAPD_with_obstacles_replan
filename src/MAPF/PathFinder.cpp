@@ -54,6 +54,7 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
         try {
 #endif
             cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
+
 #ifndef NDEBUG
         }
         catch (std::runtime_error& e){

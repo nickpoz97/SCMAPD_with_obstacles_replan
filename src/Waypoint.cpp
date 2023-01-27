@@ -18,7 +18,9 @@ TimeStep
 Waypoint::update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay) {
     arrivalTime = newArrivalTime;
     auto localDelay = 0;
-    if (demand == Demand::DELIVERY) { arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime; }
+    if (demand == Demand::DELIVERY) {
+        localDelay = arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+    }
 #ifndef NDEBUG
     if(localDelay < 0) { throw std::runtime_error("negative delay"); }
 #endif

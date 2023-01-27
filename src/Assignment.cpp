@@ -128,6 +128,7 @@ bool Assignment::checkCapacityConstraint() {
 }
 
 TimeStep Assignment::getActualTTD() const{
+    assert(!waypoints.empty());
     return waypoints.crbegin()->getCumulatedDelay();
 }
 

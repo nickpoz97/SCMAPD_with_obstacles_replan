@@ -20,7 +20,7 @@ SmallHComp BigH::getComparator(Heuristic h) {
             };
         // MCA
         default:
-            return [](const SmallH& a, const SmallH& b) -> bool {return a.getTopMCA() > b.getTopMCA();};
+            return [](const SmallH& a, const SmallH& b) -> bool {return a.getTopAssignment() > b.getTopAssignment();};
     }
 }
 

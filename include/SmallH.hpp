@@ -23,6 +23,8 @@ public:
 
     const Path& getTopPath() const;
     int getTopAgentId() const;
+
+    const Assignment& getTopAssignment() const;
 private:
     int taskId;
     int v;

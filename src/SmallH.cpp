@@ -93,3 +93,7 @@ const Path &SmallH::getTopPath() const {
 int SmallH::getTopAgentId() const{
     return heap.top().getAgentId();
 }
+
+const Assignment &SmallH::getTopAssignment() const {
+    return heap.top();
+}
