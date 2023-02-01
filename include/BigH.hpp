@@ -22,8 +22,11 @@ public:
 
     void update(int k, int taskId, const Status &status);
 
+    std::vector<std::vector<Assignment>> getReverseOrderedVector() const;
+
 private:
     int v;
+    Heuristic heuristic;
 
     BigHFibHeap heap;
     BigHHandles heapHandles;
@@ -36,6 +39,8 @@ private:
         const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h
     );
     static BigHHandles getHandles(const BigHFibHeap& heap);
+
+    bool isSorted() const;
 };
 
 

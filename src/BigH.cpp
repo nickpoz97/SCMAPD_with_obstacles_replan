@@ -4,6 +4,7 @@
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){
+        // todo not tested
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
                         auto aVal = a.getTopMCA() - a.getTopMCA();
@@ -11,6 +12,7 @@ SmallHComp BigH::getComparator(Heuristic h) {
 
                         return aVal < bVal;
                     };
+        // todo not tested
         case Heuristic::RMCA_R:
             return [](const SmallH& a, const SmallH& b) -> bool {
                 auto aVal = a.getTopMCA() / a.getTopMCA();
@@ -26,6 +28,7 @@ SmallHComp BigH::getComparator(Heuristic h) {
 
 BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
     v{h == Heuristic::MCA ? 1 : 2},
+    heuristic{h},
     heap{buildPartialAssignmentHeap(agentInfos, status, v, h)},
     heapHandles{getHandles(heap)},
     unassignedTaskIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(status.getTasks().size()))
@@ -35,6 +38,7 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
             assert((*heapHandles[i]).getTaskId() == i);
         }
         #endif
+        assert(isSorted());
     }
 
 ExtractedPath BigH::extractTop() {
@@ -65,6 +69,7 @@ void BigH::update(int k, int taskId, const Status &status) {
         heap.update(sHHandle);
         assert((*sHHandle).getTaskId() == otherTaskId);
         assert(!status.checkPathWithStatus((*sHHandle).getTopPath(), (*sHHandle).getTopAgentId()));
+        assert(isSorted());
     }
 #ifndef NDEBUG
     for(const auto& sH : heap){
@@ -96,3 +101,23 @@ BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
     }
     return heapHandles;
 }
+
+bool BigH::isSorted() const{
+    auto compare = [](const SmallH& a, const SmallH& b){
+        return a.getTopAssignment() < b.getTopAssignment();
+    };
+
+    return std::is_sorted(heap.ordered_begin(), heap.ordered_end(), compare);
+}
+
+std::vector<std::vector<Assignment>> BigH::getReverseOrderedVector() const{
+    std::vector<std::vector<Assignment>> vec;
+    vec.reserve(heap.size());
+
+    for(auto it = heap.ordered_begin() ; it != heap.ordered_end() ; ++it){
+        vec.push_back(it->getOrderedVector());
+    }
+
+    return vec;
+}
+

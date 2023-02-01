@@ -12,6 +12,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
             assert((*heapHandles[i]).getAgentId() == i);
         }
         #endif
+        assert(isSorted());
     }
 
 SmallHFibHeap
@@ -56,6 +57,7 @@ void SmallH::updateTopElements(int agentId, const Status &status) {
         }
     }
     assert(!status.checkPathWithStatus(getTopPath(), getTopAgentId()));
+    assert(isSorted());
 }
 
 TimeStep SmallH::getTopMCA() const{
@@ -96,4 +98,12 @@ int SmallH::getTopAgentId() const{
 
 const Assignment &SmallH::getTopAssignment() const {
     return heap.top();
+}
+
+bool SmallH::isSorted() const{
+    return std::is_sorted(heap.ordered_begin(), heap.ordered_end());
+}
+
+std::vector<Assignment> SmallH::getOrderedVector() const{
+    return {heap.ordered_begin(), heap.ordered_end()};
 }

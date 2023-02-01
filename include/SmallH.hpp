@@ -25,6 +25,8 @@ public:
     int getTopAgentId() const;
 
     const Assignment& getTopAssignment() const;
+
+    std::vector<Assignment> getOrderedVector() const;
 private:
     int taskId;
     int v;
@@ -35,6 +37,8 @@ private:
     initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
 
     static SmallHHandles getHandles(const SmallHFibHeap& heap);
+
+    bool isSorted() const;
 };
 
 
