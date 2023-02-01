@@ -176,21 +176,17 @@ const Path &Assignment::getPath() const {
     return path;
 }
 
-bool operator>(const Assignment &a, const Assignment &b) {
+int operator<=>(const Assignment &a, const Assignment &b) {
     // signum function
-//    auto sgn = [](auto val){return (0 < val) - (val < 0);};
-//
-//    int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
-//    int pathSizeScore = sgn(a.getPath().size() - b.getPath().size()) * 2;
-//    int idealSpanScore = sgn(a.getIdealGoalTime() - b.getIdealGoalTime());
-//
-//    return mcaScore + pathSizeScore + idealSpanScore;
+    auto sgn = [](auto val){return (0 < val) - (val < 0);};
+
+    int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
+    int pathSizeScore = sgn(a.getPath().size() - b.getPath().size()) * 2;
+    int idealSpanScore = sgn(a.getIdealGoalTime() - b.getIdealGoalTime());
+
+    return mcaScore + pathSizeScore + idealSpanScore;
 
     return a.getMCA() > b.getMCA();
-}
-
-bool operator<=>(const Assignment &a, const Assignment &b){
-    return a.getMCA() - b.getMCA();
 }
 
 TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
@@ -213,8 +209,4 @@ TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
 
 TimeStep Assignment::getIdealGoalTime() const {
     return idealGoalTime;
-}
-
-bool operator<(const Assignment &a, const Assignment &b) {
-    return a.getMCA() < b.getMCA();
 }

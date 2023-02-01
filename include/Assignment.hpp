@@ -65,7 +65,7 @@ public:
 
 //    friend bool operator>(const Assignment &a, const Assignment &b);
 //    friend bool operator<(const Assignment &a, const Assignment &b);
-    friend bool operator<=>(const Assignment &a, const Assignment &b);
+    friend int operator<=>(const Assignment &a, const Assignment &b);
 
     inline explicit operator CompressedCoord() const { return getStartPosition(); }
 
