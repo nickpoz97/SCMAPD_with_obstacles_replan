@@ -17,7 +17,7 @@ public:
     PathWrapper extractTopAndReset();
     [[nodiscard]] TimeStep getTopMCA() const;
 
-    void updateTopElements(int agentId, const Status &status);
+    void updateTopElements(const Status &status);
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
     int getTaskId() const;
 
@@ -26,7 +26,7 @@ public:
 
     const Assignment& getTopAssignment() const;
 
-    std::vector<Assignment> getOrderedVector() const;
+    std::vector<std::pair<TimeStep, Assignment>> getOrderedVector() const;
 private:
     int taskId;
     int v;

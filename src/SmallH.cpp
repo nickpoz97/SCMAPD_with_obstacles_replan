@@ -38,12 +38,12 @@ PathWrapper SmallH::extractTopAndReset() {
     return topAssignment.extractAndReset();
 }
 
-void SmallH::updateTopElements(int agentId, const Status &status) {
+void SmallH::updateTopElements(const Status &status) {
     // todo check this
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
         auto targetIt = std::next(heap.ordered_begin(), i);
 
-        if(status.checkPathWithStatus(targetIt->getPath(), agentId)){
+        if(status.checkPathWithStatus(targetIt->getPath(), targetIt->getAgentId())){
             auto& handle = heapHandles[targetIt->getAgentId()];
             assert((*handle).getAgentId() == targetIt->getAgentId());
 
@@ -104,6 +104,13 @@ bool SmallH::isSorted() const{
     return std::is_sorted(heap.ordered_begin(), heap.ordered_end());
 }
 
-std::vector<Assignment> SmallH::getOrderedVector() const{
-    return {heap.ordered_begin(), heap.ordered_end()};
+std::vector<std::pair<TimeStep, Assignment>> SmallH::getOrderedVector() const{
+    std::vector<std::pair<TimeStep, Assignment>> vec;
+    vec.reserve(heap.size());
+
+
+    for(auto it = heap.ordered_begin(); it != heap.ordered_end() ; ++it){
+        vec.emplace_back(it->getMCA(), *it);
+    }
+    return vec;
 }

@@ -65,7 +65,7 @@ void BigH::update(int k, int taskId, const Status &status) {
 
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
-        (*sHHandle).updateTopElements(k, status);
+        (*sHHandle).updateTopElements(status);
         heap.update(sHHandle);
         assert((*sHHandle).getTaskId() == otherTaskId);
         assert(!status.checkPathWithStatus((*sHHandle).getTopPath(), (*sHHandle).getTopAgentId()));
@@ -110,8 +110,8 @@ bool BigH::isSorted() const{
     return std::is_sorted(heap.ordered_begin(), heap.ordered_end(), compare);
 }
 
-std::vector<std::vector<Assignment>> BigH::getReverseOrderedVector() const{
-    std::vector<std::vector<Assignment>> vec;
+std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getReverseOrderedVector() const{
+    std::vector<std::vector<std::pair<TimeStep, Assignment>>> vec;
     vec.reserve(heap.size());
 
     for(auto it = heap.ordered_begin() ; it != heap.ordered_end() ; ++it){

@@ -22,7 +22,7 @@ public:
 
     void update(int k, int taskId, const Status &status);
 
-    std::vector<std::vector<Assignment>> getReverseOrderedVector() const;
+    std::vector<std::vector<std::pair<TimeStep, Assignment>>> getReverseOrderedVector() const;
 
 private:
     int v;

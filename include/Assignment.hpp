@@ -63,6 +63,8 @@ public:
 
     [[nodiscard]] const Path& getPath() const;
 
+//    friend bool operator>(const Assignment &a, const Assignment &b);
+//    friend bool operator<(const Assignment &a, const Assignment &b);
     friend bool operator<=>(const Assignment &a, const Assignment &b);
 
     inline explicit operator CompressedCoord() const { return getStartPosition(); }
