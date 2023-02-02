@@ -6,6 +6,7 @@
 #include "MAPF/PathFinder.hpp"
 #include "MAPF/Node.hpp"
 #include "MAPF/ExploredSet.hpp"
+#include "MAPF/NoPathException.hpp"
 
 static std::list<CompressedCoord> getPartialPath(
     const Status &status,
@@ -100,7 +101,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
             }
         }
     }
-    throw std::runtime_error("Path not found");
+    throw NoPathException();
 }
 
 static void

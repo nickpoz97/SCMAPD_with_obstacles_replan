@@ -40,7 +40,7 @@ private:
     );
     static BigHHandles getHandles(const BigHFibHeap& heap);
 
-    bool isSorted() const;
+    bool checkOrder() const;
 };
 
 

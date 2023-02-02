@@ -10,6 +10,7 @@
 
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
+#include "MAPF/NoPathException.hpp"
 
 Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status) :
         startPos{agentInfo.startPos},
@@ -52,8 +53,8 @@ Assignment::addTask(int taskId, const Status &status) {
     insertTaskWaypoints(taskId, status);
     idealGoalTime = computeIdealGoalTime(status);
     std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
-    assert(!status.checkPathWithStatus(path, index));
 
+    assert(!status.checkPathWithStatus(path, index));
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
     int sum = 0;
@@ -181,12 +182,10 @@ int operator<=>(const Assignment &a, const Assignment &b) {
     auto sgn = [](auto val){return (0 < val) - (val < 0);};
 
     int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
-    int pathSizeScore = sgn(a.getPath().size() - b.getPath().size()) * 2;
+    int pathSizeScore = sgn(std::ssize(a.getPath()) - std::ssize(b.getPath())) * 2;
     int idealSpanScore = sgn(a.getIdealGoalTime() - b.getIdealGoalTime());
 
     return mcaScore + pathSizeScore + idealSpanScore;
-
-    return a.getMCA() > b.getMCA();
 }
 
 TimeStep Assignment::computeIdealGoalTime(const Status &status) const{

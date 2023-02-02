@@ -38,7 +38,7 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
             assert((*heapHandles[i]).getTaskId() == i);
         }
         #endif
-        assert(isSorted());
+        assert(checkOrder());
     }
 
 ExtractedPath BigH::extractTop() {
@@ -59,17 +59,23 @@ bool BigH::empty() const {
 }
 
 void BigH::update(int k, int taskId, const Status &status) {
+    assert(checkOrder());
     for(auto otherTaskId : unassignedTaskIndices){
         auto& sHHandle = heapHandles[otherTaskId];
+        if((*sHHandle).empty()){
+            throw std::runtime_error("No way to find all paths");
+        }
+
         assert((*sHHandle).getTaskId() == otherTaskId);
 
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
         (*sHHandle).updateTopElements(status);
         heap.update(sHHandle);
+
         assert((*sHHandle).getTaskId() == otherTaskId);
         assert(!status.checkPathWithStatus((*sHHandle).getTopPath(), (*sHHandle).getTopAgentId()));
-        assert(isSorted());
+        assert(checkOrder());
     }
 #ifndef NDEBUG
     for(const auto& sH : heap){
@@ -102,7 +108,7 @@ BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
     return heapHandles;
 }
 
-bool BigH::isSorted() const{
+bool BigH::checkOrder() const{
     auto compare = [](const SmallH& a, const SmallH& b){
         return a.getTopAssignment() < b.getTopAssignment();
     };

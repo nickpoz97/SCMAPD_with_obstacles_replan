@@ -27,18 +27,21 @@ public:
     const Assignment& getTopAssignment() const;
 
     std::vector<std::pair<TimeStep, Assignment>> getOrderedVector() const;
+
+    [[nodiscard]] bool empty() const;
 private:
     int taskId;
     int v;
     SmallHFibHeap heap;
     SmallHHandles heapHandles;
+    std::unordered_set<int> removedAgents;
 
     static SmallHFibHeap
     initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
 
     static SmallHHandles getHandles(const SmallHFibHeap& heap);
 
-    bool isSorted() const;
+    bool checkOrder() const;
 };
 
 
