@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]] const Task & getTask(int i) const;
 
-    void updatePaths(Path &&path, int agentId);
+    void updatePaths(Path &&path, TimeStep lastDeliveryTimeStep, int agentId);
 
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
@@ -40,10 +40,13 @@ public:
 
     template<typename T>
     [[nodiscard]] std::string stringifyPath(const T& path) const;
+
+    [[nodiscard]] TimeStep getSpanCost(int agentId) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
+    std::vector<TimeStep> lastDeliveryTimeSteps;
     TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

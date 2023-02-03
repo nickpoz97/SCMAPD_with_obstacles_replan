@@ -14,6 +14,7 @@
 
 struct PathWrapper{
     int agentId;
+    TimeStep lastDeliveryTimeStep;
     Path path;
 };
 
@@ -44,7 +45,7 @@ public:
     /// @return agent initial position
     [[nodiscard]] CompressedCoord getStartPosition() const;
 
-    /// @return actual path
+    /// @return actual path with agentId and last delivery time step
     /// @warning actual path is cleared
     [[nodiscard]] PathWrapper extractAndReset();
 

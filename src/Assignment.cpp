@@ -158,9 +158,7 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
 }
 
 PathWrapper Assignment::extractAndReset() {
-    waypoints.clear();
-    oldTTD = 0;
-    return {index, std::exchange(path, {})};
+    return {index, std::next(waypoints.rbegin())->getArrivalTime() ,std::exchange(path, {})};
 }
 
 void

@@ -19,7 +19,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
     while( !bigH.empty() ){
         auto [taskId, pathWrapper] = bigH.extractTop();
         auto k = pathWrapper.agentId;
-        status.updatePaths(std::move(pathWrapper.path), k);
+        status.updatePaths(std::move(pathWrapper.path), pathWrapper.lastDeliveryTimeStep, k);
         assert(!status.checkAllConflicts());
 
         bigH.update(k, taskId, status);
@@ -29,9 +29,9 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 void SCMAPD::printResult() const{
     fmt::print("agent\tcost\tpath\n");
     for(int i = 0 ; i < status.getPaths().size() ; ++i){
-        auto& p = status.getPaths()[i];
+        auto& path = status.getPaths()[i];
 
-        fmt::print("{}\t{}\t{}\n", i, p.size(), status.stringifyPath(p));
+        fmt::print("{}\t{}\t{}\n", i, status.getSpanCost(i), status.stringifyPath(path));
     }
 }
 

@@ -11,7 +11,8 @@ Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents,
                std::vector<Task> &&tasks) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        paths(initializePaths(agents))
+        paths(initializePaths(agents)),
+        lastDeliveryTimeSteps(agents.size())
         {}
 
 const Task & Status::getTask(int i) const {
@@ -22,9 +23,10 @@ const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-void Status::updatePaths(Path &&path, int agentId) {
+void Status::updatePaths(Path &&path, TimeStep lastDeliveryTimeStep, int agentId) {
     longestPathSize = std::max(static_cast<int>(path.size()), longestPathSize);
     paths[agentId] = std::move(path);
+    lastDeliveryTimeSteps[agentId] = lastDeliveryTimeStep;
 }
 
 std::vector<CompressedCoord>
@@ -146,6 +148,10 @@ std::vector<Path> Status::initializePaths(const std::vector<AgentInfo> &agents) 
 
     std::ranges::transform(agents, std::back_inserter(paths), [](const AgentInfo& a) -> Path {return {a.startPos};});
     return paths;
+}
+
+TimeStep Status::getSpanCost(int agentId) const {
+    return lastDeliveryTimeSteps[agentId];
 }
 
 template<typename T>
