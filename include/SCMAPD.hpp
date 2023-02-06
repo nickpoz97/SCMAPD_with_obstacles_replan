@@ -23,6 +23,8 @@ private:
     Status status;
     BigH bigH;
     bool debug;
+
+    std::chrono::duration<double> execution_time{};
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

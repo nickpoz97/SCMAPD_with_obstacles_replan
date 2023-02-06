@@ -19,3 +19,7 @@ target_link_libraries(${EXE} PRIVATE cnpy fmt::fmt)
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories( ${Boost_INCLUDE_DIRS} )
 target_link_libraries(${EXE} PRIVATE ${Boost_LIBRARIES})
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" )
+message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+message("Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")

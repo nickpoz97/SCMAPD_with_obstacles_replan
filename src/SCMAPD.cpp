@@ -15,6 +15,9 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
     }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
+    using namespace std::chrono;
+    auto start = steady_clock::now();
+
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
         auto [taskId, pathWrapper] = bigH.extractTop();
@@ -24,6 +27,8 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 
         bigH.update(k, taskId, status);
     }
+
+    execution_time = steady_clock::now() - start;
 }
 
 void SCMAPD::printResult() const{
@@ -33,12 +38,17 @@ void SCMAPD::printResult() const{
 
         fmt::print("{}\t{}\t{}\n", i, status.getSpanCost(i), status.stringifyPath(path));
     }
+    fmt::print("Time:\t{0:.2f}\n", execution_time.count());
 }
 
 void SCMAPD::printCheckMessage() const{
-    if(!status.checkAllConflicts()){
-        fmt::print(fmt::emphasis::bold | fg(fmt::color::green), "No collisions\n");
+    constexpr std::string_view message{"Conflicts:\t{}"};
+
+    if(status.checkAllConflicts()){
+        fmt::print(message, "True");
+        return;
     }
+    fmt::print(message, "False");
 }
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
