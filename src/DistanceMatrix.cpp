@@ -4,7 +4,7 @@
 #include "Coord.hpp"
 
 DistanceMatrix::DistanceMatrix(const std::filesystem::path& data) :
-    rawDistanceMatrix{cnpy::npy_load(data)},
+    rawDistanceMatrix{cnpy::npy_load(data.string())},
     nRows{static_cast<int>(rawDistanceMatrix.shape[0])},
     nCols{static_cast<int>(rawDistanceMatrix.shape[1])},
     startCoordsSize{static_cast<int>(rawDistanceMatrix.shape[0] * rawDistanceMatrix.shape[1])},

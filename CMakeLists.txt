@@ -16,10 +16,6 @@ add_executable(${EXE} ${SOURCES})
 target_include_directories(${EXE} PUBLIC ${INCLUDE_DIRS} ${CNPY_INCLUDE_DIR})
 target_link_libraries(${EXE} PRIVATE cnpy fmt::fmt)
 
-set(HEURISTIC MCA CACHE STRING "Choose the insertion heuristic")
-message(Using heuristic ${HEURISTIC})
-target_compile_definitions(${EXE} PUBLIC HEUR=${HEURISTIC})
-
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories( ${Boost_INCLUDE_DIRS} )
 target_link_libraries(${EXE} PRIVATE ${Boost_LIBRARIES})
