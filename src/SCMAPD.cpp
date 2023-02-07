@@ -9,15 +9,13 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
                std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
     status(std::move(ambientMap), agents, std::move(tasksVector)),
     bigH{agents, status, heuristic},
-    debug{debug}
+    debug{debug},
+    start{std::chrono::steady_clock::now()}
     {
         assert(!status.checkAllConflicts());
     }
 
 void SCMAPD::solve(TimeStep cutOffTime) {
-    using namespace std::chrono;
-    auto start = steady_clock::now();
-
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
         auto [taskId, pathWrapper] = bigH.extractTop();
@@ -28,7 +26,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
         bigH.update(k, taskId, status);
     }
 
-    execution_time = steady_clock::now() - start;
+    execution_time = std::chrono::steady_clock::now() - start;
 }
 
 void SCMAPD::printResult() const{

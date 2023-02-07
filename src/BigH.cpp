@@ -7,11 +7,11 @@ SmallHComp BigH::getComparator(Heuristic h) {
         // todo not tested
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
-                        auto aVal = a.getTopMCA() - a.getTopMCA();
-                        auto bVal = b.getTopMCA() - b.getTopMCA();
+                auto aVal = a.getTopMCA() - a.getTopMCA();
+                auto bVal = b.getTopMCA() - b.getTopMCA();
 
-                        return aVal < bVal;
-                    };
+                return aVal < bVal;
+            };
         // todo not tested
         case Heuristic::RMCA_R:
             return [](const SmallH& a, const SmallH& b) -> bool {

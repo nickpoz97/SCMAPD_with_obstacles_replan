@@ -24,7 +24,11 @@ private:
     BigH bigH;
     bool debug;
 
-    std::chrono::duration<double> execution_time{};
+    using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+    using duration = std::chrono::duration<double>;
+
+    time_point start;
+    duration execution_time{};
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

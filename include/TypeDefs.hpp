@@ -7,8 +7,6 @@
 
 using TimeStep = int;
 
-using PickupDropoffTime = std::pair<TimeStep, TimeStep>;
-
 enum class Demand : int{
     PICKUP = 1,
     DELIVERY = -1,
@@ -22,7 +20,7 @@ enum class Heuristic{
 };
 
 enum class Strategy{
-    AVOID_SPAWN,
+    RETURN_TO_SPAWN,
     HOLD_AND_DODGE,
     WAIT_OTHERS
 };
