@@ -7,16 +7,10 @@
 #include <optional>
 
 #include "Task.hpp"
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Waypoint.hpp"
 #include "Status.hpp"
 #include "AgentInfo.hpp"
-
-struct PathWrapper{
-    int agentId;
-    TimeStep lastDeliveryTimeStep;
-    Path path;
-};
 
 /**
  * @class Assignment
@@ -47,7 +41,7 @@ public:
 
     /// @return actual path with agentId and last delivery time step
     /// @warning actual path is cleared
-    [[nodiscard]] PathWrapper extractAndReset();
+    [[nodiscard]] std::tuple<int, TimeStep, Path> extractAndReset();
 
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
@@ -76,6 +70,8 @@ public:
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 
     [[nodiscard]] TimeStep getIdealGoalTime() const;
+
+    [[nodiscard]] TimeStep getLastDeliveryTimeStep() const;
 private:
     CompressedCoord startPos;
     int index;

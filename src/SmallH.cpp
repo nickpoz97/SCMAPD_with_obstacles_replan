@@ -30,12 +30,11 @@ SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, co
     return heap;
 }
 
-PathWrapper SmallH::extractTopAndReset() {
+std::tuple<int, TimeStep, Path> SmallH::extractTop() {
     assert(!heap.empty());
 
     // atomic block
     auto topAssignment = std::move(const_cast<Assignment&>(heap.top()));
-    heap.clear();
 
     return topAssignment.extractAndReset();
 }

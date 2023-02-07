@@ -1,7 +1,7 @@
 #ifndef SIMULTANEOUS_CMAPD_UTILS_HPP
 #define SIMULTANEOUS_CMAPD_UTILS_HPP
 
-#include <TypeDefs.hpp>
+#include <NewTypes.hpp>
 #include <filesystem>
 
 #include <fmt/core.h>

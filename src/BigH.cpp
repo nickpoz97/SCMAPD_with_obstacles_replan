@@ -41,17 +41,21 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
         assert(checkOrder());
     }
 
-ExtractedPath BigH::extractTop() {
+PathWrapper BigH::extractTop() {
     assert(!heap.empty());
 
     // atomic block (and order is important)
-    auto topSmallH = std::move(const_cast<SmallH&>(heap.top()));
+    const auto& topSmallH = heap.top();
+
     auto taskId = topSmallH.getTaskId();
-    auto pathWrapper = topSmallH.extractTopAndReset();
+    auto path = topSmallH.getTopPath();
+    auto agentId = topSmallH.getTopAgentId();
+    auto lastDelTimestep = topSmallH.getTopAssignment().getLastDeliveryTimeStep();
+
     heap.pop();
 
     unassignedTaskIndices.erase(taskId);
-    return {taskId, std::move(pathWrapper)};
+    return {taskId, agentId, lastDelTimestep, path};
 }
 
 bool BigH::empty() const {

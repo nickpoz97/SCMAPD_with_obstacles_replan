@@ -2,9 +2,7 @@
 #include <array>
 #include <numeric>
 #include <cassert>
-#include <algorithm>
 #include <fstream>
-#include <fmt/core.h>
 #include <fmt/ranges.h>
 #include <set>
 
@@ -157,8 +155,13 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
     return ttd;
 }
 
-PathWrapper Assignment::extractAndReset() {
-    return {index, std::next(waypoints.rbegin())->getArrivalTime() ,std::exchange(path, {})};
+std::tuple<int, TimeStep, Path> Assignment::extractAndReset() {
+    return {index, getLastDeliveryTimeStep() ,std::exchange(path, {})};
+}
+
+TimeStep Assignment::getLastDeliveryTimeStep() const{
+    assert(waypoints.size() >= 3);
+    return std::next(waypoints.rbegin())->getArrivalTime();
 }
 
 void

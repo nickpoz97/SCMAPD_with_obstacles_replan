@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "Coord.hpp"
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Node.hpp"
 
 class ExploredSet {

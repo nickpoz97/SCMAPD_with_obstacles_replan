@@ -9,15 +9,10 @@ using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
 using BigHFibHeap = boost::heap::fibonacci_heap<SmallH, boost::heap::compare<SmallHComp>>;
 using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
 
-struct ExtractedPath{
-    int taskId;
-    PathWrapper pathWrapper;
-};
-
 class BigH {
 public:
     BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h);
-    ExtractedPath extractTop();
+    PathWrapper extractTop();
     [[nodiscard]] bool empty() const;
 
     void update(int k, int taskId, const Status &status);

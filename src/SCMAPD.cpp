@@ -18,9 +18,7 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        auto [taskId, pathWrapper] = bigH.extractTop();
-        auto k = pathWrapper.agentId;
-        status.updatePaths(std::move(pathWrapper.path), pathWrapper.lastDeliveryTimeStep, k);
+        auto [k, taskId] = status.updatePaths(bigH.extractTop());
         assert(!status.checkAllConflicts());
 
         bigH.update(k, taskId, status);
@@ -52,8 +50,7 @@ void SCMAPD::printCheckMessage() const{
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                        const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                        Heuristic heuristic) {
-    DistanceMatrix dm{distanceMatrixFile};
-    AmbientMap ambientMap(gridFile, std::move(dm));
+    AmbientMap ambientMap(gridFile, DistanceMatrix{distanceMatrixFile});
 
     auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
     auto tasks{loadTasks(tasksFile, ambientMap.getDistanceMatrix())};

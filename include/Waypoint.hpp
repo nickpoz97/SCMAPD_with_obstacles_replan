@@ -7,7 +7,7 @@
 
 #include <fmt/printf.h>
 #include <optional>
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Coord.hpp"
 #include "utils.hpp"
 #include "Task.hpp"

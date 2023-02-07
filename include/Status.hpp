@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]] const Task & getTask(int i) const;
 
-    void updatePaths(Path &&path, TimeStep lastDeliveryTimeStep, int agentId);
+    std::pair<int, int> updatePaths(PathWrapper &&pathWrapper);
 
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;

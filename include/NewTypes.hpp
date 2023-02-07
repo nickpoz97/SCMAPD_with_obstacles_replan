@@ -1,9 +1,8 @@
-#ifndef SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
-#define SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
+#ifndef SIMULTANEOUS_CMAPD_NEWTYPES_HPP
+#define SIMULTANEOUS_CMAPD_NEWTYPES_HPP
 
 #include <vector>
 #include <list>
-#include "Coord.hpp"
 
 using TimeStep = int;
 
@@ -25,4 +24,4 @@ enum class Strategy{
     WAIT_OTHERS
 };
 
-#endif //SIMULTANEOUS_CMAPD_TYPEDEFS_HPP
+#endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

@@ -1,7 +1,7 @@
 #ifndef SIMULTANEOUS_CMAPD_TASK_HPP
 #define SIMULTANEOUS_CMAPD_TASK_HPP
 
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "DistanceMatrix.hpp"
 #include "utils.hpp"
 

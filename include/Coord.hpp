@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <string>
+#include "NewTypes.hpp"
 
 struct Coord {
     int row;
@@ -24,7 +25,12 @@ using Direction = Coord::Direction;
 using CompressedCoord = int;
 
 using Path = std::vector<CompressedCoord>;
-using CompressedPath = std::vector<CompressedCoord>;
 
+struct PathWrapper{
+    int taskId;
+    int agentId;
+    TimeStep lastDeliveryTimeStep;
+    Path path;
+};
 
 #endif //SIMULTANEOUS_CMAPD_COORD_HPP

@@ -23,10 +23,17 @@ const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-void Status::updatePaths(Path &&path, TimeStep lastDeliveryTimeStep, int agentId) {
-    longestPathSize = std::max(static_cast<int>(path.size()), longestPathSize);
-    paths[agentId] = std::move(path);
+std::pair<int, int> Status::updatePaths(PathWrapper &&pathWrapper) {
+    auto agentId = pathWrapper.agentId;
+    auto taskId = pathWrapper.taskId;
+    auto& newPath = pathWrapper.path;
+    auto lastDeliveryTimeStep = pathWrapper.lastDeliveryTimeStep;
+
+    longestPathSize = std::max(static_cast<int>(newPath.size()), longestPathSize);
     lastDeliveryTimeSteps[agentId] = lastDeliveryTimeStep;
+    paths[pathWrapper.agentId] = std::move(newPath);
+
+    return {agentId, taskId};
 }
 
 std::vector<CompressedCoord>

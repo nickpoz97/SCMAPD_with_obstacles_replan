@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <array>
 #include <optional>
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Coord.hpp"
 #include "DistanceMatrix.hpp"
 #include <boost/iterator/counting_iterator.hpp>

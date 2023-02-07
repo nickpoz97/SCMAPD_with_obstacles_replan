@@ -6,7 +6,7 @@
 #define SIMULTANEOUS_CMAPD_NODE_HPP
 
 #include "Coord.hpp"
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Status.hpp"
 
 class Node {

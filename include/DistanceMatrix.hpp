@@ -7,7 +7,7 @@
 
 #include <filesystem>
 #include <cnpy.h>
-#include "TypeDefs.hpp"
+#include "NewTypes.hpp"
 #include "Coord.hpp"
 
 struct DistanceMatrix {
