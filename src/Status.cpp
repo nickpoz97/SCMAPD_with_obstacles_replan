@@ -178,26 +178,15 @@ std::string Status::stringifyPath(const T& path) const {
     return result;
 }
 
+bool Status::hasIllegalPositions(const Path& path) const{
+    const auto& dm = ambient.getDistanceMatrix();
+    return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
+}
+
 template
 std::string Status::stringifyPath<std::list<CompressedCoord>>(const std::list<CompressedCoord>& path) const;
 
 template
 std::string Status::stringifyPath<Path>(const Path& path) const;
 
-//std::string Status::stringifyPath(const Path& path) const {
-//    static constexpr std::string_view pattern = "({},{})->";
-//
-//    std::string result{};
-//    result.reserve(pattern.size() * path.size());
-//
-//    for(const auto& pos : path){
-//        auto pos2D = ambient.getDistanceMatrix().from1Dto2D(pos);
-//        result.append(fmt::format(pattern, pos2D.row, pos2D.col));
-//    }
-//
-//    if(!result.empty()){
-//        result.resize(result.size() - 2);
-//    }
-//    return result;
-//}
 

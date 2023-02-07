@@ -42,6 +42,8 @@ public:
     [[nodiscard]] std::string stringifyPath(const T& path) const;
 
     [[nodiscard]] TimeStep getSpanCost(int agentId) const;
+
+    [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

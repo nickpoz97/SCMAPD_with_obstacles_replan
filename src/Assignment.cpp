@@ -50,9 +50,7 @@ Assignment::addTask(int taskId, const Status &status) {
     oldTTD = getActualTTD();
     insertTaskWaypoints(taskId, status);
     idealGoalTime = computeIdealGoalTime(status);
-    std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
-
-    assert(!status.checkPathWithStatus(path, index));
+    internalUpdate(status);
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
     int sum = 0;
@@ -167,6 +165,7 @@ TimeStep Assignment::getLastDeliveryTimeStep() const{
 void
 Assignment::internalUpdate(const Status &status) {
     std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
+    assert(!status.hasIllegalPositions(path));
     assert(!status.checkPathWithStatus(path, index));
 }
 
