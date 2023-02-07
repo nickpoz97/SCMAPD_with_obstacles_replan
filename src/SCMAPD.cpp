@@ -28,6 +28,7 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 }
 
 void SCMAPD::printResult() const{
+    fmt::print("{}\n", status.getPaths().size());
     fmt::print("agent\tcost\tpath\n");
     for(int i = 0 ; i < status.getPaths().size() ; ++i){
         auto& path = status.getPaths()[i];

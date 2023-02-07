@@ -12,8 +12,8 @@ args = parser.parse_args()
 build_path = args.build_path
 bin_path = args.bin_path
 
-assert(not os.path.exists(build_path))
-os.makedirs(build_path)
+if not os.path.exists(build_path):
+    os.makedirs(build_path)
 
 # force MinGW on windows
 generator = "-G \"MinGW Makefiles\"" if sys.platform == "win32" else ""
