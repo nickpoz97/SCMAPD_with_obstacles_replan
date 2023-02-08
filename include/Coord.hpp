@@ -29,6 +29,7 @@ using Path = std::vector<CompressedCoord>;
 struct PathWrapper{
     int taskId;
     int agentId;
+    TimeStep ttd;
     TimeStep lastDeliveryTimeStep;
     Path path;
 };

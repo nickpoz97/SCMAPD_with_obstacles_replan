@@ -12,7 +12,8 @@ Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents,
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
         paths(initializePaths(agents)),
-        lastDeliveryTimeSteps(agents.size())
+        lastDeliveryTimeSteps(agents.size()),
+        agentsTTD(agents.size())
         {}
 
 const Task & Status::getTask(int i) const {
@@ -23,14 +24,14 @@ const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-std::pair<int, int> Status::updatePaths(PathWrapper &&pathWrapper) {
+std::pair<int, int> Status::update(PathWrapper &&pathWrapper) {
     auto agentId = pathWrapper.agentId;
     auto taskId = pathWrapper.taskId;
     auto& newPath = pathWrapper.path;
-    auto lastDeliveryTimeStep = pathWrapper.lastDeliveryTimeStep;
 
     longestPathSize = std::max(static_cast<int>(newPath.size()), longestPathSize);
-    lastDeliveryTimeSteps[agentId] = lastDeliveryTimeStep;
+    lastDeliveryTimeSteps[agentId] = pathWrapper.lastDeliveryTimeStep;
+    agentsTTD[agentId] = pathWrapper.ttd;
     paths[pathWrapper.agentId] = std::move(newPath);
 
     return {agentId, taskId};
@@ -181,6 +182,10 @@ std::string Status::stringifyPath(const T& path) const {
 bool Status::hasIllegalPositions(const Path& path) const{
     const auto& dm = ambient.getDistanceMatrix();
     return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
+}
+
+TimeStep Status::getTTD(int agentId) const {
+    return agentsTTD[agentId];
 }
 
 template

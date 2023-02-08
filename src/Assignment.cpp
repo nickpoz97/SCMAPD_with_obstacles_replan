@@ -159,7 +159,7 @@ std::tuple<int, TimeStep, Path> Assignment::extractAndReset() {
 
 TimeStep Assignment::getLastDeliveryTimeStep() const{
     assert(waypoints.size() >= 3);
-    return std::next(waypoints.rbegin())->getArrivalTime();
+    return std::next(waypoints.crbegin())->getArrivalTime();
 }
 
 void
@@ -189,7 +189,7 @@ int operator<=>(const Assignment &a, const Assignment &b) {
 }
 
 TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
-    assert(waypoints.size() > 0);
+    assert(!waypoints.empty());
     TimeStep igt = 0;
     const auto& dm = status.getDistanceMatrix();
 
@@ -208,4 +208,9 @@ TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
 
 TimeStep Assignment::getIdealGoalTime() const {
     return idealGoalTime;
+}
+
+TimeStep Assignment::getTotalTravelDelay() const {
+    assert(!waypoints.empty());
+    return waypoints.crbegin()->getCumulatedDelay();
 }

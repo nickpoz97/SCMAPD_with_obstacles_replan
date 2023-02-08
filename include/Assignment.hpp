@@ -72,6 +72,8 @@ public:
     [[nodiscard]] TimeStep getIdealGoalTime() const;
 
     [[nodiscard]] TimeStep getLastDeliveryTimeStep() const;
+
+    [[nodiscard]] TimeStep getTotalTravelDelay() const;
 private:
     CompressedCoord startPos;
     int index;

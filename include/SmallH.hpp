@@ -16,19 +16,23 @@ public:
 
     std::tuple<int, TimeStep, Path> extractTop();
     [[nodiscard]] TimeStep getTopMCA() const;
+    [[nodiscard]] TimeStep getSecondTopMCA() const;
 
     void updateTopElements(const Status &status);
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
-    int getTaskId() const;
 
-    const Path& getTopPath() const;
-    int getTopAgentId() const;
-
-    const Assignment& getTopAssignment() const;
+    [[nodiscard]] const Assignment& getTopAssignment() const;
+    [[nodiscard]] const Assignment& getSecondTopAssignment() const;
 
     std::vector<std::pair<TimeStep, Assignment>> getOrderedVector() const;
 
     [[nodiscard]] bool empty() const;
+
+    [[nodiscard]] int getTaskId() const;
+    [[nodiscard]] const Path& getTopPath() const;
+    [[nodiscard]] int getTopAgentId() const;
+
+    [[nodiscard]] PathWrapper getTopWrappedPath() const;
 private:
     int taskId;
     int v;

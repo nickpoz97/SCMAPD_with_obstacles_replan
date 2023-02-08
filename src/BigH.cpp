@@ -7,18 +7,28 @@ SmallHComp BigH::getComparator(Heuristic h) {
         // todo not tested
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
-                auto aVal = a.getTopMCA() - a.getTopMCA();
-                auto bVal = b.getTopMCA() - b.getTopMCA();
+                const auto& aFirstAssign = a.getTopAssignment();
+                const auto& aSecondAssign = a.getSecondTopAssignment();
+                const auto& bFirstAssign = b.getTopAssignment();
+                const auto& bSecondAssign = b.getSecondTopAssignment();
 
-                return aVal < bVal;
+                auto aVal = aFirstAssign.getMCA() - aSecondAssign.getMCA();
+                auto bVal = bFirstAssign.getMCA() - bSecondAssign.getMCA();
+
+                return aVal < bVal || (aVal == bVal && aFirstAssign < bFirstAssign);
             };
         // todo not tested
         case Heuristic::RMCA_R:
             return [](const SmallH& a, const SmallH& b) -> bool {
-                auto aVal = a.getTopMCA() / a.getTopMCA();
-                auto bVal = b.getTopMCA() / b.getTopMCA();
+                const auto& aFirstAssign = a.getTopAssignment();
+                const auto& aSecondAssign = a.getSecondTopAssignment();
+                const auto& bFirstAssign = b.getTopAssignment();
+                const auto& bSecondAssign = b.getSecondTopAssignment();
 
-                return aVal < bVal;
+                auto aVal = aFirstAssign.getMCA() / aSecondAssign.getMCA();
+                auto bVal = bFirstAssign.getMCA() / bSecondAssign.getMCA();
+
+                return aVal < bVal || (aVal == bVal && aFirstAssign < bFirstAssign);
             };
         // MCA
         default:
@@ -46,16 +56,12 @@ PathWrapper BigH::extractTop() {
 
     // atomic block (and order is important)
     const auto& topSmallH = heap.top();
-
-    auto taskId = topSmallH.getTaskId();
-    auto path = topSmallH.getTopPath();
-    auto agentId = topSmallH.getTopAgentId();
-    auto lastDelTimestep = topSmallH.getTopAssignment().getLastDeliveryTimeStep();
+    auto wrappedPath = topSmallH.getTopWrappedPath();
 
     heap.pop();
+    unassignedTaskIndices.erase(wrappedPath.taskId);
 
-    unassignedTaskIndices.erase(taskId);
-    return {taskId, agentId, lastDelTimestep, path};
+    return wrappedPath;
 }
 
 bool BigH::empty() const {

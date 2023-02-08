@@ -138,3 +138,24 @@ std::vector<std::pair<TimeStep, Assignment>> SmallH::getOrderedVector() const{
 bool SmallH::empty() const{
     return heap.empty();
 }
+[[nodiscard]] PathWrapper SmallH::getTopWrappedPath() const{
+    const auto& top = heap.top();
+
+    return{
+        .taskId = taskId,
+        .agentId = top.getAgentId(),
+        .ttd = top.getTotalTravelDelay(),
+        .lastDeliveryTimeStep = top.getLastDeliveryTimeStep(),
+        .path {top.getPath()}
+    };
+}
+
+const Assignment &SmallH::getSecondTopAssignment() const {
+    assert(heap.size() >= 2);
+    return *std::next(heap.ordered_begin(), 2);
+}
+
+TimeStep SmallH::getSecondTopMCA() const {
+    return getSecondTopAssignment().getMCA();
+}
+

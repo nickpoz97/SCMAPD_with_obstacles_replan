@@ -18,7 +18,7 @@ SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
 void SCMAPD::solve(TimeStep cutOffTime) {
     // extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
-        auto [k, taskId] = status.updatePaths(bigH.extractTop());
+        auto [k, taskId] = status.update(bigH.extractTop());
         assert(!status.checkAllConflicts());
 
         bigH.update(k, taskId, status);
@@ -29,11 +29,11 @@ void SCMAPD::solve(TimeStep cutOffTime) {
 
 void SCMAPD::printResult() const{
     fmt::print("{}\n", status.getPaths().size());
-    fmt::print("agent\tcost\tpath\n");
+    fmt::print("agent\tcost\tttd\tpath\n");
     for(int i = 0 ; i < status.getPaths().size() ; ++i){
         auto& path = status.getPaths()[i];
 
-        fmt::print("{}\t{}\t{}\n", i, status.getSpanCost(i), status.stringifyPath(path));
+        fmt::print("{}\t{}\t{}\t{}\n", i, status.getSpanCost(i), status.getTTD(i) ,status.stringifyPath(path));
     }
     fmt::print("Time:\t{0:.2f}\n", execution_time.count());
 }

@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]] const Task & getTask(int i) const;
 
-    std::pair<int, int> updatePaths(PathWrapper &&pathWrapper);
+    std::pair<int, int> update(PathWrapper &&pathWrapper);
 
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
@@ -44,11 +44,14 @@ public:
     [[nodiscard]] TimeStep getSpanCost(int agentId) const;
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
+
+    [[nodiscard]] TimeStep getTTD(int agentId) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
     std::vector<TimeStep> lastDeliveryTimeSteps;
+    std::vector<TimeStep> agentsTTD;
     TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
