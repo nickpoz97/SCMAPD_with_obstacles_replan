@@ -7,28 +7,41 @@ SmallHComp BigH::getComparator(Heuristic h) {
         // todo not tested
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
-                const auto& aFirstAssign = a.getTopAssignment();
-                const auto& aSecondAssign = a.getSecondTopAssignment();
-                const auto& bFirstAssign = b.getTopAssignment();
-                const auto& bSecondAssign = b.getSecondTopAssignment();
+                auto getVal = [](const SmallH& sH){
+                    auto fMCA = sH.getTopAssignment().getMCA();
+                    auto sMCA = sH.getSecondTopAssignment().getMCA();
 
-                auto aVal = aFirstAssign.getMCA() - aSecondAssign.getMCA();
-                auto bVal = bFirstAssign.getMCA() - bSecondAssign.getMCA();
+                    return sMCA - fMCA;
+                };
 
-                return aVal < bVal || (aVal == bVal && aFirstAssign < bFirstAssign);
+                auto aVal = getVal(a);
+                auto bVal = getVal(b);
+                assert(aVal >= 0 && bVal >= 0);
+
+                return aVal < bVal || (aVal == bVal && a.getTopAssignment() > b.getTopAssignment());
             };
         // todo not tested
         case Heuristic::RMCA_R:
+
             return [](const SmallH& a, const SmallH& b) -> bool {
-                const auto& aFirstAssign = a.getTopAssignment();
-                const auto& aSecondAssign = a.getSecondTopAssignment();
-                const auto& bFirstAssign = b.getTopAssignment();
-                const auto& bSecondAssign = b.getSecondTopAssignment();
+                auto getVal = [](const SmallH& sH){
+                    auto fMCA = sH.getTopAssignment().getMCA();
+                    auto sMCA = sH.getSecondTopAssignment().getMCA();
 
-                auto aVal = aFirstAssign.getMCA() / aSecondAssign.getMCA();
-                auto bVal = bFirstAssign.getMCA() / bSecondAssign.getMCA();
+                    assert(fMCA >= 0 && sMCA >= fMCA);
+                    if(fMCA == 0 && sMCA == 0){
+                        return 1.0f;
+                    }
+                    if(fMCA == 0 && sMCA >= 0){
+                        return std::numeric_limits<float>::infinity();
+                    }
+                    return static_cast<float>(sMCA) / static_cast<float>(fMCA);
+                };
 
-                return aVal < bVal || (aVal == bVal && aFirstAssign < bFirstAssign);
+                auto aVal = getVal(a);
+                auto bVal = getVal(b);
+
+                return aVal < bVal || (aVal == bVal && a.getTopAssignment() > b.getTopAssignment());
             };
         // MCA
         default:
@@ -119,14 +132,14 @@ BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
 }
 
 bool BigH::checkOrder() const{
-    auto compare = [](const SmallH& a, const SmallH& b){
-        return a.getTopAssignment() < b.getTopAssignment();
+    const auto reversedComparator = [&](const SmallH& a, const SmallH&b) {
+        return getComparator(heuristic)(b, a);
     };
 
-    return std::is_sorted(heap.ordered_begin(), heap.ordered_end(), compare);
+    return std::is_sorted(heap.ordered_begin(), heap.ordered_end(), reversedComparator);
 }
 
-std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getReverseOrderedVector() const{
+std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector() const{
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> vec;
     vec.reserve(heap.size());
 

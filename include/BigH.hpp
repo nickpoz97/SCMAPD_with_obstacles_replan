@@ -17,7 +17,7 @@ public:
 
     void update(int k, int taskId, const Status &status);
 
-    std::vector<std::vector<std::pair<TimeStep, Assignment>>> getReverseOrderedVector() const;
+    std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
 
 private:
     int v;

@@ -39,6 +39,8 @@ with open(grid_path, "r") as file:
 # generate and print instances
 assert(n_agents + 2 * n_tasks <= len(candidates))
 
+os.makedirs(args.out, exist_ok=False)
+
 for i in range(n_instances):
     instance_grid = grid.copy()
 

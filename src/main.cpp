@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
         ("dm", po::value<string>()->required(), "distance matrix file")
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
+        ("h", po::value<string>()->required(), "heuristic")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -31,11 +32,13 @@ int main(int argc, char* argv[]){
 
     auto distanceMatrixFile{vm["dm"].as<string>()};
     auto gridFile{vm["m"].as<string>()};
-
     auto robotsFile{vm["a"].as<string>()};
     auto tasksFile{vm["t"].as<string>()};
+    auto heurString{vm["h"].as<string>()};
 
-    SCMAPD scmapd{loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, Heuristic::MCA)};
+    SCMAPD scmapd{
+        loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, utils::getHeuristicFromString(heurString))
+    };
     scmapd.solve(10);
     scmapd.printResult();
 
