@@ -84,12 +84,24 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
     const std::list<CompressedCoord> pathList{};
     int nIterations = 0;
 
-    while (!frontier.empty() && nIterations <= status.getPathsUpperBound()){
+    std::unordered_map<CompressedCoord, int> exploredPosCounter;
+
+    while (!frontier.empty()){
         ++nIterations;
         auto topNodePtr = frontier.top();
-
-        exploredSet.add(*topNodePtr);
         frontier.pop();
+
+        auto topNodeLoc = topNodePtr->getLocation();
+
+        if(!exploredPosCounter.contains(topNodeLoc)){
+            exploredPosCounter[topNodeLoc] = 0;
+        }
+        ++exploredPosCounter[topNodeLoc];
+
+        if(exploredPosCounter[topNodeLoc] > 2 || exploredSet.contains(topNodeLoc, topNodePtr->getGScore())){
+            exploredSet.add(*topNodePtr);
+            continue;
+        }
 
         if(topNodePtr->getLocation() == goalLoc){
             return topNodePtr->getPathList();
@@ -99,7 +111,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
 
         auto nextT = topNodePtr->getGScore() + 1;
         for(auto loc : neighbors){
-            if(!exploredSet.contains(loc, nextT)){
+            if(!exploredSet.contains(loc, nextT) && exploredPosCounter[topNodeLoc] < 2){
                 frontier.emplace(new Node{loc, nextT, dm.getDistance(loc, goalLoc), topNodePtr});
             }
         }
