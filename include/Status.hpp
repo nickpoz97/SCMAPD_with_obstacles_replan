@@ -46,6 +46,9 @@ public:
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
     [[nodiscard]] TimeStep getTTD(int agentId) const;
+
+    // this size should be considered an upper bound
+    [[nodiscard]] TimeStep getPathsUpperBound() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

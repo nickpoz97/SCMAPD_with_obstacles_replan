@@ -24,3 +24,4 @@ set(CMAKE_CXX_FLAGS_SANIT "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,unde
 message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message("Sanitizer flags: ${CMAKE_CXX_FLAGS_DEBUG} -O0")
 message("Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
+message("RelWithDebInfo flags: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")

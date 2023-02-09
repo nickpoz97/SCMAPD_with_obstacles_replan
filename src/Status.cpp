@@ -188,6 +188,14 @@ TimeStep Status::getTTD(int agentId) const {
     return agentsTTD[agentId];
 }
 
+TimeStep Status::getPathsUpperBound() const {
+    return
+        static_cast<int>(ambient.getNRows()) *
+        static_cast<int>(ambient.getNCols()) *
+        static_cast<int>(tasksVector.size()) *
+        static_cast<int>(AmbientMap::nDirections);
+}
+
 template
 std::string Status::stringifyPath<std::list<CompressedCoord>>(const std::list<CompressedCoord>& path) const;
 

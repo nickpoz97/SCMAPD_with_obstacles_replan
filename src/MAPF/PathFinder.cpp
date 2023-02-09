@@ -82,9 +82,12 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
     frontier.emplace(new Node{startLoc, t, dm.getDistance(startLoc, goalLoc)});
 
     const std::list<CompressedCoord> pathList{};
+    int nIterations = 0;
 
-    while (!frontier.empty()){
+    while (!frontier.empty() && nIterations <= status.getPathsUpperBound()){
+        ++nIterations;
         auto topNodePtr = frontier.top();
+
         exploredSet.add(*topNodePtr);
         frontier.pop();
 
