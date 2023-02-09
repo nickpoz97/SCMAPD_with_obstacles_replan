@@ -2,81 +2,98 @@ import argparse
 import random
 import os
 
-parser = argparse.ArgumentParser(description="Generate random instances")
+class NoMorePositions(Exception):
 
-parser.add_argument("grid", metavar="grid_path", type=str, help="path of grid file")
-parser.add_argument("a", metavar="A", type=int, help="number of agents")
-parser.add_argument("t", metavar="T", type=int, help="number of tasks")
-parser.add_argument("n", metavar="N", type=int, help="number of instances")
-parser.add_argument("out", metavar="output_dir_path", type=str, help="instances output location")
+    def __init__(self, n_agents: int, n_tasks: int, n_positions: int, *args: object) -> None:
+        super().__init__(args)
+        self.n_agents = n_agents
+        self.n_tasks = n_tasks
+        self.n_positions = n_positions
 
-args = parser.parse_args()
+    def __str__(self) -> str:
+        val = self.n_agents + self.n_tasks * 2
+        return f"{self.n_agents} agents + {self.n_tasks} tasks * 2 = {val} > {self.n_positions} available positions"
+    
 
-grid_path = args.grid
-n_agents = args.a
-n_tasks = args.t
-n_instances = args.n
+def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir):
+    # extract possible positions for tasks and agents
+    candidates = list()
 
-# extract possible positions for tasks and agents
-candidates = list()
+    assert(os.path.isfile(grid_path))
+    with open(grid_path, "r") as file:
+        lines = file.readlines()
 
-assert(os.path.isfile(grid_path))
-with open(grid_path, "r") as file:
-    lines = file.readlines()
+        global grid
+        grid = [['.'] * len(lines[0]) for i in range(len(lines))]
 
-    global grid
-    grid = [['.'] * len(lines[0]) for i in range(len(lines))]
+        for rowi, l in enumerate(lines): 
+            for coli, symbol in enumerate(l.strip()):
+                if symbol == 'G':
+                    candidates.append((rowi, coli))
+                if symbol == '@': 
+                    grid[rowi][coli] = '@'
 
-    for rowi, l in enumerate(lines): 
-        for coli, symbol in enumerate(l.strip()):
-            if symbol == 'G':
-                candidates.append((rowi, coli))
-            if symbol == '@': 
-                grid[rowi][coli] = '@'
+    # generate and print instances
+    if n_agents + 2 * n_tasks > len(candidates):
+        raise NoMorePositions(n_agents, n_tasks, len(candidates)) 
 
-#print(grid)
+    os.makedirs(out_dir, exist_ok=True)
 
-# generate and print instances
-assert(n_agents + 2 * n_tasks <= len(candidates))
+    for i in range(n_instances):
+        instance_grid = grid.copy()
 
-os.makedirs(args.out, exist_ok=False)
+        random.shuffle(candidates)
+        stringify_coord = lambda coord: str(coord[0]) + ',' + str(coord[1])
 
-for i in range(n_instances):
-    instance_grid = grid.copy()
+        agents_coords = candidates[:n_agents]
+        tasks_coords = candidates[n_agents:n_agents + 2 * n_tasks]
 
-    random.shuffle(candidates)
-    stringify_coord = lambda coord: str(coord[0]) + ',' + str(coord[1])
+        agents = ['\n' + stringify_coord(coord) for coord in agents_coords]
 
-    agents_coords = candidates[:n_agents]
-    tasks_coords = candidates[n_agents:n_agents + 2 * n_tasks]
+        get_sep = lambda index : '\n' if index % 2 == 0 else ','
+        tasks = [get_sep(j) + stringify_coord(coord) for j, coord in enumerate(tasks_coords)]
 
-    agents = ['\n' + stringify_coord(coord) for coord in agents_coords]
+        agents_path = str(i) + '.agents'
+        tasks_path = str(i) + '.tasks'
+        instance_grid_path = str(i) + '.grid'
 
-    get_sep = lambda index : '\n' if index % 2 == 0 else ','
-    tasks = [get_sep(j) + stringify_coord(coord) for j, coord in enumerate(tasks_coords)]
+        with open(os.path.join(out_dir, agents_path), "w") as af:
+            af.write(str(n_agents))
+            af.writelines(agents)
+            af.write('\n')
 
-    agents_path = str(i) + '.agents'
-    tasks_path = str(i) + '.tasks'
-    instance_grid_path = str(i) + '.grid'
+        with open(os.path.join(out_dir, tasks_path), "w") as tf:
+            tf.write(str(n_tasks))
+            tf.writelines(tasks)
+            tf.write('\n')
 
-    with open(os.path.join(args.out, agents_path), "w") as af:
-        af.write(str(n_agents))
-        af.writelines(agents)
-        af.write('\n')
+        for row, col in agents_coords:
+            instance_grid[row][col] = 'a'
+        for j, (row, col) in enumerate(tasks_coords):
+            instance_grid[row][col] = 's' if j % 2 == 0 else 'g'
 
-    with open(os.path.join(args.out, tasks_path), "w") as tf:
-        tf.write(str(n_tasks))
-        tf.writelines(tasks)
-        tf.write('\n')
+        grid_string = ''
+        for j in range(len(grid)):
+            grid_string += ''.join(grid[j]) + '\n'
+            
+        with open(os.path.join(out_dir, instance_grid_path), "w") as igf:
+            igf.write(grid_string)
 
-    for row, col in agents_coords:
-        instance_grid[row][col] = 'a'
-    for j, (row, col) in enumerate(tasks_coords):
-        instance_grid[row][col] = 's' if j % 2 == 0 else 'g'
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate random instances")
 
-    grid_string = ''
-    for j in range(len(grid)):
-        grid_string += ''.join(grid[j]) + '\n'
-        
-    with open(os.path.join(args.out, instance_grid_path), "w") as igf:
-        igf.write(grid_string)
+    parser.add_argument("grid", metavar="grid_path", type=str, help="path of grid file")
+    parser.add_argument("a", metavar="A", type=int, help="number of agents")
+    parser.add_argument("t", metavar="T", type=int, help="number of tasks")
+    parser.add_argument("n", metavar="N", type=int, help="number of instances")
+    parser.add_argument("out", metavar="output_dir_path", type=str, help="instances output location")
+
+    args = parser.parse_args()
+
+    grid_path = args.grid
+    n_agents = args.a
+    n_tasks = args.t
+    n_instances = args.n
+    out_dir = args.out
+
+    gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir)

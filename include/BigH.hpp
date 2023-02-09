@@ -6,7 +6,7 @@
 
 // todo check if heap is max or min
 using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
-using BigHFibHeap = boost::heap::fibonacci_heap<SmallH, boost::heap::compare<SmallHComp>>;
+using BigHFibHeap = boost::heap::binomial_heap<SmallH, boost::heap::compare<SmallHComp>>;
 using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
 
 class BigH {
