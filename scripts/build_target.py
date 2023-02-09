@@ -15,6 +15,9 @@ bin_path = args.bin_path
 if not os.path.exists(build_path):
     os.makedirs(build_path)
 
+if not os.path.exists(bin_path):
+    os.makedirs(bin_path)
+
 # force MinGW on windows
 generator = "-G \"MinGW Makefiles\"" if sys.platform == "win32" else ""
 

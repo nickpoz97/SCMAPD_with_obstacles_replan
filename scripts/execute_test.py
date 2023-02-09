@@ -7,6 +7,7 @@ parser.add_argument("instances_dir", type=str, help="directory where instances a
 parser.add_argument("exe_path", type=str, help="simultaneous cmapd exe path")
 parser.add_argument("dm_path", type=str, help="distance matrix path")
 parser.add_argument("grid_path", type=str, help="grid_path")
+parser.add_argument("h", type=str, help="heuristic choice", choices=["MCA", "RMCA_A", "RMCA_R"])
 args = parser.parse_args()
 
 instances_dir = os.path.normpath(args.instances_dir)
@@ -26,13 +27,15 @@ for index, files in instances.items():
     a_ext = 'agents'
     t_ext = 'tasks'
     assert(a_ext in files and t_ext in files)
+
+    heur = args.h
     result = subprocess.run(
-        f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]}",
+        f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]} --h {heur}",
         shell=True,
         capture_output=True
     )
     assert(result.returncode == 0)
-    path_filename = str(index) + '.paths'
+    path_filename = str(index) + '_' + heur + '.paths'
     stats_filename = str(index) + '.stats'
 
     rows = [row for row in result.stdout.decode('UTF-8').split('\n')]
