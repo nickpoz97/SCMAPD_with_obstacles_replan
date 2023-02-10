@@ -13,9 +13,7 @@
 
 class Status{
 public:
-    Status(AmbientMap &&ambientMap,
-           const std::vector<AgentInfo> &agents,
-           std::vector<Task> && tasks);
+    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks, Strategy strategy);
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
@@ -56,12 +54,15 @@ public:
 
     TimeStep getTTD() const;
 
+    int getMaxPosVisits() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     std::vector<Path> paths;
     std::vector<TimeStep> lastDeliveryTimeSteps;
     std::vector<TimeStep> agentsTTD;
+    Strategy pathFindingStrategy;
+
     TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

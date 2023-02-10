@@ -7,13 +7,14 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents,
-               std::vector<Task> &&tasks) :
+Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks,
+               Strategy strategy) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
         paths(initializePaths(agents)),
         lastDeliveryTimeSteps(agents.size()),
-        agentsTTD(agents.size())
+        agentsTTD(agents.size()),
+        pathFindingStrategy{strategy}
         {}
 
 const Task & Status::getTask(int i) const {
@@ -206,6 +207,13 @@ TimeStep Status::getPathsUpperBound() const {
         static_cast<int>(ambient.getNCols()) *
         static_cast<int>(tasksVector.size()) *
         static_cast<int>(AmbientMap::nDirections);
+}
+
+int Status::getMaxPosVisits() const{
+    if(pathFindingStrategy == Strategy::EAGER){
+        return 2;
+    }
+    return static_cast<int>(AmbientMap::nDirections);
 }
 
 template
