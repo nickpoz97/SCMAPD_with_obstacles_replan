@@ -98,8 +98,9 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
         }
         ++exploredPosCounter[topNodeLoc];
 
-        if(exploredPosCounter[topNodeLoc] > 2 || exploredSet.contains(topNodeLoc, topNodePtr->getGScore())){
-            exploredSet.add(*topNodePtr);
+        int maxPosVisits = 3;
+
+        if(exploredPosCounter[topNodeLoc] > maxPosVisits || exploredSet.contains(topNodeLoc, topNodePtr->getGScore())){
             continue;
         }
 
@@ -111,7 +112,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
 
         auto nextT = topNodePtr->getGScore() + 1;
         for(auto loc : neighbors){
-            if(!exploredSet.contains(loc, nextT) && exploredPosCounter[topNodeLoc] < 2){
+            if(!exploredSet.contains(loc, nextT) && exploredPosCounter[topNodeLoc] < maxPosVisits){
                 frontier.emplace(new Node{loc, nextT, dm.getDistance(loc, goalLoc), topNodePtr});
             }
         }

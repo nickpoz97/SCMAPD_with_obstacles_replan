@@ -78,7 +78,9 @@ private:
     CompressedCoord startPos;
     int index;
     int capacity;
+
     int idealGoalTime = 0;
+    TimeStep lastDeliveryTimeStep = 0;
 
     TimeStep oldTTD = 0;
 

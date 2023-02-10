@@ -49,6 +49,13 @@ public:
 
     // this size should be considered an upper bound
     [[nodiscard]] TimeStep getPathsUpperBound() const;
+
+    TimeStep getMaxSpanCost() const;
+
+    TimeStep getTTT() const;
+
+    TimeStep getTTD() const;
+
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
@@ -60,6 +67,7 @@ private:
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 
     static std::vector<Path> initializePaths(const std::vector<AgentInfo> &agents);
+
 };
 
 

@@ -36,6 +36,9 @@ void SCMAPD::printResult() const{
         fmt::print("{}\t{}\t{}\t{}\n", i, status.getSpanCost(i), status.getTTD(i) ,status.stringifyPath(path));
     }
     fmt::print("Time:\t{0:.2f}\n", execution_time.count());
+    fmt::print("Makespan:\t{}\n", status.getMaxSpanCost());
+    fmt::print("Total_Travel_Time:\t{}\n", status.getTTT());
+    fmt::print("Total_Travel_Delay:\t{}\n", status.getTTD());
 }
 
 void SCMAPD::printCheckMessage() const{

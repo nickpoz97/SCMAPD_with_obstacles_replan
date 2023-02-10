@@ -17,7 +17,7 @@ Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status
         capacity{agentInfo.capacity}
     {
         addTask(firstTaskId, status);
-        assert(path.size() > 0 && path[0] == startPos && waypoints.size() == 3);
+        assert(!path.empty() && *path.cbegin() == startPos && waypoints.size() == 3);
         assert(agentInfo.index == index);
     }
 
@@ -47,10 +47,14 @@ Assignment::addTask(int taskId, const Status &status) {
 #ifndef NDEBUG
     auto oldWaypointSize = waypoints.size();
 #endif
-    oldTTD = getActualTTD();
+    // safe for NoPathException
+    auto tmpOldTTD = getActualTTD();
+
     insertTaskWaypoints(taskId, status);
-    idealGoalTime = computeIdealGoalTime(status);
     internalUpdate(status);
+
+    oldTTD = tmpOldTTD;
+    idealGoalTime = computeIdealGoalTime(status);
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
     int sum = 0;
@@ -158,13 +162,17 @@ std::tuple<int, TimeStep, Path> Assignment::extractAndReset() {
 }
 
 TimeStep Assignment::getLastDeliveryTimeStep() const{
-    assert(waypoints.size() >= 3);
-    return std::next(waypoints.crbegin())->getArrivalTime();
+    return lastDeliveryTimeStep;
 }
 
 void
 Assignment::internalUpdate(const Status &status) {
     std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
+
+    assert(waypoints.size() >= 3);
+    lastDeliveryTimeStep = std::next(waypoints.crbegin())->getArrivalTime();
+
+
     assert(!status.hasIllegalPositions(path));
     assert(!status.checkPathWithStatus(path, index));
 }

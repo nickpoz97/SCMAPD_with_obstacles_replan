@@ -162,6 +162,18 @@ TimeStep Status::getSpanCost(int agentId) const {
     return lastDeliveryTimeSteps[agentId];
 }
 
+TimeStep Status::getMaxSpanCost() const {
+    return *std::max_element(lastDeliveryTimeSteps.cbegin(), lastDeliveryTimeSteps.cend());
+}
+
+TimeStep Status::getTTD() const {
+    return std::accumulate(agentsTTD.cbegin(), agentsTTD.cend(), 0);
+}
+
+TimeStep Status::getTTT() const {
+    return std::accumulate(lastDeliveryTimeSteps.cbegin(), lastDeliveryTimeSteps.cend(), 0);
+}
+
 template<typename T>
 std::string Status::stringifyPath(const T& path) const {
     static constexpr std::string_view pattern = "({},{})->";
