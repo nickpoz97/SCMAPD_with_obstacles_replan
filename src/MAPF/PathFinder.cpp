@@ -98,7 +98,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
         }
         ++exploredPosCounter[topNodeLoc];
 
-        int maxPosVisits = 3;
+        int maxPosVisits = status.getMaxPosVisits();
 
         if(exploredPosCounter[topNodeLoc] > maxPosVisits || exploredSet.contains(topNodeLoc, topNodePtr->getGScore())){
             continue;
@@ -127,7 +127,7 @@ holdPosition(const Status &status, int agentId, std::list<CompressedCoord> &path
     }
 
     auto totalTimeSteps = status.getLongestPathSize();
-    TimeStep firstTimeStep = pathList.size() - 1;
+    TimeStep firstTimeStep = std::ssize(pathList) - 1;
     auto loc = *pathList.rbegin();
 
     // using t = 0 would not work

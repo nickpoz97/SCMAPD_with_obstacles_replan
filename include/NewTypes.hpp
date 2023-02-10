@@ -19,9 +19,8 @@ enum class Heuristic{
 };
 
 enum class Strategy{
-    RETURN_TO_SPAWN,
-    HOLD_AND_DODGE,
-    WAIT_OTHERS
+    LAZY,
+    EAGER
 };
 
 #endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

@@ -5,9 +5,9 @@
 #include "fmt/color.h"
 #include "BigH.hpp"
 
-SCMAPD::SCMAPD(AmbientMap&& ambientMap, const std::vector<AgentInfo> &agents,
-               std::vector<Task> &&tasksVector, Heuristic heuristic, bool debug) :
-    status(std::move(ambientMap), agents, std::move(tasksVector)),
+SCMAPD::SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
+               Heuristic heuristic, bool debug, Strategy strategy) :
+    status(std::move(ambientMap), agents, std::move(tasksVector), strategy),
     bigH{agents, status, heuristic},
     debug{debug},
     start{std::chrono::steady_clock::now()}
@@ -52,12 +52,12 @@ void SCMAPD::printCheckMessage() const{
 }
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
-                       const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                       Heuristic heuristic) {
+                const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
+                Heuristic heuristic, Strategy strategy) {
     AmbientMap ambientMap(gridFile, DistanceMatrix{distanceMatrixFile});
 
     auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
     auto tasks{loadTasks(tasksFile, ambientMap.getDistanceMatrix())};
 
-    return {std::move(ambientMap), robots, std::move(tasks), heuristic, false};
+    return {std::move(ambientMap), robots, std::move(tasks), heuristic, false, strategy};
 }

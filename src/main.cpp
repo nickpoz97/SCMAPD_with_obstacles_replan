@@ -19,6 +19,7 @@ int main(int argc, char* argv[]){
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")
+        ("eager", po::bool_switch()->default_value(false), "use eager pathfinding strategy instead of lazy")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -35,9 +36,14 @@ int main(int argc, char* argv[]){
     auto robotsFile{vm["a"].as<string>()};
     auto tasksFile{vm["t"].as<string>()};
     auto heurString{vm["h"].as<string>()};
+    auto strategy = vm["eager"].as<bool>() ? Strategy::EAGER : Strategy::LAZY;
+
+    fmt::print("Using {} strategy\n", strategy == Strategy::EAGER ? "eager" : "lazy");
 
     SCMAPD scmapd{
-        loadData(robotsFile, tasksFile, gridFile, distanceMatrixFile, utils::getHeuristicFromString(heurString))
+        loadData(
+            robotsFile, tasksFile, gridFile, distanceMatrixFile, utils::getHeuristicFromString(heurString), strategy
+        )
     };
     scmapd.solve(10);
     scmapd.printResult();
