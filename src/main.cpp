@@ -38,7 +38,9 @@ int main(int argc, char* argv[]){
     auto heurString{vm["h"].as<string>()};
     auto strategy = vm["eager"].as<bool>() ? Strategy::EAGER : Strategy::LAZY;
 
+#ifndef NDEBUG
     fmt::print("Using {} strategy\n", strategy == Strategy::EAGER ? "eager" : "lazy");
+#endif
 
     SCMAPD scmapd{
         loadData(

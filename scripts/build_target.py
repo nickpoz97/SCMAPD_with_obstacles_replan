@@ -28,4 +28,8 @@ subprocess.run(f"cmake --build {build_path} -j 8 --config Release", check=True, 
 target_extension = ".exe" if sys.platform == "win32" else ""
 target_name = "cmapd" + target_extension
 
+final_target_path = os.path.join(bin_path, target_name)
+
+if os.path.exists(final_target_path):
+    os.remove(final_target_path)
 shutil.move(os.path.join(build_path, target_name), bin_path)

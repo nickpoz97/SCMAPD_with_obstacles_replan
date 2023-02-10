@@ -4,12 +4,17 @@ import subprocess
 
 def execute_test(instances_dir, exe_path, grid_path, dm_path):
     heuristics = ["MCA", "RMCA_A", "RMCA_R"]
+    strategies = ["eager", "lazy"]
 
-    h_dirs = dict()
+    hs_dirs = dict()
+
     for h in heuristics:
-        res_dir = os.path.join(instances_dir, h)
-        os.makedirs(res_dir, exist_ok=True)
-        h_dirs[h] = res_dir
+        for s in strategies:
+            dir_id = h + '_' + s
+
+            res_dir = os.path.join(instances_dir, dir_id)
+            os.makedirs(res_dir, exist_ok=True)
+            hs_dirs[dir_id] = res_dir
 
     # organize instances in a dict
     instances = dict()
@@ -28,28 +33,35 @@ def execute_test(instances_dir, exe_path, grid_path, dm_path):
         assert(a_ext in files and t_ext in files)
 
         for h in heuristics:
-            result = subprocess.run(
-                f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]} --h {h}",
-                shell=True,
-                capture_output=True
-            )
+            for s in strategies:
+                s_flag = "--eager" if s == "eager" else ""
 
-            assert(result.returncode == 0)
-            paths_filename = str(index) + '.paths'
-            stats_filename = str(index) + '.stats'
+                result = subprocess.run(
+                    f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]} --h {h} {s_flag}",
+                    shell=True,
+                    capture_output=True
+                )
 
-            rows = [row for row in result.stdout.decode('UTF-8').split('\n')]
+                try:
+                    assert(result.returncode == 0)   
+                except AssertionError:
+                    print(result.stderr)
+                paths_filename = str(index) + '.paths'
+                stats_filename = str(index) + '.stats'
 
-            # including header row and first one
-            boundary = int(rows[0]) + 2
+                rows = [row for row in result.stdout.decode('UTF-8').split('\n')]
 
-            paths = rows[:boundary][1:]
-            stats = rows[boundary:]
+                # including header row and first one
+                boundary = int(rows[0]) + 2
 
-            with open(os.path.join(h_dirs[h], paths_filename), 'w') as paths_file:
-                paths_file.writelines(paths)
-            with open(os.path.join(h_dirs[h], stats_filename), 'w') as stats_file:
-                stats_file.writelines(stats)
+                paths = rows[:boundary][1:]
+                stats = rows[boundary:]
+
+                dir_id = h + '_' + s
+                with open(os.path.join(hs_dirs[dir_id], paths_filename), 'w') as paths_file:
+                    paths_file.writelines(paths)
+                with open(os.path.join(hs_dirs[dir_id], stats_filename), 'w') as stats_file:
+                    stats_file.writelines(stats)
 
 
 if __name__== "__main__":
