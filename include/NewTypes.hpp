@@ -20,7 +20,8 @@ enum class Heuristic{
 
 enum class Strategy{
     LAZY,
-    EAGER
+    EAGER,
+    FORWARD_ONLY
 };
 
 #endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

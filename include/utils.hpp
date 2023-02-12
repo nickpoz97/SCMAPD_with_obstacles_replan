@@ -32,18 +32,22 @@ namespace utils{
         return result;
     }
 
-    inline Heuristic getHeuristicFromString(std::string_view heurString){
-        if(heurString == "MCA"){
-            return Heuristic::MCA;
-        }
-        if(heurString == "RMCA_R"){
-            return Heuristic::RMCA_R;
-        }
-        if(heurString == "RMCA_A"){
-            return Heuristic::RMCA_A;
-        }
-        throw std::runtime_error("Wrong heuristic choice");
+    inline Heuristic getHeuristic(const std::string& hString)
+    {
+        if (hString == "MCA") return Heuristic::MCA;
+        if (hString == "RMCA_A") return Heuristic::RMCA_A;
+        if (hString == "RMCA_R") return Heuristic::RMCA_R;
+        throw std::runtime_error("Invalid Heuristic option");
     }
+
+    inline Strategy getStrategy(const std::string& sString)
+    {
+        if (sString == "LAZY") return Strategy::LAZY;
+        if (sString == "EAGER") return Strategy::EAGER;
+        if (sString == "FORWARD_ONLY") return Strategy::FORWARD_ONLY;
+        throw std::runtime_error("Invalid Strategy option");
+    }
+
 }
 
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP

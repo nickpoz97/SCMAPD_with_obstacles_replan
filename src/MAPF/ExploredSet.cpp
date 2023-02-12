@@ -4,14 +4,28 @@
 
 #include "MAPF/ExploredSet.hpp"
 
-void ExploredSet::add(const Node& node){
-    exploredSet[node.getLocation()].insert(node.getGScore());
+void ExploredSet::insert(const Node& node){
+    auto location = node.getLocation();
+
+    assert(!contains(node));
+
+    exploredNodesSet[location].emplace(node.getGScore());
+    ++exploredPosCounter[location];
 }
 
 bool ExploredSet::contains(CompressedCoord loc, TimeStep t) const{
-    return exploredSet.contains(loc) && exploredSet.at(loc).contains(t);
+    return
+        (exploredPosCounter.contains(loc) && exploredPosCounter.at(loc) >= maxPosVisits) ||
+        (exploredNodesSet.contains(loc) && exploredNodesSet.at(loc).contains(t));
+}
+
+bool ExploredSet::contains(const Node& node) const{
+    return contains(node.getLocation(), node.getGScore());
 }
 
 void ExploredSet::clear() {
-    exploredSet.clear();
+    exploredNodesSet.clear();
+    exploredPosCounter.clear();
 }
+
+ExploredSet::ExploredSet(int maxPosVisits) : maxPosVisits{maxPosVisits} {}

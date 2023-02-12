@@ -16,6 +16,7 @@ args = parser.parse_args()
 
 instances_root = os.path.normpath(args.instances_root)
 for subdir in os.listdir(instances_root):
+    print(subdir + " instances")
     execute_test(
         os.path.join(instances_root, subdir),
         os.path.normpath(args.exe_path),

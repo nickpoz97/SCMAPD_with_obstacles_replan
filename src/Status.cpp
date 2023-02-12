@@ -213,6 +213,9 @@ int Status::getMaxPosVisits() const{
     if(pathFindingStrategy == Strategy::EAGER){
         return 2;
     }
+    if(pathFindingStrategy == Strategy::FORWARD_ONLY){
+        return 1;
+    }
     return static_cast<int>(AmbientMap::nDirections);
 }
 

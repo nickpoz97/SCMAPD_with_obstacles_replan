@@ -69,7 +69,8 @@ PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, cons
 }
 
 static std::list<CompressedCoord> getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep t) {
-    ExploredSet exploredSet;
+    ExploredSet exploredSet{status.getMaxPosVisits()};
+
     const auto& dm = status.getDistanceMatrix();
 
     using NodePtr = std::shared_ptr<Node>;
@@ -84,26 +85,18 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
     const std::list<CompressedCoord> pathList{};
     int nIterations = 0;
 
-    std::unordered_map<CompressedCoord, int> exploredPosCounter;
-
     while (!frontier.empty()){
         ++nIterations;
         auto topNodePtr = frontier.top();
         frontier.pop();
 
-        auto topNodeLoc = topNodePtr->getLocation();
-
-        if(!exploredPosCounter.contains(topNodeLoc)){
-            exploredPosCounter[topNodeLoc] = 0;
-        }
-        ++exploredPosCounter[topNodeLoc];
-
-        int maxPosVisits = status.getMaxPosVisits();
-
-        if(exploredPosCounter[topNodeLoc] > maxPosVisits || exploredSet.contains(topNodeLoc, topNodePtr->getGScore())){
+        // do not explore this node
+        if(exploredSet.contains(*topNodePtr)){
             continue;
         }
+        exploredSet.insert(*topNodePtr);
 
+        // path found
         if(topNodePtr->getLocation() == goalLoc){
             return topNodePtr->getPathList();
         }
@@ -112,7 +105,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
 
         auto nextT = topNodePtr->getGScore() + 1;
         for(auto loc : neighbors){
-            if(!exploredSet.contains(loc, nextT) && exploredPosCounter[topNodeLoc] < maxPosVisits){
+            if(!exploredSet.contains(loc, nextT)){
                 frontier.emplace(new Node{loc, nextT, dm.getDistance(loc, goalLoc), topNodePtr});
             }
         }

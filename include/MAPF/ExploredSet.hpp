@@ -13,12 +13,18 @@
 
 class ExploredSet {
 public:
-    void add(const Node& node);
+    explicit ExploredSet(int maxPosVisits);
+
+    void insert(const Node& node);
+
+    bool contains(const Node& node) const;
     bool contains(CompressedCoord loc, TimeStep t) const;
 
     void clear();
 private:
-    std::unordered_map<CompressedCoord, std::unordered_set<TimeStep>> exploredSet{};
+    int maxPosVisits;
+    std::unordered_map<CompressedCoord, std::unordered_set<TimeStep>> exploredNodesSet{};
+    std::unordered_map<CompressedCoord, int> exploredPosCounter;
 };
 
 

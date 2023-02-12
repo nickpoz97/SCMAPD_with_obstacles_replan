@@ -4,7 +4,7 @@ import subprocess
 
 def execute_test(instances_dir, exe_path, grid_path, dm_path):
     heuristics = ["MCA", "RMCA_A", "RMCA_R"]
-    strategies = ["eager", "lazy"]
+    strategies = ["eager", "lazy", "forward_only"]
 
     hs_dirs = dict()
 
@@ -34,10 +34,9 @@ def execute_test(instances_dir, exe_path, grid_path, dm_path):
 
         for h in heuristics:
             for s in strategies:
-                s_flag = "--eager" if s == "eager" else ""
-
+                print(f"Executing instance {index} with {h} heuristic and {s} strategy")
                 result = subprocess.run(
-                    f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]} --h {h} {s_flag}",
+                    f"{exe_path} --m {grid_path} --dm {dm_path} --a {files[a_ext]} --t {files[t_ext]} --h {h} --s {s.upper()}",
                     shell=True,
                     capture_output=True
                 )
@@ -45,14 +44,16 @@ def execute_test(instances_dir, exe_path, grid_path, dm_path):
                 try:
                     assert(result.returncode == 0)   
                 except AssertionError:
+                    print("Error during execution, going to next iteration\n")
                     print(result.stderr)
+                    return
                 paths_filename = str(index) + '.paths'
                 stats_filename = str(index) + '.stats'
 
-                rows = [row for row in result.stdout.decode('UTF-8').split('\n')]
+                rows = [row + '\n' for row in result.stdout.decode('UTF-8').split('\n')]
 
                 # including header row and first one
-                boundary = int(rows[0]) + 2
+                boundary = int(rows[0].strip()) + 2
 
                 paths = rows[:boundary][1:]
                 stats = rows[boundary:]

@@ -19,7 +19,7 @@ int main(int argc, char* argv[]){
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")
-        ("eager", po::bool_switch()->default_value(false), "use eager pathfinding strategy instead of lazy")
+        ("s", po::value<string>()->required(), "pathfinding strategy")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -35,8 +35,8 @@ int main(int argc, char* argv[]){
     auto gridFile{vm["m"].as<string>()};
     auto robotsFile{vm["a"].as<string>()};
     auto tasksFile{vm["t"].as<string>()};
-    auto heurString{vm["h"].as<string>()};
-    auto strategy = vm["eager"].as<bool>() ? Strategy::EAGER : Strategy::LAZY;
+    auto heur{utils::getHeuristic(vm["h"].as<string>())};
+    auto strategy{utils::getStrategy(vm["s"].as<string>())};
 
 #ifndef NDEBUG
     fmt::print("Using {} strategy\n", strategy == Strategy::EAGER ? "eager" : "lazy");
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
 
     SCMAPD scmapd{
         loadData(
-            robotsFile, tasksFile, gridFile, distanceMatrixFile, utils::getHeuristicFromString(heurString), strategy
+            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
         )
     };
     scmapd.solve(10);
