@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import shutil
 
 # find other script
 sys.path.append(os.path.realpath(__file__))
@@ -32,3 +33,4 @@ for a in range(args.min_a, args.max_a + 1, args.step_a):
             gen_instances(args.grid, a, t, args.n, out_dir)        
         except NoMorePositions as ex:
             print(ex)
+            shutil.rmtree(out_dir)
