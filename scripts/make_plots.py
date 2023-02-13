@@ -3,6 +3,11 @@ import argparse
 import matplotlib.pyplot as plt
 import itertools
 
+import numpy as np
+
+heuristics = ['MCA', 'RMCA_R', 'RMCA_A']
+stats = ['time', 'makespan', 'total travel time', 'total travel delay']
+
 def load_data_dir_paths(instances_root: str, n_agents: int, n_tasks: int):
     data_dir_path = os.path.join(instances_root, str(n_agents) + '_' + str(n_tasks))
 
@@ -15,6 +20,8 @@ def extract_stats(stats_file_path: str):
 
 def load_stats_files_paths(data_dir_path: str):
     return [os.path.join(data_dir_path, name) for name in os.listdir(data_dir_path) if name.split('.')[-1] == "stats"]
+
+stats_files_filter = lambda file_path: os.path.splitext(file_path)[-1] == '.stats'
 
 def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str, ax: plt.Axes):
     # filter heuristic choice
@@ -33,8 +40,7 @@ def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str, ax: plt.A
         if info_to_plot.lower() == 'conflicts':
             converter = bool
 
-        files_filter = lambda fp: os.path.splitext(fp)[-1] == '.stats'
-        stats_files = [os.path.join(mode_dir, fname) for fname in filter(files_filter ,os.listdir(mode_dir))]
+        stats_files = [os.path.join(mode_dir, fname) for fname in filter(stats_files_filter ,os.listdir(mode_dir))]
         y_values = [converter(extract_stats(f)[info_to_plot.replace(' ', '_')]) for f in stats_files]
         x_values = range(len(y_values))
 
@@ -43,14 +49,63 @@ def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str, ax: plt.A
         ax.legend(loc="upper right")
         ax.set_title(f"{heuristic}")
 
+def compute_stat_mean(stat_name: str, stat_dir_path: str):
+    assert(stat_name in stats)
+
+    stats_files = [filename for filename in os.listdir(stat_dir_path) if os.path.splitext(filename)[-1] == '.stats']
+    values = list()
+
+    converter = int 
+    if stat_name.lower() == "time":
+        converter = float
+    if stat_name.lower() == 'conflicts':
+        converter = bool
+
+    for sf in stats_files:
+        values.append(converter(extract_stats(os.path.join(stat_dir_path, sf))[stat_name.replace(' ', '_')]))
+    return np.mean(values)
+
+def comparison_plot(instances_root: str):
+    modes = ['eager', 'forward_only', 'lazy']
+
+    agents_tasks_dirs = [os.path.join(instances_root, at_dir) for at_dir in os.listdir(instances_root)]
+
+    for h, mode, info_to_plot in itertools.product(heuristics, modes, stats):
+        subfolder_id = h + '_' + mode
+
+        x = list()
+        y = list()
+        z = list()
+
+        for a_t_dir in agents_tasks_dirs:
+            a, t = map(int, a_t_dir.split(os.sep)[-1].split('_'))
+            x.append(a)
+            y.append(t)
+            z.append(compute_stat_mean(info_to_plot, os.path.join(a_t_dir, subfolder_id)))
+        
+        fig = plt.figure()
+        plt.scatter(x, y, c=z, vmin=np.min(z), vmax=np.max(z), s=400, marker="s")
+        plt.colorbar(label="value")
+        plt.title(f"{info_to_plot}, Heuristic: {h}, Pathfinding strategy: {mode}")
+
+        plt.xticks(np.arange(np.min(x), np.max(x)+1, (np.max(x) - np.min(x)) / (len(set(x))-1) ))
+        plt.yticks(np.arange(np.min(y), np.max(y)+1, (np.max(y) - np.min(y)) / (len(set(y))-1) ))
+        plt.xlabel("agents")
+        plt.ylabel("tasks")
+        fig.tight_layout()
+        plt.savefig(os.path.join(instances_root, f"comprehensive_{info_to_plot}_{h}_{mode}.png"))
+        plt.close()
+
+        
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute test on grouped instances from specified directory")
     parser.add_argument("instances_root", type=str, help="directory where directories of instances are stored")
     args = parser.parse_args()
     instances_root = args.instances_root
 
-    heuristics = ['MCA', 'RMCA_R', 'RMCA_A']
-    stats = ['time', 'makespan', 'total travel time', 'total travel delay']
+    comparison_plot(instances_root)
+    exit()
 
     for subdir in os.listdir(instances_root):
         a, t = map(lambda v: int(v), subdir.split('_'))
@@ -73,5 +128,3 @@ if __name__ == "__main__":
             print(f"saving {filepath}")
             plt.savefig(filepath)
             plt.close()
-
-    exit()
