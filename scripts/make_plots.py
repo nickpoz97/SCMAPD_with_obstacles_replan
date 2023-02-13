@@ -15,7 +15,7 @@ def extract_stats(stats_file_path: str):
 def load_stats_files_paths(data_dir_path: str):
     return [os.path.join(data_dir_path, name) for name in os.listdir(data_dir_path) if name.split('.')[-1] == "stats"]
 
-def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str):
+def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str, n_plots: int, ax: plt.Axes):
     dir_paths = [x for x in dir_paths if x.split(os.sep)[-1].find(heuristic, 0, len(heuristic)) != -1]
     for mode_dir in dir_paths:
         tree = mode_dir.split(os.sep)
@@ -36,18 +36,29 @@ def plot_instances(dir_paths: list, info_to_plot: str, heuristic: str):
         x_values = range(len(y_values))
 
         print(y_values)
-        plt.plot(x_values, y_values, "o-", label = mode)
-        plt.legend()
-        plt.title(f"{info_to_plot} with n_agents: {agents}, n_tasks: {tasks}, heuristic: {heuristic}")
-    plt.show()
+        ax.plot(x_values, y_values, "o-", label = mode)
+        ax.legend(loc="upper right")
+        ax.set_title(f"heuristic: {heuristic}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute test on grouped instances from specified directory")
     parser.add_argument("instances_root", type=str, help="directory where directories of instances are stored")
     args = parser.parse_args()
 
-    dir_paths = load_data_dir_paths("instances", 40, 130)
-    plot_instances(dir_paths, 'total_travel_delay', 'RMCA_R')
+    heuristics = ['MCA', 'RMCA_R', 'RMCA_A']
+
+    fig, axs = plt.subplots(nrows=1, ncols=len(heuristics), sharey=True)
+    fig.set_size_inches(11,5)
+
+    for i, h in enumerate(heuristics):
+        info_to_plot = "total_travel_delay"
+        a = 40
+        t = 130
+        plt.suptitle(f"{info_to_plot}, n_agents: {a}, n_tasks: {t}")
+        dir_paths = load_data_dir_paths("instances", 40, 130)
+        plot_instances(dir_paths, info_to_plot, h, len(heuristics), axs[i])
+    fig.tight_layout()
+    plt.show()
 
     exit()
     print()
