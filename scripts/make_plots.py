@@ -104,9 +104,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     instances_root = args.instances_root
 
-    comparison_plot(instances_root)
-    exit()
-
     for subdir in os.listdir(instances_root):
         a, t = map(lambda v: int(v), subdir.split('_'))
         for h, info_to_plot in itertools.product(heuristics, stats):
@@ -128,3 +125,5 @@ if __name__ == "__main__":
             print(f"saving {filepath}")
             plt.savefig(filepath)
             plt.close()
+
+    comparison_plot(instances_root)
