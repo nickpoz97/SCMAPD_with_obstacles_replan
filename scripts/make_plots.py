@@ -68,7 +68,7 @@ def compute_stat_mean(stat_name: str, stat_dir_path: str):
 def comparison_plot(instances_root: str):
     modes = ['eager', 'forward_only', 'lazy']
 
-    agents_tasks_dirs = [os.path.join(instances_root, at_dir) for at_dir in os.listdir(instances_root)]
+    agents_tasks_dirs = [os.path.join(instances_root, at_dir) for at_dir in os.listdir(instances_root) if os.path.isdir(os.path.join(instances_root, at_dir))]
 
     for h, mode, info_to_plot in itertools.product(heuristics, modes, stats):
         subfolder_id = h + '_' + mode
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     instances_root = args.instances_root
 
-    for subdir in os.listdir(instances_root):
+    for subdir in [dir for dir in os.listdir(instances_root) if os.path.isdir(os.path.join(instances_root, dir))]:
         a, t = map(lambda v: int(v), subdir.split('_'))
         for h, info_to_plot in itertools.product(heuristics, stats):
             out_dir_path = os.path.join(instances_root, subdir)
@@ -113,11 +113,9 @@ if __name__ == "__main__":
             fig, axs = plt.subplots(nrows=1, ncols=len(heuristics), sharey=True)
             fig.set_size_inches(11,5)
 
-            a = 40
-            t = 130
             for i, h in enumerate(heuristics):
                 plt.suptitle(f"{info_to_plot}, n_agents: {a}, n_tasks: {t}")
-                dir_paths = load_data_dir_paths("instances", 40, 130)
+                dir_paths = load_data_dir_paths("instances", a, t)
                 plot_instances(dir_paths, info_to_plot, h, axs[i])
             fig.tight_layout()
 
