@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 
 import numpy as np
+import math
 
 heuristics = ['MCA', 'RMCA_R', 'RMCA_A']
 stats = ['time', 'makespan', 'total travel time', 'total travel delay']
@@ -70,23 +71,37 @@ def comparison_plot(instances_root: str):
 
     agents_tasks_dirs = [os.path.join(instances_root, at_dir) for at_dir in os.listdir(instances_root) if os.path.isdir(os.path.join(instances_root, at_dir))]
 
+    data_dict = dict()
+
+    max_vals = {stat : 0 for stat in stats}
+    min_vals = {stat: math.inf for stat in stats}
+
     for h, mode, info_to_plot in itertools.product(heuristics, modes, stats):
         subfolder_id = h + '_' + mode
 
-        x = list()
-        y = list()
-        z = list()
+        x = data_dict[(info_to_plot, h, mode, 'x')] = list()
+        y = data_dict[(info_to_plot, h, mode, 'y')] = list()
+        z = data_dict[(info_to_plot, h, mode, 'z')] = list()
 
         for a_t_dir in agents_tasks_dirs:
             a, t = map(int, a_t_dir.split(os.sep)[-1].split('_'))
             x.append(a)
             y.append(t)
-            z.append(compute_stat_mean(info_to_plot, os.path.join(a_t_dir, subfolder_id)))
+            stat_mean_val = compute_stat_mean(info_to_plot, os.path.join(a_t_dir, subfolder_id))
+
+            max_vals[info_to_plot] = max(max_vals[info_to_plot], stat_mean_val)
+            min_vals[info_to_plot] = min(min_vals[info_to_plot], stat_mean_val)
+            z.append(stat_mean_val)
+
+    for h, mode, info_to_plot in itertools.product(heuristics, modes, stats):
+        x = data_dict[(info_to_plot, h, mode, 'x')]
+        y = data_dict[(info_to_plot, h, mode, 'y')]
+        z = data_dict[(info_to_plot, h, mode, 'z')]
         
         fig = plt.figure()
-        plt.scatter(x, y, c=z, vmin=np.min(z), vmax=np.max(z), s=400, marker="s")
+        plt.scatter(x, y, c=z, vmin=min_vals[info_to_plot], vmax=max_vals[info_to_plot], s=400, marker="s")
         plt.colorbar(label="value")
-        plt.title(f"{info_to_plot}, Heuristic: {h}, Pathfinding strategy: {mode}")
+        plt.title(f"{h} {mode}: {info_to_plot}")
 
         plt.xticks(np.arange(np.min(x), np.max(x)+1, (np.max(x) - np.min(x)) / (len(set(x))-1) ))
         plt.yticks(np.arange(np.min(y), np.max(y)+1, (np.max(y) - np.min(y)) / (len(set(y))-1) ))
@@ -103,6 +118,8 @@ if __name__ == "__main__":
     parser.add_argument("instances_root", type=str, help="directory where directories of instances are stored")
     args = parser.parse_args()
     instances_root = args.instances_root
+
+    comparison_plot(instances_root)
 
     for subdir in [dir for dir in os.listdir(instances_root) if os.path.isdir(os.path.join(instances_root, dir))]:
         a, t = map(lambda v: int(v), subdir.split('_'))
@@ -123,5 +140,3 @@ if __name__ == "__main__":
             print(f"saving {filepath}")
             plt.savefig(filepath)
             plt.close()
-
-    comparison_plot(instances_root)
