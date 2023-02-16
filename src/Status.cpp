@@ -209,14 +209,17 @@ TimeStep Status::getPathsUpperBound() const {
         static_cast<int>(AmbientMap::nDirections);
 }
 
-int Status::getMaxPosVisits() const{
-    if(pathFindingStrategy == Strategy::EAGER){
-        return 2;
+std::optional<int> Status::getMaxPosVisits() const{
+    switch (pathFindingStrategy) {
+        case Strategy::EAGER:
+            return 2;
+        case Strategy::FORWARD_ONLY:
+            return 1;
+        case Strategy::LAZY:
+            return static_cast<int>(AmbientMap::nDirections);
+        default:
+            return std::nullopt;
     }
-    if(pathFindingStrategy == Strategy::FORWARD_ONLY){
-        return 1;
-    }
-    return static_cast<int>(AmbientMap::nDirections);
 }
 
 template

@@ -4,7 +4,7 @@ import subprocess
 
 def execute_test(instances_dir, exe_path, grid_path, dm_path):
     heuristics = ["MCA", "RMCA_A", "RMCA_R"]
-    strategies = ["eager", "lazy", "forward_only"]
+    strategies = ["eager", "lazy", "forward_only", "unbounded"]
 
     hs_dirs = dict()
 
@@ -22,10 +22,12 @@ def execute_test(instances_dir, exe_path, grid_path, dm_path):
         file_path = os.path.join(instances_dir, filename)
         if os.path.isfile(file_path):
             file_info = filename.split('.')
-            index, extension = int(file_info[0]), file_info[1]
-            if index not in instances:
-                instances[index] = dict()
-            instances[index][extension] = file_path
+            extension = file_info[1]
+            if extension in {'tasks', 'agents'}:
+                index = int(file_info[0])
+                if index not in instances:
+                    instances[index] = dict()
+                instances[index][extension] = file_path
 
     for index, files in instances.items():
         a_ext = 'agents'

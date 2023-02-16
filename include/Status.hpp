@@ -54,7 +54,7 @@ public:
 
     TimeStep getTTD() const;
 
-    int getMaxPosVisits() const;
+    std::optional<int> getMaxPosVisits() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

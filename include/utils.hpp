@@ -45,6 +45,7 @@ namespace utils{
         if (sString == "LAZY") return Strategy::LAZY;
         if (sString == "EAGER") return Strategy::EAGER;
         if (sString == "FORWARD_ONLY") return Strategy::FORWARD_ONLY;
+        if (sString == "UNBOUNDED") return Strategy::UNBOUNDED;
         throw std::runtime_error("Invalid Strategy option");
     }
 
