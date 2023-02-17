@@ -26,12 +26,4 @@ using CompressedCoord = int;
 
 using Path = std::vector<CompressedCoord>;
 
-struct PathWrapper{
-    int taskId;
-    int agentId;
-    TimeStep ttd;
-    TimeStep lastDeliveryTimeStep;
-    Path path;
-};
-
 #endif //SIMULTANEOUS_CMAPD_COORD_HPP

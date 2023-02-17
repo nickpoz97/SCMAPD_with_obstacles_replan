@@ -12,7 +12,7 @@ using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
 class BigH {
 public:
     BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h);
-    PathWrapper extractTop();
+    ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
 
     void update(int k, int taskId, const Status &status);

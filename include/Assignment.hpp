@@ -11,10 +11,11 @@
 #include "Waypoint.hpp"
 #include "Status.hpp"
 #include "AgentInfo.hpp"
+#include "PathWrapper.hpp"
 
 /**
  * @class Assignment
- * @brief class that abstracts an agent and its path
+ * @brief class that abstracts an agent and its path with other infos
  */
 class Assignment {
 
@@ -69,6 +70,8 @@ public:
 
     [[nodiscard]] const WaypointsList &getWaypoints() const;
 
+    [[nodiscard]] const std::unordered_set<int> &getAssignedTaskIds() const;
+
     [[nodiscard]] TimeStep getIdealGoalTime() const;
 
     [[nodiscard]] TimeStep getLastDeliveryTimeStep() const;
@@ -86,6 +89,8 @@ private:
 
     WaypointsList waypoints{};
     Path path{};
+
+    std::unordered_set<int> assignedTasksIds;
 
     std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
                                                                                    std::_List_iterator<Waypoint> waypointGoal);

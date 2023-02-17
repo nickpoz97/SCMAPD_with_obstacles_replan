@@ -32,7 +32,7 @@ public:
     [[nodiscard]] const Path& getTopPath() const;
     [[nodiscard]] int getTopAgentId() const;
 
-    [[nodiscard]] PathWrapper getTopWrappedPath() const;
+    [[nodiscard]] ExtractedPath getTopWrappedPath() const;
 private:
     int taskId;
     int v;

@@ -10,6 +10,7 @@
 #include "Task.hpp"
 #include "AmbientMap.hpp"
 #include "AgentInfo.hpp"
+#include "PathWrapper.hpp"
 
 class Status{
 public:
@@ -20,17 +21,17 @@ public:
     getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
 
     [[nodiscard]] const std::vector<Task> &getTasks() const;
-    [[nodiscard]] const std::vector<Path> &getPaths() const;
+    [[nodiscard]] const Path & getPath(int agentId) const;
 
     [[nodiscard]] const Task & getTask(int i) const;
 
-    std::pair<int, int> update(PathWrapper &&pathWrapper);
+    std::pair<int, int> update(ExtractedPath &&pathWrapper);
 
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
     [[nodiscard]] bool checkPathWithStatus(const Path &path, int agentId) const;
 
-    static bool checkPathConflicts(const Path &pA, const Path &pB) ;
+    static bool checkPathConflicts(const Path &pA, const Path &pB);
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
     [[nodiscard]] CompressedCoord holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const;
@@ -48,26 +49,26 @@ public:
     // this size should be considered an upper bound
     [[nodiscard]] TimeStep getPathsUpperBound() const;
 
-    TimeStep getMaxSpanCost() const;
+    [[nodiscard]] TimeStep getMaxSpanCost() const;
 
-    TimeStep getTTT() const;
+    [[nodiscard]] TimeStep getTTT() const;
 
-    TimeStep getTTD() const;
+    [[nodiscard]] TimeStep getTTD() const;
 
-    std::optional<int> getMaxPosVisits() const;
+    [[nodiscard]] std::optional<int> getMaxPosVisits() const;
+
+    [[nodiscard]] int getNAgents() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
-    std::vector<Path> paths;
-    std::vector<TimeStep> lastDeliveryTimeSteps;
-    std::vector<TimeStep> agentsTTD;
+    std::vector<PathWrapper> pathsWrappers;
     Strategy pathFindingStrategy;
 
     TimeStep longestPathSize = 0;
 
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 
-    static std::vector<Path> initializePaths(const std::vector<AgentInfo> &agents);
+    static std::vector<PathWrapper> initializePathsWrappers(const std::vector<AgentInfo> &agents);
 
 };
 

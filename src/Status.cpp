@@ -11,9 +11,7 @@ Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, st
                Strategy strategy) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        paths(initializePaths(agents)),
-        lastDeliveryTimeSteps(agents.size()),
-        agentsTTD(agents.size()),
+        pathsWrappers{initializePathsWrappers(agents)},
         pathFindingStrategy{strategy}
         {}
 
@@ -25,15 +23,12 @@ const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-std::pair<int, int> Status::update(PathWrapper &&pathWrapper) {
-    auto agentId = pathWrapper.agentId;
-    auto taskId = pathWrapper.taskId;
-    auto& newPath = pathWrapper.path;
+std::pair<int, int> Status::update(ExtractedPath &&extractedPath) {
+    auto agentId = extractedPath.agentId;
+    auto taskId = extractedPath.newTaskId;
 
-    longestPathSize = std::max(static_cast<int>(newPath.size()), longestPathSize);
-    lastDeliveryTimeSteps[agentId] = pathWrapper.lastDeliveryTimeStep;
-    agentsTTD[agentId] = pathWrapper.ttd;
-    paths[pathWrapper.agentId] = std::move(newPath);
+    longestPathSize = std::max(static_cast<int>(extractedPath.wrapper.path.size()), longestPathSize);
+    pathsWrappers[agentId] = std::move(extractedPath.wrapper);
 
     return {agentId, taskId};
 }
@@ -69,9 +64,11 @@ CompressedCoord Status::holdOrAvailablePos(int agentId, CompressedCoord c, TimeS
 }
 
 bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
-    assert(agentId >= 0 && agentId < paths.size());
+    assert(agentId >= 0 && agentId < getNAgents());
 
-    auto predicate = [t1, coord1, coord2](const Path& p){
+    auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
+        const auto& p = pW.path;
+
         // if path is empty there are no conflicts
         if(p.empty()){
             return false;
@@ -86,12 +83,12 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
         return nodeConflict || edgeConflict || baseConflict;
     };
 
-    return std::ranges::any_of(paths.begin(), paths.begin() + agentId, predicate) ||
-        std::ranges::any_of(paths.begin() + agentId + 1, paths.end(), predicate);
+    return std::ranges::any_of(pathsWrappers.begin(), pathsWrappers.begin() + agentId, predicate) ||
+        std::ranges::any_of(pathsWrappers.begin() + agentId + 1, pathsWrappers.end(), predicate);
 }
 
-const std::vector<Path>& Status::getPaths() const {
-    return paths;
+const Path & Status::getPath(int agentId) const {
+    return pathsWrappers[agentId].path;
 }
 
 const DistanceMatrix& Status::getDistanceMatrix() const{
@@ -99,21 +96,23 @@ const DistanceMatrix& Status::getDistanceMatrix() const{
 }
 
 bool Status::checkPathWithStatus(const Path &path, int agentId) const{
+    auto predicate = [&](const PathWrapper& other){return checkPathConflicts(path, other.path);};
+
     return std::ranges::any_of(
-        paths.begin(),
-        paths.begin() + agentId,
-        [&](const Path& other){return checkPathConflicts(path, other);}
+        pathsWrappers.begin(),
+        pathsWrappers.begin() + agentId,
+        predicate
     ) ||
     std::ranges::any_of(
-        paths.begin() + agentId + 1,
-        paths.end(),
-        [&](const Path& other){return checkPathConflicts(path, other);}
+        pathsWrappers.begin() + agentId + 1,
+        pathsWrappers.end(),
+        predicate
     );
 }
 
 bool Status::checkAllConflicts() const {
-    for(int i = 0 ; i < paths.size() ; ++i){
-        for(int j = i+1 ; j < paths.size() ; ++j){
+    for(int i = 0 ; i < pathsWrappers.size() ; ++i){
+        for(int j = i+1 ; j < pathsWrappers.size() ; ++j){
             if(checkPathConflicts(i, j)){
                 return true;
             }
@@ -127,7 +126,7 @@ bool Status::checkPathConflicts(int i, int j) const{
         return false;
     }
 
-    return checkPathConflicts(paths[i], paths[j]);
+    return checkPathConflicts(pathsWrappers[i].path, pathsWrappers[j].path);
 }
 
 bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
@@ -151,28 +150,54 @@ TimeStep Status::getLongestPathSize() const {
     return longestPathSize;
 }
 
-std::vector<Path> Status::initializePaths(const std::vector<AgentInfo> &agents) {
-    std::vector<Path> paths{};
-    paths.reserve(agents.size());
+std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<AgentInfo> &agents) {
+    std::vector<PathWrapper> pWs{};
+    pWs.reserve(agents.size());
 
-    std::ranges::transform(agents, std::back_inserter(paths), [](const AgentInfo& a) -> Path {return {a.startPos};});
-    return paths;
+    std::ranges::transform(
+        agents,
+        std::back_inserter(pWs),
+        [](const AgentInfo& a) -> PathWrapper {
+            return {
+                .ttd = 0,
+                .lastDeliveryTimeStep = 0,
+                .path{a.startPos},
+                .wpList{},
+                .satisfiedTasksIds{}
+            };
+        }
+    );
+    return pWs;
 }
 
 TimeStep Status::getSpanCost(int agentId) const {
-    return lastDeliveryTimeSteps[agentId];
+    return pathsWrappers[agentId].lastDeliveryTimeStep;
 }
 
 TimeStep Status::getMaxSpanCost() const {
-    return *std::max_element(lastDeliveryTimeSteps.cbegin(), lastDeliveryTimeSteps.cend());
+    return std::max_element(
+        pathsWrappers.cbegin(),
+        pathsWrappers.cend(),
+        [](const PathWrapper& pWA, const PathWrapper& pWB){return pWA.lastDeliveryTimeStep < pWB.lastDeliveryTimeStep;}
+    )->lastDeliveryTimeStep;
 }
 
 TimeStep Status::getTTD() const {
-    return std::accumulate(agentsTTD.cbegin(), agentsTTD.cend(), 0);
+    return std::accumulate(
+        pathsWrappers.cbegin(),
+        pathsWrappers.cend(),
+        0,
+        [](TimeStep ttd, const PathWrapper& pW) {return ttd + pW.ttd;}
+    );
 }
 
 TimeStep Status::getTTT() const {
-    return std::accumulate(lastDeliveryTimeSteps.cbegin(), lastDeliveryTimeSteps.cend(), 0);
+    return std::accumulate(
+        pathsWrappers.cbegin(),
+        pathsWrappers.cend(),
+        0,
+        [](TimeStep ttt, const PathWrapper& pW) {return ttt + pW.lastDeliveryTimeStep;}
+    );
 }
 
 template<typename T>
@@ -198,7 +223,7 @@ bool Status::hasIllegalPositions(const Path& path) const{
 }
 
 TimeStep Status::getTTD(int agentId) const {
-    return agentsTTD[agentId];
+    return pathsWrappers[agentId].ttd;
 }
 
 TimeStep Status::getPathsUpperBound() const {
@@ -220,6 +245,10 @@ std::optional<int> Status::getMaxPosVisits() const{
         default:
             return std::nullopt;
     }
+}
+
+int Status::getNAgents() const {
+    return static_cast<int>(pathsWrappers.size());
 }
 
 template

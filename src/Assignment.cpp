@@ -14,7 +14,8 @@ Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status
         startPos{agentInfo.startPos},
         waypoints{Waypoint{agentInfo.startPos}},
         index{agentInfo.index},
-        capacity{agentInfo.capacity}
+        capacity{agentInfo.capacity},
+        assignedTasksIds{}
     {
         addTask(firstTaskId, status);
         assert(!path.empty() && *path.cbegin() == startPos && waypoints.size() == 3);
@@ -55,6 +56,8 @@ Assignment::addTask(int taskId, const Status &status) {
 
     oldTTD = tmpOldTTD;
     idealGoalTime = computeIdealGoalTime(status);
+
+    assignedTasksIds.emplace(taskId);
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
     int sum = 0;
@@ -221,4 +224,8 @@ TimeStep Assignment::getIdealGoalTime() const {
 TimeStep Assignment::getTotalTravelDelay() const {
     assert(!waypoints.empty());
     return waypoints.crbegin()->getCumulatedDelay();
+}
+
+const std::unordered_set<int> &Assignment::getAssignedTaskIds() const{
+    return assignedTasksIds;
 }

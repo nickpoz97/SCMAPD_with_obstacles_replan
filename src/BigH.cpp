@@ -64,17 +64,16 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
         assert(checkOrder());
     }
 
-PathWrapper BigH::extractTop() {
+ExtractedPath BigH::extractTop() {
     assert(!heap.empty());
 
-    // atomic block (and order is important)
     const auto& topSmallH = heap.top();
-    auto wrappedPath = topSmallH.getTopWrappedPath();
+    auto extractedPath = topSmallH.getTopWrappedPath();
 
     heap.pop();
-    unassignedTaskIndices.erase(wrappedPath.taskId);
+    unassignedTaskIndices.erase(extractedPath.newTaskId);
 
-    return wrappedPath;
+    return extractedPath;
 }
 
 bool BigH::empty() const {
