@@ -26,6 +26,7 @@ struct Waypoint{
     );
 
     [[nodiscard]] TimeStep getCumulatedDelay() const;
+    [[nodiscard]] TimeStep getDelay(const std::vector<Task>& tasks) const;
     [[nodiscard]] TimeStep getArrivalTime() const;
 
     [[nodiscard]] CompressedCoord getPosition() const;

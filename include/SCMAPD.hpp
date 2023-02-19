@@ -12,7 +12,7 @@
 class SCMAPD {
 public:
     SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
-           Heuristic heuristic, bool debug, Strategy strategy);
+           Heuristic heuristic, bool debug, PathfindingStrategy strategy);
 
     void solve(TimeStep cutOffTime);
 
@@ -33,6 +33,6 @@ private:
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                 const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                Heuristic heuristic, Strategy strategy);
+                Heuristic heuristic, PathfindingStrategy strategy);
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

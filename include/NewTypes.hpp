@@ -18,11 +18,15 @@ enum class Heuristic{
     RMCA_R
 };
 
-enum class Strategy{
+enum class PathfindingStrategy{
     LAZY,
     EAGER,
     FORWARD_ONLY,
     UNBOUNDED
+};
+
+enum class Objective{
+    MAKESPAN
 };
 
 #endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

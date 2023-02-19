@@ -57,6 +57,10 @@ int Waypoint::getTaskIndex() const {
     return taskIndex.value();
 }
 
+TimeStep Waypoint::getDelay(const std::vector<Task>& tasks) const {
+    return arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+}
+
 Waypoint getTaskPickupWaypoint(const Task& task){
     return {task.startLoc, Demand::PICKUP, task.index};
 }

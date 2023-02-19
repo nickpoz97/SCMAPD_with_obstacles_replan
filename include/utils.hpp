@@ -40,12 +40,12 @@ namespace utils{
         throw std::runtime_error("Invalid Heuristic option");
     }
 
-    inline Strategy getStrategy(const std::string& sString)
+    inline PathfindingStrategy getStrategy(const std::string& sString)
     {
-        if (sString == "LAZY") return Strategy::LAZY;
-        if (sString == "EAGER") return Strategy::EAGER;
-        if (sString == "FORWARD_ONLY") return Strategy::FORWARD_ONLY;
-        if (sString == "UNBOUNDED") return Strategy::UNBOUNDED;
+        if (sString == "LAZY") return PathfindingStrategy::LAZY;
+        if (sString == "EAGER") return PathfindingStrategy::EAGER;
+        if (sString == "FORWARD_ONLY") return PathfindingStrategy::FORWARD_ONLY;
+        if (sString == "UNBOUNDED") return PathfindingStrategy::UNBOUNDED;
         throw std::runtime_error("Invalid Strategy option");
     }
 

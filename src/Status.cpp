@@ -4,11 +4,12 @@
 
 #include <algorithm>
 #include <fmt/core.h>
+#include <queue>
 
 #include "Status.hpp"
 
 Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks,
-               Strategy strategy) :
+               PathfindingStrategy strategy) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
         pathsWrappers{initializePathsWrappers(agents)},
@@ -236,11 +237,11 @@ TimeStep Status::getPathsUpperBound() const {
 
 std::optional<int> Status::getMaxPosVisits() const{
     switch (pathFindingStrategy) {
-        case Strategy::EAGER:
+        case PathfindingStrategy::EAGER:
             return 2;
-        case Strategy::FORWARD_ONLY:
+        case PathfindingStrategy::FORWARD_ONLY:
             return 1;
-        case Strategy::LAZY:
+        case PathfindingStrategy::LAZY:
             return static_cast<int>(AmbientMap::nDirections);
         default:
             return std::nullopt;
@@ -249,6 +250,44 @@ std::optional<int> Status::getMaxPosVisits() const{
 
 int Status::getNAgents() const {
     return static_cast<int>(pathsWrappers.size());
+}
+
+std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
+    using TaskInfo = std::pair<int, TimeStep>;
+
+    auto comparator = [obj](const TaskInfo& pWA, const TaskInfo& pWB){
+        switch (obj) {
+            case Objective::MAKESPAN:
+                return pWA.second > pWB.second;
+        }
+    };
+
+    n = std::min(static_cast<int>(tasksVector.size()), n);
+
+    std::vector<TaskInfo> orderedTasks;
+    orderedTasks.reserve(tasksVector.size());
+
+    for (const auto& pW : pathsWrappers){
+        for (const auto& wp : pW.wpList){
+            if(wp.getDemand() != Demand::DELIVERY){
+                continue;
+            }
+            switch (obj) {
+                case Objective::MAKESPAN:
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
+                break;
+            }
+        }
+    }
+
+    std::sort(orderedTasks.begin(), orderedTasks.end(), comparator);
+
+    std::unordered_set<int> taskIndicesToRemove{};
+    taskIndicesToRemove.reserve(n);
+    for(const auto& taskInfo : orderedTasks){
+        taskIndicesToRemove.insert(taskInfo.first);
+    }
+    return taskIndicesToRemove;
 }
 
 template

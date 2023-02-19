@@ -35,6 +35,12 @@ private:
     );
     static BigHHandles getHandles(const BigHFibHeap& heap);
 
+    void addNewTasks(
+            const std::vector<AgentInfo> &agentsInfos,
+            const Status &status,
+            const std::unordered_set<int>& taskIndices
+    );
+
     bool checkOrder() const;
 };
 

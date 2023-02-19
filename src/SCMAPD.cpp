@@ -6,7 +6,7 @@
 #include "BigH.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
-               Heuristic heuristic, bool debug, Strategy strategy) :
+               Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
     status(std::move(ambientMap), agents, std::move(tasksVector), strategy),
     bigH{agents, status, heuristic},
     debug{debug},
@@ -55,7 +55,7 @@ void SCMAPD::printCheckMessage() const{
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                 const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                Heuristic heuristic, Strategy strategy) {
+                Heuristic heuristic, PathfindingStrategy strategy) {
     AmbientMap ambientMap(gridFile, DistanceMatrix{distanceMatrixFile});
 
     auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};

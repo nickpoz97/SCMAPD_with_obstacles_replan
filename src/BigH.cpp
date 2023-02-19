@@ -106,21 +106,6 @@ void BigH::update(int k, int taskId, const Status &status) {
 #endif
 }
 
-BigHFibHeap
-BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h) {
-    const auto& tasks = status.getTasks();
-
-    BigHFibHeap heap(getComparator(h));
-
-    for(const auto& task : tasks){
-        auto taskId = task.index;
-        assert(taskId >= 0 && taskId < tasks.size());
-        heap.emplace(agentsInfos, taskId, v, status);
-    }
-
-    return heap;
-}
-
 BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
     BigHHandles heapHandles{};
 
@@ -147,5 +132,31 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
     }
 
     return vec;
+}
+
+BigHFibHeap
+BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h) {
+    const auto& tasks = status.getTasks();
+
+    BigHFibHeap heap(getComparator(h));
+
+    for(const auto& task : tasks){
+        auto taskId = task.index;
+        assert(taskId >= 0 && taskId < tasks.size());
+        heap.emplace(agentsInfos, taskId, v, status);
+    }
+
+    return heap;
+}
+
+void BigH::addNewTasks(const std::vector<AgentInfo> &agentsInfos, const Status &status,
+                       const std::unordered_set<int>& taskIndices) {
+    for (int taskId : taskIndices){
+        // if tha UTI contains it this mean you re-added a task
+        // this exploits the fact we should not have index value overflow
+        assert(!unassignedTaskIndices.contains(taskId));
+
+        heapHandles.emplace(taskId, heap.emplace(agentsInfos, taskId, v, status));
+    }
 }
 
