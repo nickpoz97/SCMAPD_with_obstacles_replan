@@ -51,7 +51,7 @@ SmallH::initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agent
         const auto& aInfo = agentsInfos[agentIndex];
         assert(aInfo.index == agentIndex);
 
-        heap.emplace(aInfo, taskId, status, pW.wpList, pW.path, pW.satisfiedTasksIds);
+        heap.emplace(aInfo, taskId, status, pW);
     }
 
     return heap;
@@ -172,11 +172,9 @@ bool SmallH::empty() const{
         .newTaskId = taskId,
         .agentId = top.getAgentId(),
         .wrapper{
-            .ttd = top.getTotalTravelDelay(),
-            .lastDeliveryTimeStep = top.getLastDeliveryTimeStep(),
-            .path {top.getPath()},
-            .wpList{top.getWaypoints()},
-            .satisfiedTasksIds{top.getAssignedTaskIds()}
+            {top.getPath()},
+            {top.getWaypoints()},
+            {top.getAssignedTaskIds()}
         }
     };
 }

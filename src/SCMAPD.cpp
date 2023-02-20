@@ -79,7 +79,7 @@ void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
 
     for(int agentId : agentsToBeUpdated){
         auto& pW = status.getPathWrapper(agentId);
-        std::tie(pW.path, pW.wpList) = PathFinder::multiAStar(std::move(pW.wpList), pW.path[0], status, agentId);
+        //std::tie(pW.path, pW.wpList) = PathFinder::multiAStar(std::move(pW.wpList), pW.path[0], status, agentId);
     }
 }
 

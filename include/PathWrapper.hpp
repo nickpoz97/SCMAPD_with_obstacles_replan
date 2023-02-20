@@ -7,13 +7,21 @@
 #include "NewTypes.hpp"
 
 struct PathWrapper{
-    TimeStep ttd;
-    TimeStep lastDeliveryTimeStep;
+public:
+    PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
+
+    bool removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
+    TimeStep getTTD() const;
+    TimeStep getlastDeliveryTimeStep() const;
+    const WaypointsList& getWaypoints() const;
+    const Path& getPath() const;
+    const std::unordered_set<int>& getSatisfiedTasksIds() const;
+
+    CompressedCoord getInitialPos() const;
+private:
     Path path;
     WaypointsList wpList;
     std::unordered_set<int> satisfiedTasksIds;
-
-    bool removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
 };
 
 class PWsVector : public std::vector<PathWrapper>{

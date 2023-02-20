@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
         )
     };
-    scmapd.solve(10, 5);
+    scmapd.solve(10, 0);
     scmapd.printResult();
 
     scmapd.printCheckMessage();

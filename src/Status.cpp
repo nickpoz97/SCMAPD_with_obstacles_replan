@@ -28,7 +28,7 @@ std::pair<int, int> Status::update(ExtractedPath &&extractedPath) {
     auto agentId = extractedPath.agentId;
     auto taskId = extractedPath.newTaskId;
 
-    longestPathSize = std::max(static_cast<int>(extractedPath.wrapper.path.size()), longestPathSize);
+    longestPathSize = std::max(static_cast<int>(extractedPath.wrapper.getPath().size()), longestPathSize);
     pathsWrappers[agentId] = std::move(extractedPath.wrapper);
 
     return {agentId, taskId};
@@ -68,7 +68,7 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
     assert(agentId >= 0 && agentId < getNAgents());
 
     auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
-        const auto& p = pW.path;
+        const auto& p = pW.getPath();
 
         // if path is empty there are no conflicts
         if(p.empty()){
@@ -93,7 +93,7 @@ const DistanceMatrix& Status::getDistanceMatrix() const{
 }
 
 bool Status::checkPathWithStatus(const Path &path, int agentId) const{
-    auto predicate = [&](const PathWrapper& other){return checkPathConflicts(path, other.path);};
+    auto predicate = [&](const PathWrapper& other){return checkPathConflicts(path, other.getPath());};
 
     return std::ranges::any_of(
         pathsWrappers.begin(),
@@ -123,7 +123,7 @@ bool Status::checkPathConflicts(int i, int j) const{
         return false;
     }
 
-    return checkPathConflicts(pathsWrappers[i].path, pathsWrappers[j].path);
+    return checkPathConflicts(pathsWrappers[i].getPath(), pathsWrappers[j].getPath());
 }
 
 bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
@@ -156,11 +156,7 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
         std::back_inserter(pWs),
         [](const AgentInfo& a) -> PathWrapper {
             return {
-                .ttd = 0,
-                .lastDeliveryTimeStep = 0,
-                .path{a.startPos},
-                .wpList{},
-                .satisfiedTasksIds{}
+                {a.startPos},{},{}
             };
         }
     );
@@ -223,7 +219,7 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
     orderedTasks.reserve(tasksVector.size());
 
     for (const auto& pW : pathsWrappers){
-        for (const auto& wp : pW.wpList){
+        for (const auto& wp : pW.getWaypoints()){
             if(wp.getDemand() != Demand::DELIVERY){
                 continue;
             }

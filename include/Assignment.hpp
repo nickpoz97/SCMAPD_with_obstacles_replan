@@ -28,9 +28,7 @@ public:
      */
     Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status);
 
-    Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status,
-               WaypointsList waypoints, Path path,
-               std::unordered_set<int> assignedTasksIds);
+    Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status, const PathWrapper &pW);
 
     /// @return agent capacity
     [[maybe_unused]] [[nodiscard]] int getCapacity() const;

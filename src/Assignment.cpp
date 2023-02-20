@@ -23,15 +23,13 @@ Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status
         assert(agentInfo.index == index);
     }
 
-Assignment::Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status,
-                       WaypointsList waypoints, Path path,
-                       std::unordered_set<int> assignedTasksIds) :
+Assignment::Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status, const PathWrapper &pW) :
     startPos{agentInfo.startPos},
-    waypoints{std::move(waypoints)},
+    waypoints{pW.getWaypoints()},
     index{agentInfo.index},
     capacity{agentInfo.capacity},
-    path{std::move(path)},
-    assignedTasksIds{std::move(assignedTasksIds)}
+    path{pW.getPath()},
+    assignedTasksIds{pW.getSatisfiedTasksIds()}
 {
     addTask(newTaskId, status);
 }
