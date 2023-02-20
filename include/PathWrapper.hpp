@@ -12,6 +12,18 @@ struct PathWrapper{
     Path path;
     WaypointsList wpList;
     std::unordered_set<int> satisfiedTasksIds;
+
+    void removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
+};
+
+class PWsVector : public std::vector<PathWrapper>{
+public:
+    [[nodiscard]] TimeStep getMaxSpanCost() const;
+    [[nodiscard]] TimeStep getTTD() const;
+    [[nodiscard]] TimeStep getTTT() const;
+    [[nodiscard]] TimeStep getSpan(int agentId) const;
+    [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
+    [[nodiscard]] const Path& getPath(int agentId) const;
 };
 
 struct ExtractedPath{

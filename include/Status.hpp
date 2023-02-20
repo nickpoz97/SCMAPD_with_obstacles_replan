@@ -21,7 +21,6 @@ public:
     getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
 
     [[nodiscard]] const std::vector<Task> &getTasks() const;
-    [[nodiscard]] const Path & getPath(int agentId) const;
 
     [[nodiscard]] const Task & getTask(int i) const;
 
@@ -40,30 +39,21 @@ public:
     template<typename T>
     [[nodiscard]] std::string stringifyPath(const T& path) const;
 
-    [[nodiscard]] TimeStep getSpanCost(int agentId) const;
-
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
-
-    [[nodiscard]] TimeStep getTTD(int agentId) const;
-
-    // this size should be considered an upper bound
-    [[nodiscard]] TimeStep getPathsUpperBound() const;
-
-    [[nodiscard]] TimeStep getMaxSpanCost() const;
-
-    [[nodiscard]] TimeStep getTTT() const;
-
-    [[nodiscard]] TimeStep getTTD() const;
 
     [[nodiscard]] std::optional<int> getMaxPosVisits() const;
 
     [[nodiscard]] int getNAgents() const;
 
     [[nodiscard]] std::unordered_set<int> chooseNTasks(int n, Objective obj) const;
+
+    void removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices);
+
+    [[nodiscard]] const PWsVector & getPathWrappers() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
-    std::vector<PathWrapper> pathsWrappers;
+    PWsVector pathsWrappers;
     PathfindingStrategy pathFindingStrategy;
 
     TimeStep longestPathSize = 0;

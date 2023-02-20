@@ -29,6 +29,10 @@ private:
 
     time_point start;
     duration execution_time{};
+
+    void findFirstSolution();
+
+    void optimize();
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

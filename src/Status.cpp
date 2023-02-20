@@ -88,10 +88,6 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
         std::ranges::any_of(pathsWrappers.begin() + agentId + 1, pathsWrappers.end(), predicate);
 }
 
-const Path & Status::getPath(int agentId) const {
-    return pathsWrappers[agentId].path;
-}
-
 const DistanceMatrix& Status::getDistanceMatrix() const{
     return ambient.getDistanceMatrix();
 }
@@ -171,36 +167,6 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
     return pWs;
 }
 
-TimeStep Status::getSpanCost(int agentId) const {
-    return pathsWrappers[agentId].lastDeliveryTimeStep;
-}
-
-TimeStep Status::getMaxSpanCost() const {
-    return std::max_element(
-        pathsWrappers.cbegin(),
-        pathsWrappers.cend(),
-        [](const PathWrapper& pWA, const PathWrapper& pWB){return pWA.lastDeliveryTimeStep < pWB.lastDeliveryTimeStep;}
-    )->lastDeliveryTimeStep;
-}
-
-TimeStep Status::getTTD() const {
-    return std::accumulate(
-        pathsWrappers.cbegin(),
-        pathsWrappers.cend(),
-        0,
-        [](TimeStep ttd, const PathWrapper& pW) {return ttd + pW.ttd;}
-    );
-}
-
-TimeStep Status::getTTT() const {
-    return std::accumulate(
-        pathsWrappers.cbegin(),
-        pathsWrappers.cend(),
-        0,
-        [](TimeStep ttt, const PathWrapper& pW) {return ttt + pW.lastDeliveryTimeStep;}
-    );
-}
-
 template<typename T>
 std::string Status::stringifyPath(const T& path) const {
     static constexpr std::string_view pattern = "({},{})->";
@@ -221,18 +187,6 @@ std::string Status::stringifyPath(const T& path) const {
 bool Status::hasIllegalPositions(const Path& path) const{
     const auto& dm = ambient.getDistanceMatrix();
     return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
-}
-
-TimeStep Status::getTTD(int agentId) const {
-    return pathsWrappers[agentId].ttd;
-}
-
-TimeStep Status::getPathsUpperBound() const {
-    return
-        static_cast<int>(ambient.getNRows()) *
-        static_cast<int>(ambient.getNCols()) *
-        static_cast<int>(tasksVector.size()) *
-        static_cast<int>(AmbientMap::nDirections);
 }
 
 std::optional<int> Status::getMaxPosVisits() const{
@@ -288,6 +242,16 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
         taskIndicesToRemove.insert(taskInfo.first);
     }
     return taskIndicesToRemove;
+}
+
+const PWsVector & Status::getPathWrappers() const {
+    return pathsWrappers;
+}
+
+void Status::removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices) {
+    for(auto& pw : pathsWrappers){
+        pw.removeTasksAndWPs(rmvTasksIndices);
+    }
 }
 
 template
