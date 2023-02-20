@@ -4,6 +4,7 @@
 #include "Assignment.hpp"
 #include "fmt/color.h"
 #include "BigH.hpp"
+#include "MAPF/PathFinder.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
                Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
@@ -15,14 +16,15 @@ SCMAPD::SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, st
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::solve(TimeStep cutOffTime) {
-    findFirstSolution();
-    optimize();
+void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks) {
+    findSolution();
+    assert(bigH.empty());
+    optimize(nOptimizationTasks);
 
     execution_time = std::chrono::steady_clock::now() - start;
 }
 
-void SCMAPD::findFirstSolution() {// extractBigHTop takes care of tasks indices removal
+void SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
         auto [k, taskId] = status.update(bigH.extractTop());
         assert(!status.checkAllConflicts());
@@ -59,10 +61,26 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-void SCMAPD::optimize() {
-    const auto backup = status.getPathWrappers();
+void SCMAPD::optimize(int n) {
+    if(n <= 0){
+        return;
+    }
 
+    const auto PWsBackup{status.getPathWrappers()};
 
+    auto chosenTasks = status.chooseNTasks(n, Objective::MAKESPAN);
+    removeTasks(chosenTasks);
+
+    //bigH.addNewTasks()
+}
+
+void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
+    auto agentsToBeUpdated = status.removeTasksFromAgents(chosenTasks);
+
+    for(int agentId : agentsToBeUpdated){
+        auto& pW = status.getPathWrapper(agentId);
+        std::tie(pW.path, pW.wpList) = PathFinder::multiAStar(std::move(pW.wpList), pW.path[0], status, agentId);
+    }
 }
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

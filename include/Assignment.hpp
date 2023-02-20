@@ -26,10 +26,14 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    explicit Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status);
+    Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status);
+
+    Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status,
+               WaypointsList waypoints, Path path,
+               std::unordered_set<int> assignedTasksIds);
 
     /// @return agent capacity
-    [[nodiscard]] int getCapacity() const;
+    [[maybe_unused]] [[nodiscard]] int getCapacity() const;
 
     /// @return difference between actual TTD and TTD before last task addition to path
     [[nodiscard]] TimeStep getMCA() const;

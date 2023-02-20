@@ -47,9 +47,10 @@ public:
 
     [[nodiscard]] std::unordered_set<int> chooseNTasks(int n, Objective obj) const;
 
-    void removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices);
+    std::unordered_set<int> removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices);
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
+    [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

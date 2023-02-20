@@ -207,12 +207,13 @@ int Status::getNAgents() const {
 }
 
 std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
+    // taskId,
     using TaskInfo = std::pair<int, TimeStep>;
 
-    auto comparator = [obj](const TaskInfo& pWA, const TaskInfo& pWB){
+    auto comparator = [obj](const TaskInfo& ta, const TaskInfo& tb){
         switch (obj) {
             case Objective::MAKESPAN:
-                return pWA.second > pWB.second;
+                return ta.second > tb.second;
         }
     };
 
@@ -228,7 +229,7 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
             }
             switch (obj) {
                 case Objective::MAKESPAN:
-                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
                 break;
             }
         }
@@ -238,8 +239,8 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
 
     std::unordered_set<int> taskIndicesToRemove{};
     taskIndicesToRemove.reserve(n);
-    for(const auto& taskInfo : orderedTasks){
-        taskIndicesToRemove.insert(taskInfo.first);
+    for(int i = 0 ; i < std::min(n, static_cast<int>(orderedTasks.size())) ; ++i){
+        taskIndicesToRemove.insert(orderedTasks[i].first);
     }
     return taskIndicesToRemove;
 }
@@ -248,10 +249,21 @@ const PWsVector & Status::getPathWrappers() const {
     return pathsWrappers;
 }
 
-void Status::removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices) {
-    for(auto& pw : pathsWrappers){
-        pw.removeTasksAndWPs(rmvTasksIndices);
+std::unordered_set<int> Status::removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices) {
+    std::unordered_set<int> agentsToBeUpdated;
+
+    for(int k = 0 ; k < pathsWrappers.size() ; ++k){
+        auto& pw = pathsWrappers[k];
+        if(pw.removeTasksAndWPs(rmvTasksIndices)){
+            agentsToBeUpdated.insert(k);
+        }
     }
+
+    return agentsToBeUpdated;
+}
+
+PathWrapper &Status::getPathWrapper(int agentId) {
+    return pathsWrappers[agentId];
 }
 
 template

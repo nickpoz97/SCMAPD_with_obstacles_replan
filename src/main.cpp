@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
     auto strategy{utils::getStrategy(vm["s"].as<string>())};
 
 #ifndef NDEBUG
-    fmt::print("Using {} strategy\n", strategy == Strategy::EAGER ? "eager" : "lazy");
+    fmt::print("Using {} strategy\n", strategy == PathfindingStrategy::EAGER ? "eager" : "lazy");
 #endif
 
     SCMAPD scmapd{
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
         )
     };
-    scmapd.solve(10);
+    scmapd.solve(10, 5);
     scmapd.printResult();
 
     scmapd.printCheckMessage();

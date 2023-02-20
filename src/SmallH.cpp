@@ -8,14 +8,23 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         heap{initializeHeap(agentsInfos, taskId, status)},
         heapHandles{getHandles(heap)},
         removedAgents{}
-    {
-        #ifndef NDEBUG
-        for(int i = 0 ; i < heapHandles.size() ; ++i){
-            assert((*heapHandles[i]).getAgentId() == i);
-        }
-        #endif
-        assert(checkOrder());
+{
+    #ifndef NDEBUG
+    for(int i = 0 ; i < heapHandles.size() ; ++i){
+        assert((*heapHandles[i]).getAgentId() == i);
     }
+    #endif
+    assert(checkOrder());
+}
+
+SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
+               const PWsVector &pWs) :
+    taskId{taskId},
+    v{v},
+    heap{initializeHeap(pWs, agentsInfos, taskId, status)},
+    heapHandles{getHandles(heap)},
+    removedAgents{}
+    {}
 
 SmallHFibHeap
 SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
@@ -25,6 +34,24 @@ SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, co
         auto agentIndex = aInfo.index;
         heap.emplace(aInfo, taskId, status);
         assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
+    }
+
+    return heap;
+}
+
+SmallHFibHeap
+SmallH::initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agentsInfos, int taskId,
+                       const Status &status) {
+    SmallHFibHeap heap{};
+
+    assert(agentsInfos.size() == pWs.size());
+
+    for (int agentIndex = 0 ; agentIndex < pWs.size() ; ++agentIndex){
+        const auto& pW = pWs[agentIndex];
+        const auto& aInfo = agentsInfos[agentIndex];
+        assert(aInfo.index == agentIndex);
+
+        heap.emplace(aInfo, taskId, status, pW.wpList, pW.path, pW.satisfiedTasksIds);
     }
 
     return heap;

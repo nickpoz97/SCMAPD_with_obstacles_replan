@@ -13,6 +13,8 @@ using SmallHHandles = std::unordered_map<int, SmallHFibHeap::handle_type>;
 class SmallH {
 public:
     SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status);
+    SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
+           const PWsVector &pWs);
 
     std::tuple<int, TimeStep, Path> extractTop();
     [[nodiscard]] TimeStep getTopMCA() const;
@@ -42,6 +44,10 @@ private:
 
     static SmallHFibHeap
     initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
+
+    static SmallHFibHeap
+    initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agentsInfos, int taskId,
+                   const Status &status);
 
     static SmallHHandles getHandles(const SmallHFibHeap& heap);
 

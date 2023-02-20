@@ -38,7 +38,9 @@ const Path& PWsVector::getPath(int agentId) const {
     return operator[](agentId).path;
 }
 
-void PathWrapper::removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices) {
-    wpList.remove_if([&](const Waypoint& wp){return rmvTasksIndices.contains(wp.getTaskIndex());});
-    std::erase_if(satisfiedTasksIds,[&](int taskId){return rmvTasksIndices.contains(taskId);});
+bool PathWrapper::removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices) {
+    wpList.remove_if([&](const Waypoint& wp){
+        return wp.getDemand() != Demand::END && rmvTasksIndices.contains(wp.getTaskIndex());}
+    );
+    return std::erase_if(satisfiedTasksIds,[&](int taskId){return rmvTasksIndices.contains(taskId);});
 }

@@ -12,10 +12,14 @@ using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
 class BigH {
 public:
     BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h);
+
     ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
 
     void update(int k, int taskId, const Status &status);
+
+    void addNewTasks(const std::vector<AgentInfo> &agentInfos, const PWsVector &pathsWrappers, const Status &status,
+                     const std::unordered_set<int> &taskIndices);
 
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
 
@@ -34,12 +38,6 @@ private:
         const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h
     );
     static BigHHandles getHandles(const BigHFibHeap& heap);
-
-    void addNewTasks(
-            const std::vector<AgentInfo> &agentsInfos,
-            const Status &status,
-            const std::unordered_set<int>& taskIndices
-    );
 
     bool checkOrder() const;
 };

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <fmt/ranges.h>
 #include <set>
+#include <utility>
 
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
@@ -22,7 +23,20 @@ Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status
         assert(agentInfo.index == index);
     }
 
-int Assignment::getCapacity() const {
+Assignment::Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status,
+                       WaypointsList waypoints, Path path,
+                       std::unordered_set<int> assignedTasksIds) :
+    startPos{agentInfo.startPos},
+    waypoints{std::move(waypoints)},
+    index{agentInfo.index},
+    capacity{agentInfo.capacity},
+    path{std::move(path)},
+    assignedTasksIds{std::move(assignedTasksIds)}
+{
+    addTask(newTaskId, status);
+}
+
+[[maybe_unused]] int Assignment::getCapacity() const {
     return capacity;
 }
 

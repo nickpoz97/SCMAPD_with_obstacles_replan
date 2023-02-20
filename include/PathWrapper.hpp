@@ -13,7 +13,7 @@ struct PathWrapper{
     WaypointsList wpList;
     std::unordered_set<int> satisfiedTasksIds;
 
-    void removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
+    bool removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
 };
 
 class PWsVector : public std::vector<PathWrapper>{
