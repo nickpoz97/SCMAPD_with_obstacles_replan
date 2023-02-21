@@ -30,7 +30,6 @@ private:
     BigHFibHeap heap;
     BigHHandles heapHandles;
 
-    std::unordered_set<int> unassignedTaskIndices;
     static SmallHComp getComparator(Heuristic h);
 
     static BigHFibHeap

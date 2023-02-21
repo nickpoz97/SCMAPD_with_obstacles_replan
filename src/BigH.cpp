@@ -53,8 +53,7 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
     v{h == Heuristic::MCA ? 1 : 2},
     heuristic{h},
     heap{buildPartialAssignmentHeap(agentInfos, status, v, h)},
-    heapHandles{getHandles(heap)},
-    unassignedTaskIndices(boost::counting_iterator<int>(0), boost::counting_iterator<int>(status.getTasks().size()))
+    heapHandles{getHandles(heap)}
     {
         #ifndef NDEBUG
         for(int i = 0 ; i < heapHandles.size() ; ++i){
@@ -71,7 +70,7 @@ ExtractedPath BigH::extractTop() {
     auto extractedPath = topSmallH.getTopWrappedPath();
 
     heap.pop();
-    unassignedTaskIndices.erase(extractedPath.newTaskId);
+    heapHandles.erase(extractedPath.newTaskId);
 
     return extractedPath;
 }
@@ -82,8 +81,7 @@ bool BigH::empty() const {
 
 void BigH::update(int k, int taskId, const Status &status) {
     assert(checkOrder());
-    for(auto otherTaskId : unassignedTaskIndices){
-        auto& sHHandle = heapHandles[otherTaskId];
+    for(auto& [otherTaskId, sHHandle] : heapHandles){
         if((*sHHandle).empty()){
             throw std::runtime_error("No way to find all paths");
         }
@@ -156,10 +154,9 @@ void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &s
     for (int taskId : newTaskIndices){
         // if tha UTI contains it this mean you re-added a task
         // this exploits the fact we should not have index value overflow
-        assert(!unassignedTaskIndices.contains(taskId));
+        assert(!heapHandles.contains(taskId));
 
         heapHandles[taskId] = heap.emplace(agentInfos, taskId, v, status, pathsWrapper);
     }
-    unassignedTaskIndices = std::move(newTaskIndices);
 }
 

@@ -7,8 +7,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         taskId{taskId},
         v{v},
         heap{},
-        heapHandles{},
-        removedAgents{}
+        heapHandles{}
 {
     heapHandles.reserve(agentsInfos.size());
 
@@ -18,7 +17,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
             heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status));
         }
         catch(const NoPathException& e) {
-            removedAgents.insert(agentIndex);
+            heapHandles.erase(agentIndex);
         }
         assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
     }
@@ -36,8 +35,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
     taskId{taskId},
     v{v},
     heap{},
-    heapHandles{},
-    removedAgents{}
+    heapHandles{}
 {
     heapHandles.reserve(agentsInfos.size());
 
@@ -52,7 +50,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
             heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status, pW));
         }
         catch(const NoPathException& e) {
-            removedAgents.insert(agentIndex);
+            heapHandles.erase(agentIndex);
         }
     }
     if(heap.empty()){
@@ -89,7 +87,7 @@ void SmallH::updateTopElements(const Status &status) {
             }
             catch(const NoPathException& e){
                 heap.erase(handle);
-                removedAgents.insert(agentId);
+                heapHandles.erase(agentId);
                 continue;
             }
             heap.update(handle);
@@ -107,7 +105,7 @@ TimeStep SmallH::getTopMCA() const{
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     assert(checkOrder());
 
-    if(removedAgents.contains(k)){
+    if(!heapHandles.contains(k)){
         return;
     }
 
@@ -119,7 +117,7 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     }
     catch(const NoPathException& e){
         heap.erase(targetHandle);
-        removedAgents.insert(k);
+        heapHandles.erase(k);
         return;
     }
     heap.update(targetHandle);

@@ -40,7 +40,6 @@ private:
     int v;
     SmallHFibHeap heap;
     SmallHHandles heapHandles;
-    std::unordered_set<int> removedAgents;
 
     static SmallHHandles getHandles(const SmallHFibHeap& heap);
 
