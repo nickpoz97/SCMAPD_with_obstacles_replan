@@ -6,10 +6,23 @@
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
         taskId{taskId},
         v{v},
-        heap{initializeHeap(agentsInfos, taskId, status)},
-        heapHandles{getHandles(heap)},
+        heap{},
+        heapHandles{},
         removedAgents{}
 {
+    heapHandles.reserve(agentsInfos.size());
+
+    for (const auto& aInfo : agentsInfos){
+        auto agentIndex = aInfo.index;
+        try{
+            heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status));
+        }
+        catch(const NoPathException& e) {
+            removedAgents.insert(agentIndex);
+        }
+        assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
+    }
+
     #ifndef NDEBUG
     for(int i = 0 ; i < heapHandles.size() ; ++i){
         assert((*heapHandles[i]).getAgentId() == i);
@@ -22,28 +35,11 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
                const PWsVector &pWs) :
     taskId{taskId},
     v{v},
-    heap{initializeHeap(pWs, agentsInfos, taskId, status)},
-    heapHandles{getHandles(heap)},
+    heap{},
+    heapHandles{},
     removedAgents{}
-    {}
-
-SmallHFibHeap
-SmallH::initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status) {
-    SmallHFibHeap heap{};
-
-    for (const auto& aInfo : agentsInfos){
-        auto agentIndex = aInfo.index;
-        heap.emplace(aInfo, taskId, status);
-        assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
-    }
-
-    return heap;
-}
-
-SmallHFibHeap
-SmallH::initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agentsInfos, int taskId,
-                       const Status &status) {
-    SmallHFibHeap heap{};
+{
+    heapHandles.reserve(agentsInfos.size());
 
     assert(agentsInfos.size() == pWs.size());
 
@@ -53,15 +49,15 @@ SmallH::initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agent
         assert(aInfo.index == agentIndex);
 
         try{
-            heap.emplace(aInfo, taskId, status, pW);
+            heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status, pW));
         }
-        catch(const NoPathException& e) {}
+        catch(const NoPathException& e) {
+            removedAgents.insert(agentIndex);
+        }
     }
     if(heap.empty()){
         throw NotPossibleOptimization();
     }
-
-    return heap;
 }
 
 std::tuple<int, TimeStep, Path> SmallH::extractTop() {

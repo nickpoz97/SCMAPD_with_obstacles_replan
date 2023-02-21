@@ -42,13 +42,6 @@ private:
     SmallHHandles heapHandles;
     std::unordered_set<int> removedAgents;
 
-    static SmallHFibHeap
-    initializeHeap(const std::vector<AgentInfo> &agentsInfos, int taskId, const Status &status);
-
-    static SmallHFibHeap
-    initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agentsInfos, int taskId,
-                   const Status &status);
-
     static SmallHHandles getHandles(const SmallHFibHeap& heap);
 
     bool checkOrder() const;
