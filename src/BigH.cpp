@@ -149,15 +149,17 @@ BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, cons
     return heap;
 }
 
-void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const PWsVector &pathsWrappers, const Status &status,
-                       const std::unordered_set<int> &taskIndices) {
-    for (int taskId : taskIndices){
+void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &status,
+                       std::unordered_set<int> &&newTaskIndices) {
+    const auto& pathsWrapper = status.getPathWrappers();
+
+    for (int taskId : newTaskIndices){
         // if tha UTI contains it this mean you re-added a task
         // this exploits the fact we should not have index value overflow
         assert(!unassignedTaskIndices.contains(taskId));
 
-        heapHandles[taskId] = heap.emplace(agentInfos, taskId, v, status, pathsWrappers);
+        heapHandles[taskId] = heap.emplace(agentInfos, taskId, v, status, pathsWrapper);
     }
-    unassignedTaskIndices = taskIndices;
+    unassignedTaskIndices = std::move(newTaskIndices);
 }
 

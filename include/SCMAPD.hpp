@@ -11,30 +11,32 @@
 
 class SCMAPD {
 public:
-    SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
+    SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
            Heuristic heuristic, bool debug, PathfindingStrategy strategy);
 
-    void solve(TimeStep cutOffTime, int nOptimizationTasks);
+    void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj);
 
     void printResult() const;
 
     void printCheckMessage() const;
 private:
-    Status status;
-    BigH bigH;
-    bool debug;
-
     using time_point = std::chrono::time_point<std::chrono::steady_clock>;
     using duration = std::chrono::duration<double>;
-
     time_point start;
     duration execution_time{};
 
+    Status status;
+    BigH bigH;
+    bool debug;
+    const std::vector<AgentInfo> agentInfos;
+
     void findSolution();
 
-    void optimize(int n);
+    bool optimize(int n, Objective obj);
 
     void removeTasks(const std::unordered_set<int> &chosenTasks);
+
+    static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,

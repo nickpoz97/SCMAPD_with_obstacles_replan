@@ -50,6 +50,8 @@ public:
     std::unordered_set<int> removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices);
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
+    void setPathWrappers(PWsVector&& other);
+
     [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
 private:
     const AmbientMap ambient;

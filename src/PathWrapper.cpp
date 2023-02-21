@@ -71,6 +71,10 @@ const WaypointsList &PathWrapper::getWaypoints() const {
     return wpList;
 }
 
+WaypointsList &PathWrapper::getWaypoints() {
+    return wpList;
+}
+
 const Path &PathWrapper::getPath() const {
     return path;
 }
@@ -79,3 +83,31 @@ CompressedCoord PathWrapper::getInitialPos() const {
     assert(!path.empty());
     return path[0];
 }
+
+void PathWrapper::update(std::pair<Path, WaypointsList> &&updatedData) {
+    path = std::move(updatedData.first);
+    wpList = std::move(updatedData.second);
+
+#ifndef NDEBUG
+    assert(
+        std::ranges::all_of(
+            wpList.cbegin(),
+            wpList.cend(),
+            [&](const Waypoint& wp){
+                return wp.getDemand() == Demand::END || satisfiedTasksIds.contains(wp.getTaskIndex());
+            }
+        )
+    );
+    assert(
+        std::ranges::all_of(
+            wpList.cbegin(),
+            wpList.cend(),
+            [&](const Waypoint& wp){
+                return std::find(path.cbegin(), path.cend(), wp.getPosition()) != path.cend();
+            }
+        )
+    );
+#endif
+}
+
+

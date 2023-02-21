@@ -6,20 +6,25 @@
 #include "BigH.hpp"
 #include "MAPF/PathFinder.hpp"
 
-SCMAPD::SCMAPD(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasksVector,
+SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
                Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
+    start{std::chrono::steady_clock::now()},
     status(std::move(ambientMap), agents, std::move(tasksVector), strategy),
     bigH{agents, status, heuristic},
     debug{debug},
-    start{std::chrono::steady_clock::now()}
+    agentInfos{std::move(agents)}
     {
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks) {
+void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj) {
     findSolution();
     assert(bigH.empty());
-    optimize(nOptimizationTasks);
+
+    bool success = true;
+    for(int i = 0 ; i < cutOffTime && success ; ++i){
+        success = optimize(nOptimizationTasks, obj);
+    }
 
     execution_time = std::chrono::steady_clock::now() - start;
 }
@@ -61,17 +66,26 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-void SCMAPD::optimize(int n) {
+bool SCMAPD::optimize(int n, Objective obj) {
     if(n <= 0){
-        return;
+        return false;
     }
 
-    const auto PWsBackup{status.getPathWrappers()};
+    auto PWsBackup{status.getPathWrappers()};
 
-    auto chosenTasks = status.chooseNTasks(n, Objective::MAKESPAN);
+    auto chosenTasks = status.chooseNTasks(n, obj);
     removeTasks(chosenTasks);
 
-    //bigH.addNewTasks()
+    bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
+
+    findSolution();
+    assert(bigH.empty());
+
+    if(!isBetter(status.getPathWrappers(), PWsBackup, obj)){
+        status.setPathWrappers(std::move(PWsBackup));
+        return false;
+    }
+    return true;
 }
 
 void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
@@ -79,7 +93,16 @@ void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
 
     for(int agentId : agentsToBeUpdated){
         auto& pW = status.getPathWrapper(agentId);
-        //std::tie(pW.path, pW.wpList) = PathFinder::multiAStar(std::move(pW.wpList), pW.path[0], status, agentId);
+        pW.update(PathFinder::multiAStar(std::move(pW.getWaypoints()), pW.getInitialPos(), status, agentId));
+    }
+}
+
+bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj) {
+    switch (obj) {
+        case Objective::MAKESPAN:
+            return newResult.getMaxSpanCost() <= oldResult.getMaxSpanCost();
+        case Objective::TTD:
+            return newResult.getTTD() <= oldResult.getTTD();
     }
 }
 
@@ -91,5 +114,5 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
     auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
     auto tasks{loadTasks(tasksFile, ambientMap.getDistanceMatrix())};
 
-    return {std::move(ambientMap), robots, std::move(tasks), heuristic, false, strategy};
+    return {std::move(ambientMap), std::move(robots), std::move(tasks), heuristic, false, strategy};
 }

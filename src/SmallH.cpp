@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "SmallH.hpp"
+#include "NotPossibleOptimization.hpp"
 #include "MAPF/NoPathException.hpp"
 
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
@@ -51,7 +52,13 @@ SmallH::initializeHeap(const PWsVector &pWs, const std::vector<AgentInfo> &agent
         const auto& aInfo = agentsInfos[agentIndex];
         assert(aInfo.index == agentIndex);
 
-        heap.emplace(aInfo, taskId, status, pW);
+        try{
+            heap.emplace(aInfo, taskId, status, pW);
+        }
+        catch(const NoPathException& e) {}
+    }
+    if(heap.empty()){
+        throw NotPossibleOptimization();
     }
 
     return heap;

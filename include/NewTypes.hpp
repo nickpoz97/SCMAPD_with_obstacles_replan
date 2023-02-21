@@ -26,7 +26,8 @@ enum class PathfindingStrategy{
 };
 
 enum class Objective{
-    MAKESPAN
+    MAKESPAN,
+    TTD
 };
 
 #endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

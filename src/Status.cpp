@@ -206,13 +206,6 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
     // taskId,
     using TaskInfo = std::pair<int, TimeStep>;
 
-    auto comparator = [obj](const TaskInfo& ta, const TaskInfo& tb){
-        switch (obj) {
-            case Objective::MAKESPAN:
-                return ta.second > tb.second;
-        }
-    };
-
     n = std::min(static_cast<int>(tasksVector.size()), n);
 
     std::vector<TaskInfo> orderedTasks;
@@ -227,11 +220,18 @@ std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
                 case Objective::MAKESPAN:
                     orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
                 break;
+                case Objective::TTD:
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
+                break;
             }
         }
     }
 
-    std::sort(orderedTasks.begin(), orderedTasks.end(), comparator);
+    std::sort(
+        orderedTasks.begin(),
+        orderedTasks.end(),
+        [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
+    );
 
     std::unordered_set<int> taskIndicesToRemove{};
     taskIndicesToRemove.reserve(n);
@@ -260,6 +260,10 @@ std::unordered_set<int> Status::removeTasksFromAgents(const std::unordered_set<i
 
 PathWrapper &Status::getPathWrapper(int agentId) {
     return pathsWrappers[agentId];
+}
+
+void Status::setPathWrappers(PWsVector &&other) {
+    pathsWrappers = std::move(other);
 }
 
 template
