@@ -80,10 +80,11 @@ private:
 
     [[nodiscard]] TimeStep getActualTTD() const;
 
-    [[nodiscard]] TimeStep computeApproxTTD(const Status &status, WaypointsList::iterator newPickupWpIt) const ;
+    [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                                            WaypointsList::iterator newPickupWpIt) const ;
 
     void
-    insertTaskWaypoints(int taskId, const Status &status);
+    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector);
 
     TimeStep computeIdealGoalTime(const Status &status) const;
 };

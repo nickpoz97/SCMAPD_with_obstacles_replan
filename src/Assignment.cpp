@@ -57,7 +57,7 @@ Assignment::addTask(int taskId, const Status &status) {
     // safe for NoPathException
     auto tmpOldTTD = getActualTTD();
 
-    insertTaskWaypoints(taskId, status);
+    insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks());
     internalUpdate(status);
 
     oldTTD = tmpOldTTD;
@@ -75,13 +75,12 @@ Assignment::addTask(int taskId, const Status &status) {
 }
 
 void
-Assignment::insertTaskWaypoints(int taskId, const Status &status) {
-    const Task& task = status.getTask(taskId);
+Assignment::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector) {
     assert(waypoints.crend()->getDemand() == Demand::END);
 
     if(waypoints.size() == 1){
-        waypoints.push_front(getTaskDeliveryWaypoint(task));
-        waypoints.push_front(getTaskPickupWaypoint(task));
+        waypoints.push_front(getTaskDeliveryWaypoint(newTask));
+        waypoints.push_front(getTaskPickupWaypoint(newTask));
         return;
     }
 
@@ -96,9 +95,9 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
     // search for best position for task start and goal
     for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
         for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){
-            auto [newStartIt, newGoalIt] = insertNewWaypoints(task, wpPickupIt, wpDeliveryIt);
+            auto [newStartIt, newGoalIt] = insertNewWaypoints(newTask, wpPickupIt, wpDeliveryIt);
             if(checkCapacityConstraint()){
-                auto newApproxTtd = computeApproxTTD(status, newStartIt);
+                auto newApproxTtd = computeApproxTTD(dm, tasksVector, newStartIt);
                 if(newApproxTtd < bestApproxTTD){
                     bestApproxTTD = newApproxTtd;
                     bestPickupIt = wpPickupIt;
@@ -108,7 +107,7 @@ Assignment::insertTaskWaypoints(int taskId, const Status &status) {
             restorePreviousWaypoints(newStartIt, newGoalIt);
         }
     }
-    insertNewWaypoints(task, bestPickupIt, bestDeliveryIt);
+    insertNewWaypoints(newTask, bestPickupIt, bestDeliveryIt);
 }
 
 void Assignment::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
@@ -142,11 +141,10 @@ TimeStep Assignment::getActualTTD() const{
     return waypoints.crbegin()->getCumulatedDelay();
 }
 
-TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::iterator newPickupWpIt) const{
+TimeStep Assignment::computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                                      WaypointsList::iterator newPickupWpIt) const{
 
     assert(newPickupWpIt != waypoints.end());
-
-    const auto& dm = status.getDistanceMatrix();
 
     auto ttd = newPickupWpIt == waypoints.begin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
     auto prevWpPos = newPickupWpIt == waypoints.begin() ? getStartPosition() : std::prev(newPickupWpIt)->getPosition();
@@ -156,7 +154,7 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
         if(wpIt->getDemand() == Demand::DELIVERY){
             // using ideal path
-            ttd += arrivalTime - status.getTask(wpIt->getTaskIndex()).idealGoalTime;
+            ttd += arrivalTime - tasksVector[wpIt->getTaskIndex()].idealGoalTime;
             assert(ttd > 0);
         }
         prevWpPos = wpIt->getPosition();
