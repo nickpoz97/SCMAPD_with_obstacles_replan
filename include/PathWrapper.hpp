@@ -15,17 +15,31 @@ public:
     TimeStep getLastDeliveryTimeStep() const;
 
     const WaypointsList& getWaypoints() const;
-    WaypointsList &getWaypoints();
 
     const Path& getPath() const;
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
-    void update(std::pair<Path, WaypointsList> &&updatedData);
-protected:
+    void PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData);
+private:
     Path path;
     WaypointsList waypoints;
+
+    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                   std::_List_iterator<Waypoint> waypointGoal);
+    void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
+                                  std::_List_iterator<Waypoint> waypointGoal);
+
+    bool checkCapacityConstraint(int capacity) const;
+
+    [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                                            WaypointsList::iterator newPickupWpIt) const ;
+protected:
     std::unordered_set<int> satisfiedTasksIds;
+
+    void
+    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                        int agentCapacity);
 };
 
 class PWsVector : public std::vector<PathWrapper>{

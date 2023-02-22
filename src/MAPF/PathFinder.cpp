@@ -25,7 +25,7 @@ holdPosition(
 );
 
 std::pair<Path, WaypointsList>
-PathFinder::multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
+PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
     if(waypoints.empty()){
         throw std::runtime_error("No waypoints");
     }
@@ -88,10 +88,8 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
     frontier.emplace(new Node{startLoc, t, dm.getDistance(startLoc, goalLoc)});
 
     const std::list<CompressedCoord> pathList{};
-    int nIterations = 0;
 
     while (!frontier.empty()){
-        ++nIterations;
         auto topNodePtr = frontier.top();
         frontier.pop();
 

@@ -88,11 +88,6 @@ void SmallH::updateTopElements(const Status &status) {
     assert(checkOrder());
 }
 
-TimeStep SmallH::getTopMCA() const{
-    assert(!heap.empty());
-    return heap.top().getMCA();
-}
-
 void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     assert(checkOrder());
 
@@ -117,15 +112,6 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
 
 int SmallH::getTaskId() const {
     return taskId;
-}
-
-SmallHHandles SmallH::getHandles(const SmallHFibHeap& heap){
-    SmallHHandles heapHandles{};
-
-    for(auto it = heap.begin(); it != heap.end() ; ++it){
-        heapHandles.emplace(it->getAgentId(), SmallHFibHeap::s_handle_from_iterator(it));
-    }
-    return heapHandles;
 }
 
 const Path &SmallH::getTopPath() const {
@@ -170,9 +156,5 @@ bool SmallH::empty() const{
 const Assignment &SmallH::getSecondTopAssignment() const {
     assert(heap.size() >= 2);
     return *std::next(heap.ordered_begin(), 2);
-}
-
-TimeStep SmallH::getSecondTopMCA() const {
-    return getSecondTopAssignment().getMCA();
 }
 

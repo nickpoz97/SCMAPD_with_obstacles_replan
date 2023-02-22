@@ -245,19 +245,6 @@ const PWsVector & Status::getPathWrappers() const {
     return pathsWrappers;
 }
 
-std::unordered_set<int> Status::removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices) {
-    std::unordered_set<int> agentsToBeUpdated;
-
-    for(int k = 0 ; k < pathsWrappers.size() ; ++k){
-        auto& pw = pathsWrappers[k];
-        if(pw.removeTasksAndWPs(rmvTasksIndices)){
-            agentsToBeUpdated.insert(k);
-        }
-    }
-
-    return agentsToBeUpdated;
-}
-
 PathWrapper &Status::getPathWrapper(int agentId) {
     return pathsWrappers[agentId];
 }

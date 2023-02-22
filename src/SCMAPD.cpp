@@ -89,11 +89,10 @@ bool SCMAPD::optimize(int n, Objective obj) {
 }
 
 void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
-    auto agentsToBeUpdated = status.removeTasksFromAgents(chosenTasks);
-
-    for(int agentId : agentsToBeUpdated){
+    for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
-        pW.update(PathFinder::multiAStar(std::move(pW.getWaypoints()), pW.getInitialPos(), status, agentId));
+        pW.removeTasksAndWPs(chosenTasks);
+        pW.PathAndWPsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
     }
 }
 

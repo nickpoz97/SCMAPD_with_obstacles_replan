@@ -71,20 +71,7 @@ private:
 
     TimeStep oldTTD = 0;
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                                                                   std::_List_iterator<Waypoint> waypointGoal);
-    bool checkCapacityConstraint();
-
-    void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
-                                  std::_List_iterator<Waypoint> waypointGoal);
-
     [[nodiscard]] TimeStep getActualTTD() const;
-
-    [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                            WaypointsList::iterator newPickupWpIt) const ;
-
-    void
-    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector);
 
     TimeStep computeIdealGoalTime(const Status &status) const;
 };

@@ -47,8 +47,6 @@ public:
 
     [[nodiscard]] std::unordered_set<int> chooseNTasks(int n, Objective obj) const;
 
-    std::unordered_set<int> removeTasksFromAgents(const std::unordered_set<int> &rmvTasksIndices);
-
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);
 

@@ -74,10 +74,6 @@ const WaypointsList &PathWrapper::getWaypoints() const {
     return waypoints;
 }
 
-WaypointsList &PathWrapper::getWaypoints() {
-    return waypoints;
-}
-
 const Path &PathWrapper::getPath() const {
     return path;
 }
@@ -87,30 +83,90 @@ CompressedCoord PathWrapper::getInitialPos() const {
     return path[0];
 }
 
-void PathWrapper::update(std::pair<Path, WaypointsList> &&updatedData) {
+void PathWrapper::PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
     path = std::move(updatedData.first);
     waypoints = std::move(updatedData.second);
-
-#ifndef NDEBUG
-    assert(
-        std::ranges::all_of(
-                waypoints.cbegin(),
-                waypoints.cend(),
-                [&](const Waypoint& wp){
-                return wp.getDemand() == Demand::END || satisfiedTasksIds.contains(wp.getTaskIndex());
-            }
-        )
-    );
-    assert(
-        std::ranges::all_of(
-                waypoints.cbegin(),
-                waypoints.cend(),
-                [&](const Waypoint& wp){
-                return std::find(path.cbegin(), path.cend(), wp.getPosition()) != path.cend();
-            }
-        )
-    );
-#endif
 }
 
+void
+PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                                int agentCapacity) {
+    assert(waypoints.crend()->getDemand() == Demand::END);
 
+    if(waypoints.size() == 1){
+        waypoints.push_front(getTaskDeliveryWaypoint(newTask));
+        waypoints.push_front(getTaskPickupWaypoint(newTask));
+        return;
+    }
+
+    auto bestPickupIt = waypoints.begin();
+    auto bestDeliveryIt = bestPickupIt;
+
+    TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
+
+    // search for best position for task start and goal
+    for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
+        for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){
+            auto [newStartIt, newGoalIt] = insertNewWaypoints(newTask, wpPickupIt, wpDeliveryIt);
+            if(checkCapacityConstraint(agentCapacity)){
+                auto newApproxTtd = computeApproxTTD(dm, tasksVector, newStartIt);
+                if(newApproxTtd < bestApproxTTD){
+                    bestApproxTTD = newApproxTtd;
+                    bestPickupIt = wpPickupIt;
+                    bestDeliveryIt = wpDeliveryIt;
+                }
+            }
+            restorePreviousWaypoints(newStartIt, newGoalIt);
+        }
+    }
+    insertNewWaypoints(newTask, bestPickupIt, bestDeliveryIt);
+}
+
+void PathWrapper::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
+                                          std::_List_iterator<Waypoint> waypointGoal) {
+    waypoints.erase(waypointStart);
+    waypoints.erase(waypointGoal);
+}
+
+std::pair<WaypointsList::iterator, WaypointsList::iterator> PathWrapper::insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
+                                                                                           std::_List_iterator<Waypoint> waypointGoal) {
+    return {
+            waypoints.insert(waypointStart, getTaskPickupWaypoint(task)),
+            waypoints.insert(waypointGoal, getTaskDeliveryWaypoint(task))
+    };
+}
+
+TimeStep PathWrapper::computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
+                                      WaypointsList::iterator newPickupWpIt) const{
+
+    assert(newPickupWpIt != waypoints.end());
+
+    auto ttd = newPickupWpIt == getWaypoints().begin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
+    auto prevWpPos = newPickupWpIt == getWaypoints().begin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
+    auto prevArrivalTime = newPickupWpIt == getWaypoints().begin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
+
+    for(auto wpIt = newPickupWpIt ; wpIt != getWaypoints().end() ; ++wpIt){
+        auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
+        if(wpIt->getDemand() == Demand::DELIVERY){
+            // using ideal path
+            ttd += arrivalTime - tasksVector[wpIt->getTaskIndex()].idealGoalTime;
+            assert(ttd > 0);
+        }
+        prevWpPos = wpIt->getPosition();
+        prevArrivalTime = arrivalTime;
+    }
+
+    return ttd;
+}
+
+bool PathWrapper::checkCapacityConstraint(int capacity) const{
+    int actualWeight = 0;
+
+    for(const auto& waypoint : getWaypoints()){
+        actualWeight += static_cast<int>(waypoint.getDemand());
+        if(actualWeight > capacity || actualWeight < 0){
+            return false;
+        }
+    }
+    return true;
+}

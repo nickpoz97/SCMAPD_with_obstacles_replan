@@ -16,9 +16,6 @@ public:
     SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
            const PWsVector &pWs);
 
-    [[nodiscard]] TimeStep getTopMCA() const;
-    [[nodiscard]] TimeStep getSecondTopMCA() const;
-
     void updateTopElements(const Status &status);
     void addTaskToAgent(int k, int otherTaskId, const Status &status);
 
@@ -39,8 +36,6 @@ private:
     int v;
     SmallHFibHeap heap;
     SmallHHandles heapHandles;
-
-    static SmallHHandles getHandles(const SmallHFibHeap& heap);
 
     bool checkOrder() const;
 };

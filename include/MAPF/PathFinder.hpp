@@ -13,7 +13,7 @@
 
 namespace PathFinder{
     std::pair<Path, WaypointsList>
-    multiAStar(WaypointsList &&waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
+    multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 }
 
 #endif //SIMULTANEOUS_CMAPD_PATHFINDER_HPP
