@@ -58,15 +58,6 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
     }
 }
 
-std::tuple<int, TimeStep, Path> SmallH::extractTop() {
-    assert(!heap.empty());
-
-    // atomic block
-    auto topAssignment = std::move(const_cast<Assignment&>(heap.top()));
-
-    return topAssignment.extractAndReset();
-}
-
 void SmallH::updateTopElements(const Status &status) {
     assert(checkOrder());
 
@@ -172,11 +163,7 @@ bool SmallH::empty() const{
     return{
         .newTaskId = taskId,
         .agentId = top.getAgentId(),
-        .wrapper{
-            {top.getPath()},
-            {top.getWaypoints()},
-            {top.getAssignedTaskIds()}
-        }
+        .wrapper{top}
     };
 }
 

@@ -16,7 +16,6 @@ public:
     SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
            const PWsVector &pWs);
 
-    std::tuple<int, TimeStep, Path> extractTop();
     [[nodiscard]] TimeStep getTopMCA() const;
     [[nodiscard]] TimeStep getSecondTopMCA() const;
 

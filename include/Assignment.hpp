@@ -17,7 +17,7 @@
  * @class Assignment
  * @brief class that abstracts an agent and its path with other infos
  */
-class Assignment {
+class Assignment : public PathWrapper{
 
 public:
     /**
@@ -42,10 +42,6 @@ public:
     /// @return agent initial position
     [[nodiscard]] CompressedCoord getStartPosition() const;
 
-    /// @return actual path with agentId and last delivery time step
-    /// @warning actual path is cleared
-    [[nodiscard]] std::tuple<int, TimeStep, Path> extractAndReset();
-
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
 
@@ -59,44 +55,24 @@ public:
     void
     addTask(int taskId, const Status &status);
 
-    [[nodiscard]] const Path& getPath() const;
-
 //    friend bool operator>(const Assignment &a, const Assignment &b);
 //    friend bool operator<(const Assignment &a, const Assignment &b);
     friend int operator<=>(const Assignment &a, const Assignment &b);
 
-    inline explicit operator CompressedCoord() const { return getStartPosition(); }
-
     // this should be called when waypoints and/or constraints are changed
     void internalUpdate(const Status &status);
 
-    [[nodiscard]] const WaypointsList &getWaypoints() const;
-
-    [[nodiscard]] const std::unordered_set<int> &getAssignedTaskIds() const;
-
     [[nodiscard]] TimeStep getIdealGoalTime() const;
-
-    [[nodiscard]] TimeStep getLastDeliveryTimeStep() const;
-
-    [[nodiscard]] TimeStep getTotalTravelDelay() const;
 private:
-    CompressedCoord startPos;
     int index;
     int capacity;
 
     int idealGoalTime = 0;
-    TimeStep lastDeliveryTimeStep = 0;
 
     TimeStep oldTTD = 0;
 
-    WaypointsList waypoints{};
-    Path path{};
-
-    std::unordered_set<int> assignedTasksIds;
-
     std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
                                                                                    std::_List_iterator<Waypoint> waypointGoal);
-
     bool checkCapacityConstraint();
 
     void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,

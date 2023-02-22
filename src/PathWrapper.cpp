@@ -5,8 +5,11 @@ TimeStep PWsVector::getMaxSpanCost() const {
     return std::max_element(
             cbegin(),
             cend(),
-            [](const PathWrapper& pWA, const PathWrapper& pWB){return pWA.getlastDeliveryTimeStep() < pWB.getlastDeliveryTimeStep();}
-    )->getlastDeliveryTimeStep();
+            [](const PathWrapper &pWA, const PathWrapper &pWB) {
+                return pWA.getLastDeliveryTimeStep() <
+                       pWB.getLastDeliveryTimeStep();
+            }
+    )->getLastDeliveryTimeStep();
 }
 
 TimeStep PWsVector::getTTD() const {
@@ -23,12 +26,12 @@ TimeStep PWsVector::getTTT() const {
             cbegin(),
             cend(),
             0,
-            [](TimeStep ttt, const PathWrapper& pW) {return ttt + pW.getlastDeliveryTimeStep();}
+            [](TimeStep ttt, const PathWrapper& pW) {return ttt + pW.getLastDeliveryTimeStep();}
     );
 }
 
 TimeStep PWsVector::getSpan(int agentId) const {
-    return operator[](agentId).getlastDeliveryTimeStep();
+    return operator[](agentId).getLastDeliveryTimeStep();
 }
 
 TimeStep PWsVector::getTasksDelay(int agentId) const {
@@ -40,21 +43,21 @@ const Path& PWsVector::getPath(int agentId) const {
 }
 
 bool PathWrapper::removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices) {
-    wpList.remove_if([&](const Waypoint& wp){
+    waypoints.remove_if([&](const Waypoint& wp){
         return wp.getDemand() != Demand::END && rmvTasksIndices.contains(wp.getTaskIndex());}
     );
     return std::erase_if(satisfiedTasksIds,[&](int taskId){return rmvTasksIndices.contains(taskId);});
 }
 
 TimeStep PathWrapper::getTTD() const {
-    return wpList.crbegin()->getCumulatedDelay();
+    return waypoints.crbegin()->getCumulatedDelay();
 }
 
-TimeStep PathWrapper::getlastDeliveryTimeStep() const {
-    if(wpList.size() <= 1){
+TimeStep PathWrapper::getLastDeliveryTimeStep() const {
+    if(waypoints.size() <= 1){
         return 0;
     }
-    return std::next(wpList.crbegin())->getArrivalTime();
+    return std::next(waypoints.crbegin())->getArrivalTime();
 }
 
 const std::unordered_set<int> &PathWrapper::getSatisfiedTasksIds() const {
@@ -62,17 +65,17 @@ const std::unordered_set<int> &PathWrapper::getSatisfiedTasksIds() const {
 }
 
 PathWrapper::PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds) :
-    path{std::move(path)},
-    wpList{std::move(wpList)},
-    satisfiedTasksIds{std::move(satisfiedTasksIds)}
+        path{std::move(path)},
+        waypoints{std::move(wpList)},
+        satisfiedTasksIds{std::move(satisfiedTasksIds)}
     {}
 
 const WaypointsList &PathWrapper::getWaypoints() const {
-    return wpList;
+    return waypoints;
 }
 
 WaypointsList &PathWrapper::getWaypoints() {
-    return wpList;
+    return waypoints;
 }
 
 const Path &PathWrapper::getPath() const {
@@ -86,23 +89,23 @@ CompressedCoord PathWrapper::getInitialPos() const {
 
 void PathWrapper::update(std::pair<Path, WaypointsList> &&updatedData) {
     path = std::move(updatedData.first);
-    wpList = std::move(updatedData.second);
+    waypoints = std::move(updatedData.second);
 
 #ifndef NDEBUG
     assert(
         std::ranges::all_of(
-            wpList.cbegin(),
-            wpList.cend(),
-            [&](const Waypoint& wp){
+                waypoints.cbegin(),
+                waypoints.cend(),
+                [&](const Waypoint& wp){
                 return wp.getDemand() == Demand::END || satisfiedTasksIds.contains(wp.getTaskIndex());
             }
         )
     );
     assert(
         std::ranges::all_of(
-            wpList.cbegin(),
-            wpList.cend(),
-            [&](const Waypoint& wp){
+                waypoints.cbegin(),
+                waypoints.cend(),
+                [&](const Waypoint& wp){
                 return std::find(path.cbegin(), path.cend(), wp.getPosition()) != path.cend();
             }
         )

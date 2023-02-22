@@ -1,6 +1,5 @@
 #include <limits>
 #include <array>
-#include <numeric>
 #include <cassert>
 #include <fstream>
 #include <fmt/ranges.h>
@@ -12,24 +11,19 @@
 #include "MAPF/NoPathException.hpp"
 
 Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status) :
-        startPos{agentInfo.startPos},
-        waypoints{Waypoint{agentInfo.startPos}},
+        PathWrapper{{agentInfo.startPos}, {Waypoint{agentInfo.startPos}}, {}},
         index{agentInfo.index},
-        capacity{agentInfo.capacity},
-        assignedTasksIds{}
+        capacity{agentInfo.capacity}
     {
         addTask(firstTaskId, status);
-        assert(!path.empty() && *path.cbegin() == startPos && waypoints.size() == 3);
+        assert(!path.empty() && *path.cbegin() == getStartPosition() && waypoints.size() == 3);
         assert(agentInfo.index == index);
     }
 
 Assignment::Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status, const PathWrapper &pW) :
-    startPos{agentInfo.startPos},
-    waypoints{pW.getWaypoints()},
-    index{agentInfo.index},
-    capacity{agentInfo.capacity},
-    path{pW.getPath()},
-    assignedTasksIds{pW.getSatisfiedTasksIds()}
+        PathWrapper{pW},
+        index{agentInfo.index},
+        capacity{agentInfo.capacity}
 {
     addTask(newTaskId, status);
 }
@@ -47,7 +41,7 @@ int Assignment::getAgentId() const {
 }
 
 CompressedCoord Assignment::getStartPosition() const {
-    return startPos;
+    return PathWrapper::getInitialPos();
 }
 
 bool Assignment::empty() const {
@@ -69,7 +63,7 @@ Assignment::addTask(int taskId, const Status &status) {
     oldTTD = tmpOldTTD;
     idealGoalTime = computeIdealGoalTime(status);
 
-    assignedTasksIds.emplace(taskId);
+    satisfiedTasksIds.emplace(taskId);
 #ifndef NDEBUG
     assert(oldWaypointSize == waypoints.size() - 2);
     int sum = 0;
@@ -155,7 +149,7 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
     const auto& dm = status.getDistanceMatrix();
 
     auto ttd = newPickupWpIt == waypoints.begin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
-    auto prevWpPos = newPickupWpIt == waypoints.begin() ? startPos : std::prev(newPickupWpIt)->getPosition();
+    auto prevWpPos = newPickupWpIt == waypoints.begin() ? getStartPosition() : std::prev(newPickupWpIt)->getPosition();
     auto prevArrivalTime = newPickupWpIt == waypoints.begin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != waypoints.end() ; ++wpIt){
@@ -172,32 +166,12 @@ TimeStep Assignment::computeApproxTTD(const Status &status, WaypointsList::itera
     return ttd;
 }
 
-std::tuple<int, TimeStep, Path> Assignment::extractAndReset() {
-    return {index, getLastDeliveryTimeStep() ,std::exchange(path, {})};
-}
-
-TimeStep Assignment::getLastDeliveryTimeStep() const{
-    return lastDeliveryTimeStep;
-}
-
 void
 Assignment::internalUpdate(const Status &status) {
-    std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), startPos, status, index);
-
-    assert(waypoints.size() >= 3);
-    lastDeliveryTimeStep = std::next(waypoints.crbegin())->getArrivalTime();
-
+    std::tie(path, waypoints) = PathFinder::multiAStar(std::move(waypoints), getStartPosition(), status, index);
 
     assert(!status.hasIllegalPositions(path));
     assert(!status.checkPathWithStatus(path, index));
-}
-
-const WaypointsList &Assignment::getWaypoints() const {
-    return waypoints;
-}
-
-const Path &Assignment::getPath() const {
-    return path;
 }
 
 int operator<=>(const Assignment &a, const Assignment &b) {
@@ -216,7 +190,7 @@ TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
     TimeStep igt = 0;
     const auto& dm = status.getDistanceMatrix();
 
-    igt += dm.getDistance(startPos, waypoints.cbegin()->getPosition());
+    igt += dm.getDistance(getStartPosition(), waypoints.cbegin()->getPosition());
 
     for(const auto& wp : waypoints){
         if(wp.getDemand() == Demand::DELIVERY) { igt += status.getTask(wp.getTaskIndex()).idealGoalTime; }
@@ -233,11 +207,3 @@ TimeStep Assignment::getIdealGoalTime() const {
     return idealGoalTime;
 }
 
-TimeStep Assignment::getTotalTravelDelay() const {
-    assert(!waypoints.empty());
-    return waypoints.crbegin()->getCumulatedDelay();
-}
-
-const std::unordered_set<int> &Assignment::getAssignedTaskIds() const{
-    return assignedTasksIds;
-}

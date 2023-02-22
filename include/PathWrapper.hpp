@@ -12,7 +12,7 @@ public:
 
     bool removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
     TimeStep getTTD() const;
-    TimeStep getlastDeliveryTimeStep() const;
+    TimeStep getLastDeliveryTimeStep() const;
 
     const WaypointsList& getWaypoints() const;
     WaypointsList &getWaypoints();
@@ -22,9 +22,9 @@ public:
 
     CompressedCoord getInitialPos() const;
     void update(std::pair<Path, WaypointsList> &&updatedData);
-private:
+protected:
     Path path;
-    WaypointsList wpList;
+    WaypointsList waypoints;
     std::unordered_set<int> satisfiedTasksIds;
 };
 

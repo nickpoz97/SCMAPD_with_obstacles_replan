@@ -38,10 +38,6 @@ int main(int argc, char* argv[]){
     auto heur{utils::getHeuristic(vm["h"].as<string>())};
     auto strategy{utils::getStrategy(vm["s"].as<string>())};
 
-#ifndef NDEBUG
-    fmt::print("Using {} strategy\n", strategy == PathfindingStrategy::EAGER ? "eager" : "lazy");
-#endif
-
     SCMAPD scmapd{
         loadData(
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
