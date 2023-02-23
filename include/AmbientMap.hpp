@@ -26,7 +26,7 @@ public:
     static constexpr int nDirections = directionVector.size();
     static constexpr int getHoldDirectionIndex();
 
-    AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm);
+    AmbientMap(const std::filesystem::path &gridPath, const std::filesystem::path &distanceMatrixPath);
 
     [[nodiscard]] bool isValid(const Coord &coord) const;
     CellType operator[](const Coord& coord) const;
@@ -40,8 +40,7 @@ private:
     const DistanceMatrix distanceMatrix;
     std::vector<std::vector<CellType>> grid;
 
-    static std::vector<std::vector<CellType>> getGrid(std::fstream &&data);
-    static std::fstream openGridFile(const std::filesystem::path &gridPath);
+    static std::vector<std::vector<CellType>> getGrid(const std::filesystem::path &gridPath);
 };
 
 constexpr int AmbientMap::getHoldDirectionIndex() {

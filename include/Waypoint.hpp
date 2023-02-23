@@ -48,5 +48,6 @@ using WaypointsList = std::list<Waypoint>;
 
 Waypoint getTaskPickupWaypoint(const Task& task);
 Waypoint getTaskDeliveryWaypoint(const Task& task);
+std::vector<CompressedCoord> getWpCoords(const WaypointsList& wpList);
 
 #endif //SIMULTANEOUS_CMAPD_WAYPOINT_HPP

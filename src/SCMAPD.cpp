@@ -3,7 +3,7 @@
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
 #include "fmt/color.h"
-#include "BigH.hpp"
+#include "fmt/ranges.h"
 #include "MAPF/PathFinder.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
@@ -45,10 +45,29 @@ void SCMAPD::printResult() const{
 
     fmt::print("{}\n", nAgents);
     fmt::print("agent\tcost\tttd\tpath\n");
-    for(int i = 0 ; i < nAgents ; ++i){
-        const auto& path = pathWrappers.getPath(i);
 
-        fmt::print("{}\t{}\t{}\t{}\n", i, pathWrappers.getSpan(i), pathWrappers.getTasksDelay(i) ,status.stringifyPath(path));
+    for(int i = 0 ; i < nAgents ; ++i){
+        const auto& pW = pathWrappers[i];
+
+        fmt::print(
+            "{}\t{}\t{}\t{}\n",
+            i,
+            pW.getLastDeliveryTimeStep(),
+            pW.getTTD(),
+            status.stringifyPath(pW.getPath())
+        );
+    }
+
+    fmt::print("agent\twaypoints\ttasks\n");
+    for(int i = 0 ; i < nAgents ; ++i){
+        const auto& pW = pathWrappers[i];
+
+        fmt::print(
+            "{}\t[{}]\t[{}]\n",
+            i,
+            fmt::join(getWpCoords(pW.getWaypoints()), ","),
+            fmt::join(pW.getSatisfiedTasksIds(), ",")
+        );
     }
     fmt::print("Time:\t{0:.2f}\n", execution_time.count());
     fmt::print("Makespan:\t{}\n", pathWrappers.getMaxSpanCost());
@@ -108,10 +127,14 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                 const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
                 Heuristic heuristic, PathfindingStrategy strategy) {
-    AmbientMap ambientMap(gridFile, DistanceMatrix{distanceMatrixFile});
+    AmbientMap ambientMap(gridFile, distanceMatrixFile);
 
-    auto robots{loadAgents(agentsFile, ambientMap.getDistanceMatrix())};
-    auto tasks{loadTasks(tasksFile, ambientMap.getDistanceMatrix())};
-
-    return {std::move(ambientMap), std::move(robots), std::move(tasks), heuristic, false, strategy};
+    return {
+        std::move(ambientMap),
+        loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
+        loadTasks(tasksFile, ambientMap.getDistanceMatrix()),
+        heuristic,
+        false,
+        strategy
+    };
 }

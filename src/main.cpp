@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
         )
     };
-    scmapd.solve(0, 5, Objective::MAKESPAN);
+    scmapd.solve(10, 10, Objective::MAKESPAN);
     scmapd.printResult();
 
     scmapd.printCheckMessage();

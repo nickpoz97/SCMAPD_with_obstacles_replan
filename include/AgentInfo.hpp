@@ -8,9 +8,9 @@
 #include "Coord.hpp"
 
 struct AgentInfo{
-    CompressedCoord startPos;
-    int capacity;
-    int index;
+    const CompressedCoord startPos;
+    const int capacity;
+    const int index;
 };
 
 std::vector<AgentInfo>

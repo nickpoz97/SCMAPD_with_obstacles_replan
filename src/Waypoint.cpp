@@ -68,3 +68,11 @@ Waypoint getTaskPickupWaypoint(const Task& task){
 Waypoint getTaskDeliveryWaypoint(const Task& task){
     return {task.goalLoc, Demand::DELIVERY, task.index};
 }
+
+std::vector<CompressedCoord> getWpCoords(const WaypointsList& wpList){
+    std::vector<CompressedCoord> wpCoords{};
+    wpCoords.reserve(wpList.size());
+
+    std::ranges::transform(wpList, std::back_inserter(wpCoords), [](const auto& wp){return wp.getPosition();});
+    return wpCoords;
+}

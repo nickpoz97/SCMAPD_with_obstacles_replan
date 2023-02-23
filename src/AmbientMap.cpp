@@ -4,24 +4,19 @@
 #include "AmbientMap.hpp"
 #include "DistanceMatrix.hpp"
 
-std::fstream AmbientMap::openGridFile(const std::filesystem::path &gridPath){
+
+std::vector<std::vector<CellType>> AmbientMap::getGrid(const std::filesystem::path &gridPath) {
     std::fstream fs(gridPath.c_str(), std::ios::in);
 
     if(!fs.is_open()){
         throw std::runtime_error("Grid file doesn' t exist");
     }
-
-    return fs;
-}
-
-
-std::vector<std::vector<CellType>> AmbientMap::getGrid(std::fstream &&data) {
     std::list<std::list<CellType>> tmpGrid;
 
     using namespace boost::algorithm;
 
     std::string line;
-    while(std::getline(data, line)){
+    while(std::getline(fs, line)){
         std::list<CellType> row;
 
         trim(line);
@@ -81,11 +76,11 @@ std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int d
     return isValid(neighbor) ? std::optional{distanceMatrix.from2Dto1D(neighbor)} : std::nullopt;
 }
 
-AmbientMap::AmbientMap(const std::filesystem::path &gridPath, DistanceMatrix&& dm) :
-    distanceMatrix{std::move(dm)},
-    grid{getGrid(openGridFile(gridPath))}
+AmbientMap::AmbientMap(const std::filesystem::path &gridPath, const std::filesystem::path &distanceMatrixPath) :
+    distanceMatrix{distanceMatrixPath},
+    grid{getGrid(gridPath)}
 {
-    if(dm.nRows != grid.size() || (!grid.empty() && dm.nCols != grid[0].size())){
+    if(distanceMatrix.nRows != grid.size() || (!grid.empty() && distanceMatrix.nCols != grid[0].size())){
         throw std::runtime_error("Grid file and distance matrix file do not refer to same ambient");
     }
 }
