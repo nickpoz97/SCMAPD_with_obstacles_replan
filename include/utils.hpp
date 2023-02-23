@@ -49,6 +49,12 @@ namespace utils{
         throw std::runtime_error("Invalid Strategy option");
     }
 
+    inline Objective getObjective(const std::string& objString)
+    {
+        if(objString == "MAKESPAN") return Objective::MAKESPAN;
+        if(objString == "TTD") return Objective::TTD;
+        throw std::runtime_error("Invalid Objective option");
+    }
 }
 
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP

@@ -38,6 +38,11 @@ int Task::getNextId() {
 
 std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep){
     std::ifstream fs (tasksFilePath, std::ios::in);
+
+    if(!fs.is_open()){
+        throw std::runtime_error("Tasks file does not exist");
+    }
+
     std::string line;
 
     // nTasks line

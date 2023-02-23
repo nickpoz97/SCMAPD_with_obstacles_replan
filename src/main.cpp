@@ -19,7 +19,9 @@ int main(int argc, char* argv[]){
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")
-        ("s", po::value<string>()->required(), "pathfinding strategy")
+        ("obj", po::value<string>()->required(), "optimization objective")
+        ("cutoff", po::value<int>()->required(), "max number of optimization iterations")
+        ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -36,14 +38,16 @@ int main(int argc, char* argv[]){
     auto robotsFile{vm["a"].as<string>()};
     auto tasksFile{vm["t"].as<string>()};
     auto heur{utils::getHeuristic(vm["h"].as<string>())};
-    auto strategy{utils::getStrategy(vm["s"].as<string>())};
+    auto objective{utils::getObjective(vm["obj"].as<string>())};
+    auto cutoffTime{vm["cutoff"].as<int>()};
+    auto nt{vm["nt"].as<int>()};
 
     SCMAPD scmapd{
         loadData(
-            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, strategy
+            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, PathfindingStrategy::UNBOUNDED
         )
     };
-    scmapd.solve(10, 10, Objective::MAKESPAN);
+    scmapd.solve(cutoffTime, nt, objective);
     scmapd.printResult();
 
     scmapd.printCheckMessage();

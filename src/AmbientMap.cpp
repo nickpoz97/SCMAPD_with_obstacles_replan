@@ -9,15 +9,24 @@ std::vector<std::vector<CellType>> AmbientMap::getGrid(const std::filesystem::pa
     std::fstream fs(gridPath.c_str(), std::ios::in);
 
     if(!fs.is_open()){
-        throw std::runtime_error("Grid file doesn' t exist");
+        throw std::runtime_error("Grid file does not exist");
     }
-    std::list<std::list<CellType>> tmpGrid;
+
+    std::string line;
+    int nRows = 0;
+    while(std::getline(fs, line)){ ++nRows; }
+
+    fs.clear();
+    fs.seekg(0);
 
     using namespace boost::algorithm;
 
-    std::string line;
+    std::vector<std::vector<CellType>> grid{};
+    grid.reserve(nRows);
+
     while(std::getline(fs, line)){
-        std::list<CellType> row;
+        std::vector<CellType> row;
+        row.reserve(line.size());
 
         trim(line);
 
@@ -29,22 +38,11 @@ std::vector<std::vector<CellType>> AmbientMap::getGrid(const std::filesystem::pa
         };
         std::transform(line.cbegin(), line.cend(), std::back_inserter(row), charConverter);
 
-        tmpGrid.push_back(row);
-    }
-
-    if(tmpGrid.empty()){
-        throw std::runtime_error("Grid file is empty");
-    }
-
-    int nRows = tmpGrid.size();
-    int nCols = tmpGrid.cbegin()->size();
-
-    std::vector<std::vector<CellType>> grid{};
-    grid.reserve(nRows);
-
-    for(const auto& tmpRow : tmpGrid){
-        std::vector<CellType> row{tmpRow.begin(), tmpRow.end()};
         grid.push_back(row);
+    }
+
+    if(grid.empty()){
+        throw std::runtime_error("Grid file is empty");
     }
 
     return grid;

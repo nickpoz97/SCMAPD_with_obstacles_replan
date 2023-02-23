@@ -11,6 +11,11 @@ std::vector<AgentInfo>
 loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,
            int capacity) {
     std::ifstream fs (agentsFilePath, std::ios::in);
+
+    if(!fs.is_open()){
+        throw std::runtime_error("Agents file does not exist");
+    }
+
     std::string line;
 
     // nAgents line
