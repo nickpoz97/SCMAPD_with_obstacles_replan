@@ -1,5 +1,6 @@
 #include <PathWrapper.hpp>
 #include <utility>
+#include <random>
 
 TimeStep PWsVector::getMaxSpanCost() const {
     return std::max_element(
@@ -169,4 +170,18 @@ bool PathWrapper::checkCapacityConstraint(int capacity) const{
         }
     }
     return true;
+}
+
+int PathWrapper::randomTaskId() const {
+    assert(!satisfiedTasksIds.empty());
+    std::vector<int> shuffled_tasks{satisfiedTasksIds.cbegin(), satisfiedTasksIds.cend()};
+
+    // shuffle them using status hash as seed
+    std::shuffle(
+        shuffled_tasks.begin(),
+        shuffled_tasks.end(),
+        std::default_random_engine(hash_value(*this))
+    );
+
+    return *shuffled_tasks.begin();
 }

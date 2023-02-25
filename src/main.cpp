@@ -22,6 +22,7 @@ int main(int argc, char* argv[]){
         ("obj", po::value<string>()->required(), "optimization objective")
         ("cutoff", po::value<int>()->required(), "max number of optimization iterations")
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
+        ("mtd", po::value<string>()->required(), "optimization method")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -41,13 +42,14 @@ int main(int argc, char* argv[]){
     auto objective{utils::getObjective(vm["obj"].as<string>())};
     auto cutoffTime{vm["cutoff"].as<int>()};
     auto nt{vm["nt"].as<int>()};
+    auto mtd{utils::getMethod(vm["mtd"].as<string>())};
 
     SCMAPD scmapd{
         loadData(
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, PathfindingStrategy::UNBOUNDED
         )
     };
-    scmapd.solve(cutoffTime, nt, objective);
+    scmapd.solve(cutoffTime, nt, objective, mtd);
     scmapd.printResult();
 
     scmapd.printCheckMessage();

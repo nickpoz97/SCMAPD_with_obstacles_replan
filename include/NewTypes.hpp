@@ -30,4 +30,10 @@ enum class Objective{
     TTD
 };
 
+enum class Method{
+    WORST_TASKS,
+    RANDOM_TASKS,
+    WORST_AGENTS
+};
+
 #endif //SIMULTANEOUS_CMAPD_NEWTYPES_HPP

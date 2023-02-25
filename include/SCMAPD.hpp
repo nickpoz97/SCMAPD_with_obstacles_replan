@@ -14,7 +14,7 @@ public:
     SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
            Heuristic heuristic, bool debug, PathfindingStrategy strategy);
 
-    void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj);
+    void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd);
 
     void printResult() const;
 
@@ -32,7 +32,7 @@ private:
 
     void findSolution();
 
-    bool optimize(int n, Objective obj);
+    bool optimize(int n, Objective obj, Method mtd);
 
     void removeTasks(const std::unordered_set<int> &chosenTasks);
 

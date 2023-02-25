@@ -21,6 +21,8 @@ public:
 
     CompressedCoord getInitialPos() const;
     void PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData);
+
+    int randomTaskId() const;
 private:
     Path path;
     WaypointsList waypoints;

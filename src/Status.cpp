@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fmt/core.h>
 #include <queue>
+#include <random>
 
 #include "Status.hpp"
 
@@ -185,45 +186,6 @@ int Status::getNAgents() const {
     return static_cast<int>(pathsWrappers.size());
 }
 
-std::unordered_set<int> Status::chooseNTasks(int n, Objective obj) const {
-    // taskId,
-    using TaskInfo = std::pair<int, TimeStep>;
-
-    n = std::min(static_cast<int>(tasksVector.size()), n);
-
-    std::vector<TaskInfo> orderedTasks;
-    orderedTasks.reserve(tasksVector.size());
-
-    for (const auto& pW : pathsWrappers){
-        for (const auto& wp : pW.getWaypoints()){
-            if(wp.getDemand() != Demand::DELIVERY){
-                continue;
-            }
-            switch (obj) {
-                case Objective::MAKESPAN:
-                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
-                break;
-                case Objective::TTD:
-                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
-                break;
-            }
-        }
-    }
-
-    std::sort(
-        orderedTasks.begin(),
-        orderedTasks.end(),
-        [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
-    );
-
-    std::unordered_set<int> taskIndicesToRemove{};
-    taskIndicesToRemove.reserve(n);
-    for(int i = 0 ; i < std::min(n, static_cast<int>(orderedTasks.size())) ; ++i){
-        taskIndicesToRemove.insert(orderedTasks[i].first);
-    }
-    return taskIndicesToRemove;
-}
-
 const PWsVector & Status::getPathWrappers() const {
     return pathsWrappers;
 }
@@ -249,4 +211,105 @@ VerbosePath Status::toVerbosePath(int i) const {
     );
 
     return vP;
+}
+
+std::unordered_set<int> Status::chooseNWorstTasks(int n, Objective obj) const {
+    // taskId, value
+    using TaskInfo = std::pair<int, TimeStep>;
+
+    n = std::min(static_cast<int>(tasksVector.size()), n);
+
+    std::vector<TaskInfo> orderedTasks;
+    orderedTasks.reserve(tasksVector.size());
+
+    for (const auto& pW : pathsWrappers){
+        for (const auto& wp : pW.getWaypoints()){
+            if(wp.getDemand() != Demand::DELIVERY){
+                continue;
+            }
+            switch (obj) {
+                case Objective::MAKESPAN:
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
+                    break;
+                case Objective::TTD:
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
+                    break;
+            }
+        }
+    }
+
+    std::sort(
+            orderedTasks.begin(),
+            orderedTasks.end(),
+            [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
+    );
+
+    std::unordered_set<int> taskIndicesToRemove{};
+    taskIndicesToRemove.reserve(n);
+    for(int i = 0 ; i < n ; ++i){
+        taskIndicesToRemove.insert(orderedTasks[i].first);
+    }
+    return taskIndicesToRemove;
+}
+
+std::unordered_set<int> Status::chooseNRandomTasks(int n) const{
+    n = std::min(static_cast<int>(tasksVector.size()), n);
+
+    std::vector<int> shuffled_tasks{};
+    shuffled_tasks.reserve(tasksVector.size());
+
+    // copy indices
+    std::ranges::transform(
+            tasksVector,
+            std::back_inserter(shuffled_tasks),
+            [](const Task& t){return t.index;}
+    );
+
+    // shuffle them using status hash as seed
+    std::shuffle(
+            shuffled_tasks.begin(),
+            shuffled_tasks.end(),
+            std::default_random_engine(hash_value(*this))
+    );
+    return {shuffled_tasks.cbegin(), shuffled_tasks.cbegin() + n};
+}
+
+std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int n, Objective obj) const {
+    // agentId, value
+    using AgentInfo = std::pair<int, TimeStep>;
+
+    n = std::min(static_cast<int>(pathsWrappers.size()), n);
+
+    std::vector<AgentInfo> orderedAgents;
+    orderedAgents.reserve(orderedAgents.size());
+
+    for (int i = 0 ; i < pathsWrappers.size() ; ++i){
+        const auto& pW = pathsWrappers[i];
+
+        switch (obj) {
+            case Objective::MAKESPAN:
+                orderedAgents.emplace_back(i, pW.getLastDeliveryTimeStep());
+                break;
+            case Objective::TTD:
+                orderedAgents.emplace_back(i, pW.getTTD());
+                break;
+        }
+    }
+
+    std::sort(
+        orderedAgents.begin(),
+        orderedAgents.end(),
+        [](const AgentInfo & ta, const AgentInfo& tb){return ta.second > tb.second;}
+    );
+
+    std::unordered_set<int> taskIndicesToRemove{};
+    taskIndicesToRemove.reserve(n);
+
+    for(int i = 0 ; i < n ; ++i){
+        const auto& pW = pathsWrappers[orderedAgents[i].first];
+        if(!pW.getSatisfiedTasksIds().empty()) {
+            taskIndicesToRemove.insert(pW.randomTaskId());
+        }
+    }
+    return taskIndicesToRemove;
 }

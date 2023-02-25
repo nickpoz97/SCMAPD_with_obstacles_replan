@@ -16,13 +16,12 @@ SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::ve
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj) {
+void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd) {
     findSolution();
     assert(bigH.empty());
 
-    bool success = true;
-    for(int i = 0 ; i < cutOffTime && success ; ++i){
-        success = optimize(nOptimizationTasks, obj);
+    for(int i = 0 ; i < cutOffTime ; ++i){
+        optimize(nOptimizationTasks, obj, mtd);
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
@@ -86,14 +85,26 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-bool SCMAPD::optimize(int n, Objective obj) {
+bool SCMAPD::optimize(int n, Objective obj, Method mtd) {
     if(n <= 0){
         return false;
     }
 
     auto PWsBackup{status.getPathWrappers()};
 
-    auto chosenTasks = status.chooseNTasks(n, obj);
+    auto chooseNTasks = [n, obj, mtd, this](){
+        switch (mtd) {
+            case Method::WORST_TASKS:
+                return status.chooseNWorstTasks(n, obj);
+            case Method::WORST_AGENTS:
+                return status.chooseTasksFromNWorstAgents(n, obj);
+            // RANDOM TASKS
+            default:
+                return status.chooseNRandomTasks(n);
+        }
+    };
+
+    std::unordered_set<int> chosenTasks{chooseNTasks()};
     removeTasks(chosenTasks);
 
     bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));

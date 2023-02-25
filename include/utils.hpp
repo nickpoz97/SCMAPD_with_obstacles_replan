@@ -55,6 +55,14 @@ namespace utils{
         if(objString == "TTD") return Objective::TTD;
         throw std::runtime_error("Invalid Objective option");
     }
+
+    inline Method getMethod(const std::string& mtdString)
+    {
+        if(mtdString == "WORST_TASKS") return Method::WORST_TASKS;
+        if(mtdString == "WORST_AGENTS") return Method::WORST_AGENTS;
+        if(mtdString == "RANDOM_TASKS") return Method::RANDOM_TASKS;
+        throw std::runtime_error("Invalid Method option");
+    }
 }
 
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP
