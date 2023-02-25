@@ -3,7 +3,6 @@
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
 #include "fmt/color.h"
-#include "fmt/ranges.h"
 #include "MAPF/PathFinder.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
@@ -73,6 +72,8 @@ void SCMAPD::printResult() const{
     fmt::print("Makespan:\t{}\n", pathWrappers.getMaxSpanCost());
     fmt::print("Total_Travel_Time:\t{}\n", pathWrappers.getTTT());
     fmt::print("Total_Travel_Delay:\t{}\n", pathWrappers.getTTD());
+
+    fmt::print("Final_Status_Hash: {}\n", hash_value(status));
 }
 
 void SCMAPD::printCheckMessage() const{

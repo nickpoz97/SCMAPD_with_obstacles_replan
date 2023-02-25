@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/container_hash/hash.hpp>
 #include "NewTypes.hpp"
 
 struct Coord {
@@ -24,6 +25,7 @@ using Direction = Coord::Direction;
 using CompressedCoord = int;
 
 using Path = std::vector<CompressedCoord>;
+inline std::size_t hash_value(const Path& p){ return boost::hash_range(p.cbegin(), p.cend()); }
 
 class VerbosePath : public std::vector<Coord>{
 public:

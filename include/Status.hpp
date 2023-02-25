@@ -62,5 +62,9 @@ private:
     static std::vector<PathWrapper> initializePathsWrappers(const std::vector<AgentInfo> &agents);
 };
 
+inline std::size_t hash_value(const Status& s){
+    const auto& pWs = s.getPathWrappers();
+    return boost::hash_range(pWs.cbegin(), pWs.cend());
+}
 
 #endif //SIMULTANEOUS_CMAPD_STATUS_HPP

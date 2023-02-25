@@ -58,4 +58,8 @@ struct ExtractedPath{
     PathWrapper wrapper;
 };
 
+inline std::size_t hash_value(const PathWrapper& p){
+    return hash_value(p.getPath());
+}
+
 #endif //SIMULTANEOUS_CMAPD_PATHWRAPPER_HPP
