@@ -54,7 +54,7 @@ void SCMAPD::printResult() const{
             i,
             pW.getLastDeliveryTimeStep(),
             pW.getTTD(),
-            status.stringifyPath(pW.getPath())
+            static_cast<std::string>(status.toVerbosePath(i))
         );
     }
 

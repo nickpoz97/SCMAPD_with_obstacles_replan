@@ -36,9 +36,6 @@ public:
     [[nodiscard]] CompressedCoord holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const;
     [[nodiscard]] TimeStep getLongestPathSize() const;
 
-    template<typename T>
-    [[nodiscard]] std::string stringifyPath(const T& path) const;
-
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
     [[nodiscard]] std::optional<int> getMaxPosVisits() const;
@@ -51,6 +48,7 @@ public:
     void setPathWrappers(PWsVector&& other);
 
     [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
+    [[nodiscard]] VerbosePath toVerbosePath(int i) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
@@ -62,7 +60,6 @@ private:
     [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
 
     static std::vector<PathWrapper> initializePathsWrappers(const std::vector<AgentInfo> &agents);
-
 };
 
 

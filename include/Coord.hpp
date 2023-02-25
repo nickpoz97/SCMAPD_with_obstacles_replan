@@ -18,12 +18,16 @@ struct Coord {
     friend Coord operator+(const Coord& coord, const Direction& movement);
     friend bool operator==(const Coord& a, const Coord& b) = default;
 
-    explicit operator std::string() const;
 };
 using Direction = Coord::Direction;
 
 using CompressedCoord = int;
 
 using Path = std::vector<CompressedCoord>;
+
+class VerbosePath : public std::vector<Coord>{
+public:
+    explicit operator std::string() const;
+};
 
 #endif //SIMULTANEOUS_CMAPD_COORD_HPP

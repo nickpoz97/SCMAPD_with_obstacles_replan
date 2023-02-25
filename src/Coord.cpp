@@ -3,12 +3,25 @@
 //
 
 #include "Coord.hpp"
-#include "fmt/printf.h"
+#include "fmt/ranges.h"
+#include "fmt/core.h"
 
 Coord operator+(const Coord& coord, const Direction& movement){
     return {coord.row + movement.row, coord.col + movement.col};
 }
 
-Coord::operator std::string() const {
-    return fmt::sprintf("{%d,%d}", row, col);
+template <> struct fmt::formatter<Coord>{
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const Coord& c, FormatContext& ctx) const{
+        return format_to(ctx.out(), "({},{})", c.row, c.col);
+    }
+};
+
+VerbosePath::operator std::string() const {
+    return fmt::format("{}", fmt::join(*this, "->"));
 }

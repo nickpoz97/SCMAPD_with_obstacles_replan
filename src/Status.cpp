@@ -163,23 +163,6 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
     return pWs;
 }
 
-template<typename T>
-std::string Status::stringifyPath(const T& path) const {
-    static constexpr std::string_view pattern = "({},{})->";
-
-    std::string result{};
-
-    for(const auto& pos : path){
-        auto pos2D = ambient.getDistanceMatrix().from1Dto2D(pos);
-        result.append(fmt::format(pattern, pos2D.row, pos2D.col));
-    }
-
-    if(!result.empty()){
-        result.resize(result.size() - 2);
-    }
-    return result;
-}
-
 bool Status::hasIllegalPositions(const Path& path) const{
     const auto& dm = ambient.getDistanceMatrix();
     return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
@@ -253,10 +236,17 @@ void Status::setPathWrappers(PWsVector &&other) {
     pathsWrappers = std::move(other);
 }
 
-template
-std::string Status::stringifyPath<std::list<CompressedCoord>>(const std::list<CompressedCoord>& path) const;
+VerbosePath Status::toVerbosePath(int i) const {
+    assert(i >= 0 && i < pathsWrappers.size());
+    const auto& path = pathsWrappers[i].getPath();
 
-template
-std::string Status::stringifyPath<Path>(const Path& path) const;
+    VerbosePath vP;
+    vP.reserve(path.size());
+    std::ranges::transform(
+        path,
+        std::back_inserter(vP),
+        [this](const CompressedCoord& cc){return getDistanceMatrix().from1Dto2D(cc);}
+    );
 
-
+    return vP;
+}
