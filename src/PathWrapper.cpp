@@ -43,7 +43,7 @@ const Path& PWsVector::getPath(int agentId) const {
     return operator[](agentId).getPath();
 }
 
-bool PathWrapper::removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices) {
+bool PathWrapper::removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices) {
     waypoints.remove_if([&](const Waypoint& wp){
         return wp.getDemand() != Demand::END && rmvTasksIndices.contains(wp.getTaskIndex());}
     );
@@ -84,7 +84,7 @@ CompressedCoord PathWrapper::getInitialPos() const {
     return path[0];
 }
 
-void PathWrapper::PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
+void PathWrapper::PathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
     path = std::move(updatedData.first);
     waypoints = std::move(updatedData.second);
 }

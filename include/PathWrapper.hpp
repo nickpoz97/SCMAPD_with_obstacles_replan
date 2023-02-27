@@ -10,7 +10,7 @@ struct PathWrapper{
 public:
     PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
 
-    bool removeTasksAndWPs(const std::unordered_set<int> &rmvTasksIndices);
+    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices);
     TimeStep getTTD() const;
     TimeStep getLastDeliveryTimeStep() const;
 
@@ -20,7 +20,7 @@ public:
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
-    void PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData);
+    void PathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData);
 
     int randomTaskId(int magicNumber) const;
 private:

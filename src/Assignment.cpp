@@ -95,7 +95,7 @@ TimeStep Assignment::getActualTTD() const{
 
 void
 Assignment::internalUpdate(const Status &status) {
-    PathAndWPsUpdate(PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index));
+    PathAndWaypointsUpdate(PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index));
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));

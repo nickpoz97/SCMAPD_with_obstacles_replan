@@ -5,6 +5,7 @@
 #include "fmt/color.h"
 #include "MAPF/PathFinder.hpp"
 #include "NoSolution.hpp"
+#include "MAPF/NoPathException.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
                Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
@@ -133,8 +134,13 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd) {
 void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
-        pW.removeTasksAndWPs(chosenTasks);
-        pW.PathAndWPsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
+        pW.removeTasksAndWaypoints(chosenTasks);
+        try{
+            pW.PathAndWaypointsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
+        }
+        catch(const NoPathException& noPathException){
+            throw NoSolution();
+        }
     }
 }
 
