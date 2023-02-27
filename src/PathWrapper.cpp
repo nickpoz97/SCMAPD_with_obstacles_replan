@@ -172,15 +172,18 @@ bool PathWrapper::checkCapacityConstraint(int capacity) const{
     return true;
 }
 
-int PathWrapper::randomTaskId() const {
+int PathWrapper::randomTaskId(int magicNumber) const {
     assert(!satisfiedTasksIds.empty());
     std::vector<int> shuffled_tasks{satisfiedTasksIds.cbegin(), satisfiedTasksIds.cend()};
+
+    auto seed = hash_value(*this);
+    boost::hash_combine(seed, magicNumber);
 
     // shuffle them using status hash as seed
     std::shuffle(
         shuffled_tasks.begin(),
         shuffled_tasks.end(),
-        std::default_random_engine(hash_value(*this))
+        std::default_random_engine(seed)
     );
 
     return *shuffled_tasks.begin();

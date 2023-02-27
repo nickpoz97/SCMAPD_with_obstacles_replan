@@ -22,7 +22,7 @@ public:
     CompressedCoord getInitialPos() const;
     void PathAndWPsUpdate(std::pair<Path, WaypointsList> &&updatedData);
 
-    int randomTaskId() const;
+    int randomTaskId(int magicNumber) const;
 private:
     Path path;
     WaypointsList waypoints;

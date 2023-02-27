@@ -60,7 +60,6 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 #ifndef NDEBUG
         }
         catch (std::runtime_error& e){
-            std::cerr << status.stringifyPath(pathList);
             throw std::runtime_error("runtime error in waypoint catched");
         }
 #endif

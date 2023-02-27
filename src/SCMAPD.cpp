@@ -4,6 +4,7 @@
 #include "Assignment.hpp"
 #include "fmt/color.h"
 #include "MAPF/PathFinder.hpp"
+#include "NoSolution.hpp"
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
                Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
@@ -21,7 +22,12 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     assert(bigH.empty());
 
     for(int i = 0 ; i < cutOffTime ; ++i){
-        optimize(nOptimizationTasks, obj, mtd);
+        bool success = optimize(i, nOptimizationTasks, obj, mtd);
+
+        // no random elements
+        if(!success && mtd == Method::WORST_TASKS){
+            break;
+        }
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
@@ -85,37 +91,42 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-bool SCMAPD::optimize(int n, Objective obj, Method mtd) {
+bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd) {
     if(n <= 0){
         return false;
     }
 
     auto PWsBackup{status.getPathWrappers()};
 
-    auto chooseNTasks = [n, obj, mtd, this](){
+    auto chooseNTasks = [n, obj, mtd, iterIndex, this](){
         switch (mtd) {
             case Method::WORST_TASKS:
                 return status.chooseNWorstTasks(n, obj);
             case Method::WORST_AGENTS:
-                return status.chooseTasksFromNWorstAgents(n, obj);
+                return status.chooseTasksFromNWorstAgents(iterIndex, n, obj);
             // RANDOM TASKS
             default:
-                return status.chooseNRandomTasks(n);
+                return status.chooseNRandomTasks(iterIndex, n);
         }
     };
 
-    std::unordered_set<int> chosenTasks{chooseNTasks()};
-    removeTasks(chosenTasks);
+    try{
+        std::unordered_set<int> chosenTasks{chooseNTasks()};
 
-    bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
+        removeTasks(chosenTasks);
+        bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
+        findSolution();
 
-    findSolution();
-    assert(bigH.empty());
-
-    if(!isBetter(status.getPathWrappers(), PWsBackup, obj)){
+        assert(bigH.empty());
+        if(!isBetter(status.getPathWrappers(), PWsBackup, obj)){
+            throw NoSolution();
+        }
+    }
+    catch(const NoSolution& noSolution){
         status.setPathWrappers(std::move(PWsBackup));
         return false;
     }
+
     return true;
 }
 

@@ -1,6 +1,7 @@
 #include <functional>
 #include <algorithm>
 #include "BigH.hpp"
+#include "NoSolution.hpp"
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){
@@ -83,7 +84,7 @@ void BigH::update(int k, int taskId, const Status &status) {
     assert(checkOrder());
     for(auto& [otherTaskId, sHHandle] : heapHandles){
         if((*sHHandle).empty()){
-            throw std::runtime_error("No way to find all paths");
+            throw NoSolution();
         }
 
         assert((*sHHandle).getTaskId() == otherTaskId);

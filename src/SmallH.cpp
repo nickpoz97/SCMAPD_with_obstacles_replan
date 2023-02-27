@@ -1,6 +1,6 @@
 #include <algorithm>
 #include "SmallH.hpp"
-#include "NotPossibleOptimization.hpp"
+#include "NoSolution.hpp"
 #include "MAPF/NoPathException.hpp"
 
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
@@ -54,7 +54,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         }
     }
     if(heap.empty()){
-        throw NotPossibleOptimization();
+        throw NoSolution();
     }
 }
 

@@ -42,9 +42,9 @@ public:
 
     [[nodiscard]] int getNAgents() const;
 
-    [[nodiscard]] std::unordered_set<int> chooseNRandomTasks(int n) const;
+    [[nodiscard]] std::unordered_set<int> chooseNRandomTasks(int iterIndex, int n) const;
     [[nodiscard]] std::unordered_set<int> chooseNWorstTasks(int n, Objective obj) const;
-    [[nodiscard]] std::unordered_set<int> chooseTasksFromNWorstAgents(int n, Objective obj) const;
+    [[nodiscard]] std::unordered_set<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Objective obj) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);

@@ -252,7 +252,7 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Objective obj) const {
     return taskIndicesToRemove;
 }
 
-std::unordered_set<int> Status::chooseNRandomTasks(int n) const{
+std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
     n = std::min(static_cast<int>(tasksVector.size()), n);
 
     std::vector<int> shuffled_tasks{};
@@ -265,16 +265,19 @@ std::unordered_set<int> Status::chooseNRandomTasks(int n) const{
             [](const Task& t){return t.index;}
     );
 
+    auto seed = hash_value(*this);
+    boost::hash_combine(seed, iterIndex);
+
     // shuffle them using status hash as seed
     std::shuffle(
             shuffled_tasks.begin(),
             shuffled_tasks.end(),
-            std::default_random_engine(hash_value(*this))
+            std::default_random_engine(seed)
     );
     return {shuffled_tasks.cbegin(), shuffled_tasks.cbegin() + n};
 }
 
-std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int n, Objective obj) const {
+std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Objective obj) const {
     // agentId, value
     using AgentInfo = std::pair<int, TimeStep>;
 
@@ -308,7 +311,7 @@ std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int n, Objective obj
     for(int i = 0 ; i < n ; ++i){
         const auto& pW = pathsWrappers[orderedAgents[i].first];
         if(!pW.getSatisfiedTasksIds().empty()) {
-            taskIndicesToRemove.insert(pW.randomTaskId());
+            taskIndicesToRemove.insert(pW.randomTaskId(iterIndex));
         }
     }
     return taskIndicesToRemove;

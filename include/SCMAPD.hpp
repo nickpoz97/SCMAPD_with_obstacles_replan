@@ -32,7 +32,7 @@ private:
 
     void findSolution();
 
-    bool optimize(int n, Objective obj, Method mtd);
+    bool optimize(int iterIndex, int n, Objective obj, Method mtd);
 
     void removeTasks(const std::unordered_set<int> &chosenTasks);
 
