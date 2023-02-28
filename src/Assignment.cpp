@@ -6,23 +6,17 @@
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
 
-Assignment::Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status) :
+Assignment::Assignment(const AgentInfo &agentInfo) :
         PathWrapper{{agentInfo.startPos}, {Waypoint{agentInfo.startPos}}, {}},
         index{agentInfo.index},
         capacity{agentInfo.capacity}
-    {
-        addTask(firstTaskId, status);
-        assert(!getPath().empty() && *getPath().cbegin() == getStartPosition() && getWaypoints().size() == 3);
-        assert(agentInfo.index == index);
-    }
+    {}
 
-Assignment::Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status, const PathWrapper &pW) :
+Assignment::Assignment(const AgentInfo &agentInfo, const PathWrapper &pW) :
         PathWrapper{pW},
         index{agentInfo.index},
         capacity{agentInfo.capacity}
-{
-    addTask(newTaskId, status);
-}
+    {}
 
 [[maybe_unused]] int Assignment::getCapacity() const {
     return capacity;

@@ -3,32 +3,6 @@
 #include "NoSolution.hpp"
 #include "MAPF/NoPathException.hpp"
 
-SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
-        taskId{taskId},
-        v{v},
-        heap{},
-        heapHandles{}
-{
-    heapHandles.reserve(agentsInfos.size());
-
-    for (const auto& aInfo : agentsInfos){
-        auto agentIndex = aInfo.index;
-        try{
-            heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status));
-        }
-        catch(const NoPathException& e) {}
-        assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
-    }
-
-    #ifndef NDEBUG
-    assert(heap.size() == heapHandles.size());
-    for(int i = 0 ; i < heapHandles.size() ; ++i){
-        assert((*heapHandles[i]).getAgentId() == i);
-    }
-    #endif
-    assert(checkOrder());
-}
-
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
                const PWsVector &pWs) :
     taskId{taskId},
@@ -36,22 +10,33 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
     heap{},
     heapHandles{}
 {
+    assert(pWs.empty() || pWs.size() == agentsInfos.size());
+
     heapHandles.reserve(agentsInfos.size());
 
-    assert(agentsInfos.size() == pWs.size());
+    for (const auto& aInfo : agentsInfos){
+        auto agentIndex = aInfo.index;
 
-    for (int agentIndex = 0 ; agentIndex < pWs.size() ; ++agentIndex){
-        const auto& pW = pWs[agentIndex];
-        const auto& aInfo = agentsInfos[agentIndex];
-        assert(aInfo.index == agentIndex);
-
+        auto handle = pWs.empty() ? heap.emplace(aInfo) : heap.emplace(aInfo, pWs[agentIndex]);
         try{
-            heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status, pW));
+            (*handle).addTask(taskId, status);
         }
-        catch(const NoPathException& e) {}
+        catch(const NoPathException& e) {
+            heap.erase(handle);
+            continue;
+        }
+        heap.update(handle);
+        heapHandles.emplace(agentIndex, handle);
     }
 
     assert(heap.size() == heapHandles.size());
+#ifndef NDEBUG
+    for(const auto& aInfo : agentsInfos){
+        auto i = aInfo.index;
+        assert(!heapHandles.contains(i) || (*heapHandles[i]).getAgentId() == i);
+    }
+#endif
+    assert(checkOrder());
 }
 
 void SmallH::updateTopElements(const Status &status) {

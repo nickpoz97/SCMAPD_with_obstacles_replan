@@ -26,9 +26,8 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    Assignment(const AgentInfo &agentInfo, int firstTaskId, const Status &status);
-
-    Assignment(const AgentInfo &agentInfo, int newTaskId, const Status &status, const PathWrapper &pW);
+    Assignment(const AgentInfo &agentInfo);
+    Assignment(const AgentInfo &agentInfo, const PathWrapper &pW);
 
     /// @return agent capacity
     [[maybe_unused]] [[nodiscard]] int getCapacity() const;
