@@ -16,13 +16,12 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         try{
             heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status));
         }
-        catch(const NoPathException& e) {
-            heapHandles.erase(agentIndex);
-        }
+        catch(const NoPathException& e) {}
         assert(agentIndex >= 0 && agentIndex < agentsInfos.size());
     }
 
     #ifndef NDEBUG
+    assert(heap.size() == heapHandles.size());
     for(int i = 0 ; i < heapHandles.size() ; ++i){
         assert((*heapHandles[i]).getAgentId() == i);
     }
@@ -49,13 +48,10 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         try{
             heapHandles.emplace(agentIndex, heap.emplace(aInfo, taskId, status, pW));
         }
-        catch(const NoPathException& e) {
-            heapHandles.erase(agentIndex);
-        }
+        catch(const NoPathException& e) {}
     }
-    if(heap.empty()){
-        throw NoSolution();
-    }
+
+    assert(heap.size() == heapHandles.size());
 }
 
 void SmallH::updateTopElements(const Status &status) {
@@ -132,7 +128,6 @@ bool SmallH::checkOrder() const{
 std::vector<std::pair<TimeStep, Assignment>> SmallH::getOrderedVector() const{
     std::vector<std::pair<TimeStep, Assignment>> vec;
     vec.reserve(heap.size());
-
 
     for(auto it = heap.ordered_begin(); it != heap.ordered_end() ; ++it){
         vec.emplace_back(it->getMCA(), *it);

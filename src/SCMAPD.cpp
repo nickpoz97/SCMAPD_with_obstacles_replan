@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <functional>
 #include "SCMAPD.hpp"
 #include "Assignment.hpp"
@@ -111,9 +110,9 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd) {
         }
     };
 
-    try{
         std::unordered_set<int> chosenTasks{chooseNTasks()};
 
+    try{
         removeTasks(chosenTasks);
         bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
         findSolution();
@@ -139,6 +138,7 @@ void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
             pW.PathAndWaypointsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
         }
         catch(const NoPathException& noPathException){
+            // if it is not possible to remove tasks and optimize, stop optimization
             throw NoSolution();
         }
     }
