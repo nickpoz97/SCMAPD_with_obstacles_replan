@@ -6,6 +6,8 @@
 #include "NoSolution.hpp"
 #include "MAPF/NoPathException.hpp"
 
+#include <nlohmann/json.hpp>
+
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
                Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
     start{std::chrono::steady_clock::now()},
@@ -47,38 +49,34 @@ void SCMAPD::printResult() const{
 
     const auto& pathWrappers = status.getPathWrappers();
 
-    fmt::print("{}\n", nAgents);
-    fmt::print("agent\tcost\tttd\tpath\n");
+    using namespace nlohmann;
+    json j;
+
+    j["agents"] = json::array();
 
     for(int i = 0 ; i < nAgents ; ++i){
         const auto& pW = pathWrappers[i];
 
-        fmt::print(
-            "{}\t{}\t{}\t{}\n",
-            i,
-            pW.getLastDeliveryTimeStep(),
-            pW.getTTD(),
-            static_cast<std::string>(status.toVerbosePath(i))
-        );
+        j["agents"].push_back({
+            {"index", i},
+            {"ttt", pW.getLastDeliveryTimeStep()},
+            {"ttd", pW.getTTD()},
+            {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
+            {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
+            {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
+        });
     }
 
-    fmt::print("agent\twaypoints\ttasks\n");
-    for(int i = 0 ; i < nAgents ; ++i){
-        const auto& pW = pathWrappers[i];
+    j["stats"] = {
+            {"time", fmt::format("{0:.2f}", execution_time.count())},
+            {"makespan", pathWrappers.getMaxSpanCost()},
+            {"ttt", pathWrappers.getTTT()},
+            {"ttd", pathWrappers.getTTD()},
+            {"status_hash", hash_value(status)},
+            {"conflicts", status.checkAllConflicts()}
+    };
 
-        fmt::print(
-            "{}\t[{}]\t[{}]\n",
-            i,
-            fmt::join(getWpCoords(pW.getWaypoints()), ","),
-            fmt::join(pW.getSatisfiedTasksIds(), ",")
-        );
-    }
-    fmt::print("Time:\t{0:.2f}\n", execution_time.count());
-    fmt::print("Makespan:\t{}\n", pathWrappers.getMaxSpanCost());
-    fmt::print("Total_Travel_Time:\t{}\n", pathWrappers.getTTT());
-    fmt::print("Total_Travel_Delay:\t{}\n", pathWrappers.getTTD());
-
-    fmt::print("Final_Status_Hash: {}\n", hash_value(status));
+    fmt::print("{}", j.dump(1));
 }
 
 void SCMAPD::printCheckMessage() const{

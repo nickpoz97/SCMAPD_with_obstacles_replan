@@ -10,6 +10,10 @@ Coord operator+(const Coord& coord, const Direction& movement){
     return {coord.row + movement.row, coord.col + movement.col};
 }
 
+Coord::operator nlohmann::json() const {
+    return nlohmann::json::array({row, col});
+}
+
 template <> struct fmt::formatter<Coord>{
     template <typename ParseContext>
     constexpr auto parse(ParseContext& ctx) {
@@ -22,6 +26,10 @@ template <> struct fmt::formatter<Coord>{
     }
 };
 
-VerbosePath::operator std::string() const {
-    return fmt::format("{}", fmt::join(*this, "->"));
+VerbosePath::operator nlohmann::json() const {
+    nlohmann::json j;
+    for (const auto& coord : *this){
+        j.push_back(nlohmann::json(coord).dump());
+    }
+    return j;
 }

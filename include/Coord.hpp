@@ -10,6 +10,7 @@
 #include <string>
 #include <boost/container_hash/hash.hpp>
 #include "NewTypes.hpp"
+#include <nlohmann/json.hpp>
 
 struct Coord {
     int row;
@@ -19,6 +20,7 @@ struct Coord {
     friend Coord operator+(const Coord& coord, const Direction& movement);
     friend bool operator==(const Coord& a, const Coord& b) = default;
 
+    explicit operator nlohmann::json() const;
 };
 using Direction = Coord::Direction;
 
@@ -29,7 +31,7 @@ inline std::size_t hash_value(const Path& p){ return boost::hash_range(p.cbegin(
 
 class VerbosePath : public std::vector<Coord>{
 public:
-    explicit operator std::string() const;
+    explicit operator nlohmann::json() const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_COORD_HPP

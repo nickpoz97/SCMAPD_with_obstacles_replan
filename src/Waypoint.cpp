@@ -69,10 +69,34 @@ Waypoint getTaskDeliveryWaypoint(const Task& task){
     return {task.goalLoc, Demand::DELIVERY, task.index};
 }
 
-std::vector<CompressedCoord> getWpCoords(const WaypointsList& wpList){
-    std::vector<CompressedCoord> wpCoords{};
+VerbosePath getWpCoords(const WaypointsList &wpList, const DistanceMatrix &dm) {
+    VerbosePath wpCoords{};
     wpCoords.reserve(wpList.size());
 
-    std::ranges::transform(wpList, std::back_inserter(wpCoords), [](const auto& wp){return wp.getPosition();});
+    std::ranges::transform(
+        wpList,
+        std::back_inserter(wpCoords),
+        [&dm](const auto& wp){return dm.from1Dto2D(wp.getPosition());}
+    );
     return wpCoords;
+}
+
+nlohmann::json getWpsJson(const WaypointsList &wpList, const DistanceMatrix &dm){
+    using namespace nlohmann;
+
+    json j{};
+
+    for(const auto& wp : wpList){
+        if(wp.getDemand() == Demand::END){
+            continue;
+        }
+        j.push_back({
+            {"coords", static_cast<json>(dm.from1Dto2D(wp.getPosition())).dump()},
+            {"demand", wp.getDemand()},
+            {"arrival_time", wp.getArrivalTime()},
+            {"task_id", wp.getTaskIndex()}
+        });
+    }
+
+    return j;
 }

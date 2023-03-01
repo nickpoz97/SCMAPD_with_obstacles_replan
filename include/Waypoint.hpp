@@ -11,6 +11,7 @@
 #include "Coord.hpp"
 #include "utils.hpp"
 #include "Task.hpp"
+#include <nlohmann/json.hpp>
 
 struct Waypoint{
     Waypoint(CompressedCoord position, Demand demand, int taskIndex);
@@ -44,10 +45,17 @@ private:
     std::optional<TimeStep> arrivalTime{};
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM( Demand, {
+    {Demand::PICKUP, "PICKUP"},
+    {Demand::DELIVERY, "DELIVERY"},
+    {Demand::END, "END"},
+})
+
 using WaypointsList = std::list<Waypoint>;
 
 Waypoint getTaskPickupWaypoint(const Task& task);
 Waypoint getTaskDeliveryWaypoint(const Task& task);
-std::vector<CompressedCoord> getWpCoords(const WaypointsList& wpList);
+VerbosePath getWpCoords(const WaypointsList &wpList, const DistanceMatrix &dm);
+nlohmann::json getWpsJson(const WaypointsList &wpList, const DistanceMatrix &dm);
 
 #endif //SIMULTANEOUS_CMAPD_WAYPOINT_HPP

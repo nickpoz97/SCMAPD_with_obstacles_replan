@@ -52,7 +52,7 @@ int main(int argc, char* argv[]){
     scmapd.solve(cutoffTime, nt, objective, mtd);
     scmapd.printResult();
 
-    scmapd.printCheckMessage();
+    //scmapd.printCheckMessage();
 
     return 0;
 }
