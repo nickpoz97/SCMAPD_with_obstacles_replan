@@ -20,9 +20,11 @@ public:
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
-    void PathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData);
+    void pathAndWaypointsUpdate(std::pair<Path, WaypointsList>&& updatedData);
 
     int randomTaskId(int magicNumber) const;
+
+    PathWrapper& operator=(const PathWrapper& other) = default;
 private:
     Path path;
     WaypointsList waypoints;

@@ -12,12 +12,6 @@ Assignment::Assignment(const AgentInfo &agentInfo) :
         capacity{agentInfo.capacity}
     {}
 
-Assignment::Assignment(const AgentInfo &agentInfo, const PathWrapper &pW) :
-        PathWrapper{pW},
-        index{agentInfo.index},
-        capacity{agentInfo.capacity}
-    {}
-
 [[maybe_unused]] int Assignment::getCapacity() const {
     return capacity;
 }
@@ -89,7 +83,7 @@ TimeStep Assignment::getActualTTD() const{
 
 void
 Assignment::internalUpdate(const Status &status) {
-    PathAndWaypointsUpdate(PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index));
+    pathAndWaypointsUpdate(PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index));
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));
@@ -128,3 +122,7 @@ TimeStep Assignment::getIdealGoalTime() const {
     return idealGoalTime;
 }
 
+Assignment &Assignment::operator=(const PathWrapper &otherPW) {
+    PathWrapper::operator=(otherPW);
+    return *this;
+}

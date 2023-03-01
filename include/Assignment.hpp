@@ -26,8 +26,7 @@ public:
      * @param index numerical id for the agent
      * @param capacity max number of tasks the agent can keep
      */
-    Assignment(const AgentInfo &agentInfo);
-    Assignment(const AgentInfo &agentInfo, const PathWrapper &pW);
+    explicit Assignment(const AgentInfo &agentInfo);
 
     /// @return agent capacity
     [[maybe_unused]] [[nodiscard]] int getCapacity() const;
@@ -62,6 +61,8 @@ public:
     void internalUpdate(const Status &status);
 
     [[nodiscard]] TimeStep getIdealGoalTime() const;
+
+    Assignment& operator=(const PathWrapper& otherPW);
 private:
     int index;
     int capacity;

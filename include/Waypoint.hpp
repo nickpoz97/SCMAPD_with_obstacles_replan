@@ -36,9 +36,9 @@ struct Waypoint{
     [[nodiscard]] int getTaskIndex() const;
 
 private:
-    const CompressedCoord position;
-    const Demand demand;
-    const std::optional<int> taskIndex;
+    CompressedCoord position;
+    Demand demand;
+    std::optional<int> taskIndex;
 
     TimeStep cumulatedDelay = 0;
     std::optional<TimeStep> arrivalTime{};

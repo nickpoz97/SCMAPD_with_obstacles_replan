@@ -17,7 +17,14 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
 
-        auto handle = pWs.empty() ? heap.emplace(aInfo) : heap.emplace(aInfo, pWs[agentIndex]);
+        auto handle = heap.emplace(aInfo);
+
+        if(!pWs.empty()){
+            const auto& pW = pWs[agentIndex];
+            (*handle) = pW;
+            // needs update
+        }
+
         try{
             (*handle).addTask(taskId, status);
         }

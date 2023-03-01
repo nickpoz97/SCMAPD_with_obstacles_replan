@@ -84,7 +84,7 @@ CompressedCoord PathWrapper::getInitialPos() const {
     return path[0];
 }
 
-void PathWrapper::PathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
+void PathWrapper::pathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
     path = std::move(updatedData.first);
     waypoints = std::move(updatedData.second);
 }

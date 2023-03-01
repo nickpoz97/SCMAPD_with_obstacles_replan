@@ -135,7 +135,7 @@ void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
         auto& pW = status.getPathWrapper(agentId);
         pW.removeTasksAndWaypoints(chosenTasks);
         try{
-            pW.PathAndWaypointsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
+            pW.pathAndWaypointsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
         }
         catch(const NoPathException& noPathException){
             // if it is not possible to remove tasks and optimize, stop optimization
