@@ -6,10 +6,9 @@
 #include "MAPF/PathFinder.hpp"
 #include "MAPF/Node.hpp"
 #include "MAPF/ExploredSet.hpp"
-#include "MAPF/NoPathException.hpp"
 #include "MAPF/LimitedExploredSet.hpp"
 
-static std::list<CompressedCoord> getPartialPath(
+static std::optional<std::list<CompressedCoord>> getPartialPath(
     const Status &status,
     int agentId,
     CompressedCoord startLoc,
@@ -24,7 +23,7 @@ holdPosition(
     std::list<CompressedCoord> &pathList
 );
 
-std::pair<Path, WaypointsList>
+std::optional<std::pair<Path, WaypointsList>>
 PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
     if(waypoints.empty()){
         throw std::runtime_error("No waypoints");
@@ -44,10 +43,14 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
         auto goalLoc = w.getPosition();
         auto partialPath = getPartialPath(status, agentId, actualLoc, goalLoc, t);
 
-        // remove first pos (already in pathlist)
-        partialPath.pop_front();
+        if(!partialPath.has_value()){
+            return std::nullopt;
+        }
 
-        pathList.splice(pathList.cend(), partialPath);
+        // remove first pos (already in pathlist)
+        partialPath.value().pop_front();
+
+        pathList.splice(pathList.cend(), partialPath.value());
 
         t = static_cast<int>(pathList.size()) - 1;
         // old goal is new start position
@@ -65,10 +68,11 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 #endif
     }
 
-    return {{pathList.begin(), pathList.end()}, waypoints};
+    return std::pair{Path{pathList.begin(), pathList.end()}, waypoints};
 }
 
-static std::list<CompressedCoord> getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep t) {
+static std::optional<std::list<CompressedCoord>>
+getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep t) {
     auto maxPosVisits = status.getMaxPosVisits();
 
     std::unique_ptr<ExploredSet> exploredSet{
@@ -112,7 +116,7 @@ static std::list<CompressedCoord> getPartialPath(const Status &status, int agent
             }
         }
     }
-    throw NoPathException();
+    return std::nullopt;
 }
 
 static void

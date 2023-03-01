@@ -50,15 +50,14 @@ public:
      * @param tasks
      * @param constraints
      */
-    void
-    addTask(int taskId, const Status &status);
+    [[nodiscard]] bool addTask(int taskId, const Status &status);
 
 //    friend bool operator>(const Assignment &a, const Assignment &b);
 //    friend bool operator<(const Assignment &a, const Assignment &b);
     friend int operator<=>(const Assignment &a, const Assignment &b);
 
     // this should be called when waypoints and/or constraints are changed
-    void internalUpdate(const Status &status);
+    [[nodiscard]] bool internalUpdate(const Status &status);
 
     [[nodiscard]] TimeStep getIdealGoalTime() const;
 

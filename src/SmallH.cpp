@@ -1,7 +1,5 @@
 #include <algorithm>
 #include "SmallH.hpp"
-#include "NoSolution.hpp"
-#include "MAPF/NoPathException.hpp"
 
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
                const PWsVector &pWs) :
@@ -25,10 +23,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
             // needs update
         }
 
-        try{
-            (*handle).addTask(taskId, status);
-        }
-        catch(const NoPathException& e) {
+        if(!(*handle).addTask(taskId, status)){
             heap.erase(handle);
             continue;
         }
@@ -61,10 +56,7 @@ void SmallH::updateTopElements(const Status &status) {
             auto& handle = heapHandles[agentId];
             assert((*handle).getAgentId() == agentId);
 
-            try{
-                (*handle).internalUpdate(status);
-            }
-            catch(const NoPathException& e){
+            if(!(*handle).internalUpdate(status)){
                 heap.erase(handle);
                 heapHandles.erase(agentId);
                 continue;
@@ -86,15 +78,14 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     auto& targetHandle = heapHandles[k];
     assert((*targetHandle).getAgentId() == k);
 
-    try{
-        (*targetHandle).addTask(otherTaskId, status);
-    }
-    catch(const NoPathException& e){
+    if(!(*targetHandle).addTask(otherTaskId, status)){
         heap.erase(targetHandle);
         heapHandles.erase(k);
         return;
     }
     heap.update(targetHandle);
+
+    assert(heap.size() == heapHandles.size());
     assert(checkOrder());
 }
 

@@ -1,7 +1,6 @@
 #include <functional>
 #include <algorithm>
 #include "BigH.hpp"
-#include "NoSolution.hpp"
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){
@@ -80,11 +79,11 @@ bool BigH::empty() const {
     return heap.empty();
 }
 
-void BigH::update(int k, int taskId, const Status &status) {
+bool BigH::update(int k, int taskId, const Status &status) {
     assert(checkOrder());
     for(auto& [otherTaskId, sHHandle] : heapHandles){
         if((*sHHandle).empty()){
-            throw NoSolution();
+            return false;
         }
 
         assert((*sHHandle).getTaskId() == otherTaskId);
@@ -92,6 +91,10 @@ void BigH::update(int k, int taskId, const Status &status) {
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
         (*sHHandle).updateTopElements(status);
+
+        if((*sHHandle).empty()){
+            return false;
+        }
         heap.update(sHHandle);
 
         assert((*sHHandle).getTaskId() == otherTaskId);
@@ -103,6 +106,7 @@ void BigH::update(int k, int taskId, const Status &status) {
         assert(!status.checkPathWithStatus(sH.getTopPath(), sH.getTopAgentId()));
     }
 #endif
+    return true;
 }
 
 BigHHandles BigH::getHandles(const BigHFibHeap &heap) {

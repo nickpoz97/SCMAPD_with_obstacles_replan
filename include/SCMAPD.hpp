@@ -30,11 +30,11 @@ private:
     bool debug;
     const std::vector<AgentInfo> agentInfos;
 
-    void findSolution();
+    [[nodiscard]] bool findSolution();
 
     bool optimize(int iterIndex, int n, Objective obj, Method mtd);
 
-    void removeTasks(const std::unordered_set<int> &chosenTasks);
+    [[nodiscard]] bool removeTasks(const std::unordered_set<int> &chosenTasks);
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 };

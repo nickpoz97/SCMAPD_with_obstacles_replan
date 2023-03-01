@@ -16,7 +16,7 @@ public:
     ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
 
-    void update(int k, int taskId, const Status &status);
+    [[nodiscard]] bool update(int k, int taskId, const Status &status);
 
     void addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &status,
                      std::unordered_set<int> &&newTaskIndices);

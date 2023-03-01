@@ -32,7 +32,7 @@ bool Assignment::empty() const {
     return getWaypoints().empty();
 }
 
-void
+bool
 Assignment::addTask(int taskId, const Status &status) {
 
 #ifndef NDEBUG
@@ -42,7 +42,10 @@ Assignment::addTask(int taskId, const Status &status) {
     auto tmpOldTTD = getActualTTD();
 
     insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
-    internalUpdate(status);
+
+    if(!internalUpdate(status)){
+        return false;
+    }
 
     oldTTD = tmpOldTTD;
     idealGoalTime = computeIdealGoalTime(status);
@@ -74,6 +77,8 @@ Assignment::addTask(int taskId, const Status &status) {
         )
     );
 #endif
+
+    return true;
 }
 
 TimeStep Assignment::getActualTTD() const{
@@ -81,12 +86,18 @@ TimeStep Assignment::getActualTTD() const{
     return getWaypoints().crbegin()->getCumulatedDelay();
 }
 
-void
+bool
 Assignment::internalUpdate(const Status &status) {
-    pathAndWaypointsUpdate(PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index));
+    auto result{PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index)};
+    if(!result.has_value()){
+        return false;
+    }
+
+    pathAndWaypointsUpdate(std::move(result.value()));
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));
+    return true;
 }
 
 int operator<=>(const Assignment &a, const Assignment &b) {

@@ -3,8 +3,6 @@
 #include "Assignment.hpp"
 #include "fmt/color.h"
 #include "MAPF/PathFinder.hpp"
-#include "NoSolution.hpp"
-#include "MAPF/NoPathException.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -20,7 +18,9 @@ SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::ve
     }
 
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd) {
-    findSolution();
+    if(!findSolution()){
+        throw std::runtime_error("No solution");
+    }
     assert(bigH.empty());
 
     for(int i = 0 ; i < cutOffTime ; ++i){
@@ -35,13 +35,16 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     execution_time = std::chrono::steady_clock::now() - start;
 }
 
-void SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
+bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
     while( !bigH.empty() ){
         auto [k, taskId] = status.update(bigH.extractTop());
         assert(!status.checkAllConflicts());
 
-        bigH.update(k, taskId, status);
+        if(!bigH.update(k, taskId, status)){
+            return false;
+        }
     }
+    return true;
 }
 
 void SCMAPD::printResult() const{
@@ -108,38 +111,37 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd) {
         }
     };
 
-        std::unordered_set<int> chosenTasks{chooseNTasks()};
+    std::unordered_set<int> chosenTasks{chooseNTasks()};
 
-    try{
-        removeTasks(chosenTasks);
+    // check if it is able to remove tasks
+    if(removeTasks(chosenTasks)){
         bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
-        findSolution();
 
-        assert(bigH.empty());
-        if(!isBetter(status.getPathWrappers(), PWsBackup, obj)){
-            throw NoSolution();
+        // maintain only better solutions
+        if (findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
+            assert(bigH.empty());
+            return true;
         }
     }
-    catch(const NoSolution& noSolution){
-        status.setPathWrappers(std::move(PWsBackup));
-        return false;
-    }
-
-    return true;
+    status.setPathWrappers(std::move(PWsBackup));
+    return false;
 }
 
-void SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
+bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
         pW.removeTasksAndWaypoints(chosenTasks);
-        try{
-            pW.pathAndWaypointsUpdate(PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId));
+
+        auto result {PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId)};
+
+        if(!result.has_value()) {
+            return false;
         }
-        catch(const NoPathException& noPathException){
-            // if it is not possible to remove tasks and optimize, stop optimization
-            throw NoSolution();
-        }
+
+        pW.pathAndWaypointsUpdate(std::move(result.value()));
     }
+
+    return true;
 }
 
 bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj) {
@@ -148,6 +150,9 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
             return newResult.getMaxSpanCost() <= oldResult.getMaxSpanCost();
         case Objective::TTD:
             return newResult.getTTD() <= oldResult.getTTD();
+        // TTT
+        default:
+            return newResult.getTTT() <= oldResult.getTTT();
     }
 }
 

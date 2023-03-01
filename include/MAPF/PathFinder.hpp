@@ -12,7 +12,7 @@
 #include "Status.hpp"
 
 namespace PathFinder{
-    std::pair<Path, WaypointsList>
+    [[nodiscard]] std::optional<std::pair<Path, WaypointsList>>
     multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 }
 
