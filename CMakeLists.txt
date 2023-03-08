@@ -24,3 +24,13 @@ message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG} -O0")
 message("Sanitizer flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message("Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 message("RelWithDebInfo flags: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR} CACHE PATH "default installation path" FORCE)
+
+set(INSTALL_DIR_NAME scmapd)
+
+install(TARGETS ${EXE} DESTINATION ${INSTALL_DIR_NAME})
+install(DIRECTORY data DESTINATION ${INSTALL_DIR_NAME})
+
+file(GLOB_RECURSE SCRIPTS scripts/*)
+install(PROGRAMS ${SCRIPTS} DESTINATION ${INSTALL_DIR_NAME})
