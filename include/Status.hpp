@@ -24,7 +24,7 @@ public:
 
     [[nodiscard]] const Task & getTask(int i) const;
 
-    std::pair<int, int> update(ExtractedPath &&pathWrapper);
+    std::pair<int, int> update(ExtractedPath pathWrapper);
 
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
@@ -43,8 +43,8 @@ public:
     [[nodiscard]] int getNAgents() const;
 
     [[nodiscard]] std::unordered_set<int> chooseNRandomTasks(int iterIndex, int n) const;
-    [[nodiscard]] std::unordered_set<int> chooseNWorstTasks(int n, Objective obj) const;
-    [[nodiscard]] std::unordered_set<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Objective obj) const;
+    [[nodiscard]] std::unordered_set<int> chooseNWorstTasks(int n, Metric mt) const;
+    [[nodiscard]] std::unordered_set<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);

@@ -27,7 +27,13 @@ enum class PathfindingStrategy{
 
 enum class Objective{
     MAKESPAN,
-    TTD
+    TTD,
+    TTT
+};
+
+enum class Metric{
+    DELAY,
+    ARRIVAL_TIME
 };
 
 enum class Method{

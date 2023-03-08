@@ -25,7 +25,7 @@ const std::vector<Task> &Status::getTasks() const {
     return tasksVector;
 }
 
-std::pair<int, int> Status::update(ExtractedPath &&extractedPath) {
+std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     auto agentId = extractedPath.agentId;
     auto taskId = extractedPath.newTaskId;
 
@@ -213,7 +213,7 @@ VerbosePath Status::toVerbosePath(int i) const {
     return vP;
 }
 
-std::unordered_set<int> Status::chooseNWorstTasks(int n, Objective obj) const {
+std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     // taskId, value
     using TaskInfo = std::pair<int, TimeStep>;
 
@@ -227,11 +227,11 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Objective obj) const {
             if(wp.getDemand() != Demand::DELIVERY){
                 continue;
             }
-            switch (obj) {
-                case Objective::MAKESPAN:
+            switch (mt) {
+                case Metric::ARRIVAL_TIME:
                     orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
                     break;
-                case Objective::TTD:
+                case Metric::DELAY:
                     orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
                     break;
             }
@@ -277,7 +277,7 @@ std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
     return {shuffled_tasks.cbegin(), shuffled_tasks.cbegin() + n};
 }
 
-std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Objective obj) const {
+std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const {
     // agentId, value
     using AgentInfo = std::pair<int, TimeStep>;
 
@@ -289,11 +289,11 @@ std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n
     for (int i = 0 ; i < pathsWrappers.size() ; ++i){
         const auto& pW = pathsWrappers[i];
 
-        switch (obj) {
-            case Objective::MAKESPAN:
+        switch (mt) {
+            case Metric::ARRIVAL_TIME:
                 orderedAgents.emplace_back(i, pW.getLastDeliveryTimeStep());
                 break;
-            case Objective::TTD:
+            case Metric::DELAY:
                 orderedAgents.emplace_back(i, pW.getTTD());
                 break;
         }

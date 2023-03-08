@@ -9,6 +9,9 @@
 struct PathWrapper{
 public:
     PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
+    PathWrapper() = default;
+    PathWrapper(const PathWrapper&) = default;
+    PathWrapper(PathWrapper&&) = default;
 
     bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices);
     TimeStep getTTD() const;
@@ -25,6 +28,7 @@ public:
     int randomTaskId(int magicNumber) const;
 
     PathWrapper& operator=(const PathWrapper& other) = default;
+    PathWrapper& operator=(PathWrapper&& other) = default;
 private:
     Path path;
     WaypointsList waypoints;

@@ -14,13 +14,14 @@ int main(int argc, char* argv[]){
         ("help", "produce help message")
 
         // params for the input instance && experiment settings
-        ("m", po::value<string>()->required(), "input file for map")
-        ("dm", po::value<string>()->required(), "distance matrix file")
+        ("m", po::value<string>()->default_value("./data/grid.txt"), "input file for map")
+        ("dm", po::value<string>()->default_value("./data/distance_matrix.npy"), "distance matrix file")
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")
         ("obj", po::value<string>()->required(), "optimization objective")
-        ("cutoff", po::value<int>()->required(), "max number of optimization iterations")
+        ("metric", po::value<string>()->required(), "optimization metric")
+        ("cutoff", po::value<int>()->default_value(500), "max number of optimization iterations")
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
     ;
@@ -43,13 +44,14 @@ int main(int argc, char* argv[]){
     auto cutoffTime{vm["cutoff"].as<int>()};
     auto nt{vm["nt"].as<int>()};
     auto mtd{utils::getMethod(vm["mtd"].as<string>())};
+    auto metric{utils::getMetric(vm["metric"].as<string>())};
 
     SCMAPD scmapd{
         loadData(
             robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, PathfindingStrategy::UNBOUNDED
         )
     };
-    scmapd.solve(cutoffTime, nt, objective, mtd);
+    scmapd.solve(cutoffTime, nt, objective, mtd, metric);
     scmapd.printResult();
 
     //scmapd.printCheckMessage();

@@ -32,16 +32,14 @@ namespace utils{
         return result;
     }
 
-    inline Heuristic getHeuristic(const std::string& hString)
-    {
+    inline Heuristic getHeuristic(const std::string& hString){
         if (hString == "MCA") return Heuristic::MCA;
         if (hString == "RMCA_A") return Heuristic::RMCA_A;
         if (hString == "RMCA_R") return Heuristic::RMCA_R;
         throw std::runtime_error("Invalid Heuristic option");
     }
 
-    inline PathfindingStrategy getStrategy(const std::string& sString)
-    {
+    inline PathfindingStrategy getStrategy(const std::string& sString){
         if (sString == "LAZY") return PathfindingStrategy::LAZY;
         if (sString == "EAGER") return PathfindingStrategy::EAGER;
         if (sString == "FORWARD_ONLY") return PathfindingStrategy::FORWARD_ONLY;
@@ -49,19 +47,23 @@ namespace utils{
         throw std::runtime_error("Invalid Strategy option");
     }
 
-    inline Objective getObjective(const std::string& objString)
-    {
+    inline Objective getObjective(const std::string& objString){
         if(objString == "MAKESPAN") return Objective::MAKESPAN;
         if(objString == "TTD") return Objective::TTD;
         throw std::runtime_error("Invalid Objective option");
     }
 
-    inline Method getMethod(const std::string& mtdString)
-    {
+    inline Method getMethod(const std::string& mtdString){
         if(mtdString == "WORST_TASKS") return Method::WORST_TASKS;
         if(mtdString == "WORST_AGENTS") return Method::WORST_AGENTS;
         if(mtdString == "RANDOM_TASKS") return Method::RANDOM_TASKS;
         throw std::runtime_error("Invalid Method option");
+    }
+
+    inline Metric getMetric(const std::string& mtdString){
+        if(mtdString == "DELAY") return Metric::DELAY;
+        if(mtdString == "ARRIVAL_TIME") return Metric::ARRIVAL_TIME;
+        throw std::runtime_error("Invalid Metric option");
     }
 }
 
