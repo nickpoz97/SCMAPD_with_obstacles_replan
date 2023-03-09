@@ -6,8 +6,8 @@
 
 // todo check if heap is max or min
 using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
-using BigHFibHeap = boost::heap::binomial_heap<SmallH, boost::heap::compare<SmallHComp>>;
-using BigHHandles = std::unordered_map<int, BigHFibHeap::handle_type>;
+using BigHHeap = boost::heap::binomial_heap<SmallH, boost::heap::compare<SmallHComp>>;
+using BigHHandles = std::unordered_map<int, BigHHeap::handle_type>;
 
 class BigH {
 public:
@@ -27,16 +27,10 @@ private:
     int v;
     Heuristic heuristic;
 
-    BigHFibHeap heap;
+    BigHHeap heap;
     BigHHandles heapHandles;
 
     static SmallHComp getComparator(Heuristic h);
-
-    static BigHFibHeap
-    buildPartialAssignmentHeap(
-        const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h
-    );
-    static BigHHandles getHandles(const BigHFibHeap& heap);
 
     bool checkOrder() const;
 };

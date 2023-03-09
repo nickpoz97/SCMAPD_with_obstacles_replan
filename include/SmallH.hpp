@@ -7,8 +7,8 @@
 #include "Status.hpp"
 #include "AgentInfo.hpp"
 
-using SmallHFibHeap = boost::heap::binomial_heap<Assignment, boost::heap::compare<std::greater<>>>;
-using SmallHHandles = std::unordered_map<int, SmallHFibHeap::handle_type>;
+using SmallHHeap = boost::heap::binomial_heap<Assignment, boost::heap::compare<std::greater<>>>;
+using SmallHHandles = std::unordered_map<int, SmallHHeap::handle_type>;
 
 class SmallH {
 public:
@@ -33,7 +33,7 @@ public:
 private:
     int taskId;
     int v;
-    SmallHFibHeap heap;
+    SmallHHeap heap;
     SmallHHandles heapHandles;
 
     bool checkOrder() const;

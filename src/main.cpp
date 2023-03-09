@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
         ("h", po::value<string>()->required(), "heuristic")
         ("obj", po::value<string>()->required(), "optimization objective")
         ("metric", po::value<string>()->required(), "optimization metric")
-        ("cutoff", po::value<int>()->default_value(500), "max number of optimization iterations")
+        ("cutoff", po::value<int>()->default_value(10), "optimization threshold in seconds")
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
     ;

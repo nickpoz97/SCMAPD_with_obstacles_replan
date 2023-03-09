@@ -1,6 +1,5 @@
 #include <functional>
 #include "SCMAPD.hpp"
-#include "Assignment.hpp"
 #include "fmt/color.h"
 #include "MAPF/PathFinder.hpp"
 
@@ -22,8 +21,14 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     }
     assert(bigH.empty());
 
-    for(int i = 0 ; i < cutOffTime ; ++i){
-        bool success = optimize(i, nOptimizationTasks, obj, mtd, mtr);
+    int nIterations = 0;
+
+    auto getExecutionSeconds = [this](){
+        return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count();
+    };
+
+    while( getExecutionSeconds() <= cutOffTime ){
+        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr);
 
         // no random elements
         if(!success && mtd == Method::WORST_TASKS){

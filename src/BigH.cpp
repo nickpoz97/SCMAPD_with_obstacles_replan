@@ -52,9 +52,18 @@ SmallHComp BigH::getComparator(Heuristic h) {
 BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
     v{h == Heuristic::MCA ? 1 : 2},
     heuristic{h},
-    heap{buildPartialAssignmentHeap(agentInfos, status, v, h)},
-    heapHandles{getHandles(heap)}
+    heap(getComparator(h)),
+    heapHandles{}
     {
+        const auto& tasks = status.getTasks();
+        heapHandles.reserve(agentInfos.size());
+
+        for(const auto& task : tasks){
+            auto taskId = task.index;
+            assert(taskId >= 0 && taskId < tasks.size());
+            heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
+        }
+
         #ifndef NDEBUG
         for(int i = 0 ; i < heapHandles.size() ; ++i){
             assert((*heapHandles[i]).getTaskId() == i);
@@ -109,15 +118,6 @@ bool BigH::update(int k, int taskId, const Status &status) {
     return true;
 }
 
-BigHHandles BigH::getHandles(const BigHFibHeap &heap) {
-    BigHHandles heapHandles{};
-
-    for(auto it = heap.begin(); it != heap.end() ; ++it){
-        heapHandles.emplace(it->getTaskId(), BigHFibHeap::s_handle_from_iterator(it));
-    }
-    return heapHandles;
-}
-
 bool BigH::checkOrder() const{
     const auto reversedComparator = [&](const SmallH& a, const SmallH&b) {
         return getComparator(heuristic)(b, a);
@@ -135,21 +135,6 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
     }
 
     return vec;
-}
-
-BigHFibHeap
-BigH::buildPartialAssignmentHeap(const std::vector<AgentInfo> &agentsInfos, const Status &status, int v, Heuristic h) {
-    const auto& tasks = status.getTasks();
-
-    BigHFibHeap heap(getComparator(h));
-
-    for(const auto& task : tasks){
-        auto taskId = task.index;
-        assert(taskId >= 0 && taskId < tasks.size());
-        heap.emplace(agentsInfos, taskId, v, status);
-    }
-
-    return heap;
 }
 
 void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &status,
