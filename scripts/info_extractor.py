@@ -1,7 +1,8 @@
 import subprocess
 import os
+import json
 
-def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str, heur: str, obj: str, metric: str, nt: int, method: str):
+def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str, heur: str, obj: str, metric: str, nt: int, method: str, cutoff: int):
     command = [
         exe_path,
         '--a', agents_file_path,
@@ -9,32 +10,24 @@ def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str,
         '--h', heur,
         '--obj', obj,
         '--metric', metric,
-        '--cutoff', nt,
+        '--cutoff', str(cutoff),
+        '--nt', str(nt),
         '--mtd', method
     ]
+    print(*command, sep=' ')
 
     result = subprocess.run(command, capture_output=True, check=True)
     return result.stdout.decode("UTF-8")
 
 def instance_stats(decoded_output: str):
-    lines = decoded_output.strip().split('\n')
-    header_line_n = 3
+    data = json.loads(decoded_output)
+    return data["stats"]
 
-    infos = dict()
-
-    splitter = lambda s: s.split(':\t')
-    infos["stats"] = {
-        splitter(l)[0]: splitter(l)[1] for l in lines[:header_line_n]
-    }
-    infos["agents_span"] = [
-        int(l.split('\t')[1])-1 for l in lines[header_line_n+1:]
-    ]
-    return infos
-
-def all_stats(exe_path: str, instances_root: str):
+def all_stats(exe_path: str, instances_root: str, settings: list):
+    tasks_files = [os.path.join(instances_root, name) for name in filter(lambda fname: os.path.splitext(fname)[-1] == '.tasks', os.listdir(instances_root))]
+    agents_files = [os.path.join(instances_root, name) for name in filter(lambda fname: os.path.splitext(fname)[-1] == '.agents', os.listdir(instances_root))]
     
+    return [instance_stats(execute_instance(exe_path, af, tf, *settings)) for af, tf in zip(agents_files, tasks_files)]
 
-    # tasks_files = [os.path.join(instances_root, name) for name in filter(lambda fname: os.path.splitext(fname)[-1] == '.tasks', os.listdir(instances_root))]
-    # agents_files = [os.path.join(instances_root, name) for name in filter(lambda fname: os.path.splitext(fname)[-1] == '.agents', os.listdir(instances_root))]
-    
-    # return [instance_stats(execute_instance(exe_path, af, tf)) for af, tf in zip(agents_files, tasks_files)]
+if __name__ == "__main__":
+    print(all_stats("./scmapd", "../instances/40_130", ["MCA", "MAKESPAN", "DELAY", 5, "WORST_TASKS", 0]))
