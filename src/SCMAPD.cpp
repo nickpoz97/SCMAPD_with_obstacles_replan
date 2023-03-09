@@ -7,11 +7,10 @@
 #include <nlohmann/json.hpp>
 
 SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
-               Heuristic heuristic, bool debug, PathfindingStrategy strategy) :
+               Heuristic heuristic) :
     start{std::chrono::steady_clock::now()},
-    status(std::move(ambientMap), agents, std::move(tasksVector), strategy),
+    status(std::move(ambientMap), agents, std::move(tasksVector)),
     bigH{agents, status, heuristic},
-    debug{debug},
     agentInfos{std::move(agents)}
     {
         assert(!status.checkAllConflicts());
@@ -161,12 +160,6 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
                 Heuristic heuristic, PathfindingStrategy strategy) {
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
 
-    return {
-        std::move(ambientMap),
-        loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
-        loadTasks(tasksFile, ambientMap.getDistanceMatrix()),
-        heuristic,
-        false,
-        strategy
-    };
+    return {std::move(ambientMap), loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
+            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic};
 }

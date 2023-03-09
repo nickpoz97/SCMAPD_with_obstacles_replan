@@ -14,7 +14,7 @@
 
 class Status{
 public:
-    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks, PathfindingStrategy strategy);
+    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks);
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
@@ -38,8 +38,6 @@ public:
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
-    [[nodiscard]] std::optional<int> getMaxPosVisits() const;
-
     [[nodiscard]] int getNAgents() const;
 
     [[nodiscard]] std::unordered_set<int> chooseNRandomTasks(int iterIndex, int n) const;
@@ -55,7 +53,6 @@ private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     PWsVector pathsWrappers;
-    PathfindingStrategy pathFindingStrategy;
 
     TimeStep longestPathSize = 0;
 

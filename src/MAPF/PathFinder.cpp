@@ -6,7 +6,6 @@
 #include "MAPF/PathFinder.hpp"
 #include "MAPF/Node.hpp"
 #include "MAPF/ExploredSet.hpp"
-#include "MAPF/LimitedExploredSet.hpp"
 
 static std::optional<std::list<CompressedCoord>> getPartialPath(
     const Status &status,
@@ -73,11 +72,7 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 
 static std::optional<std::list<CompressedCoord>>
 getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep t) {
-    auto maxPosVisits = status.getMaxPosVisits();
-
-    std::unique_ptr<ExploredSet> exploredSet{
-        maxPosVisits.has_value() ? new LimitedExploredSet{maxPosVisits.value()} : new ExploredSet
-    };
+    ExploredSet exploredSet{};
 
     const auto& dm = status.getDistanceMatrix();
 
@@ -97,10 +92,10 @@ getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, Comp
         frontier.pop();
 
         // do not explore this node
-        if(exploredSet->contains(*topNodePtr)){
+        if(exploredSet.contains(*topNodePtr)){
             continue;
         }
-        exploredSet->insert(*topNodePtr);
+        exploredSet.insert(*topNodePtr);
 
         // path found
         if(topNodePtr->getLocation() == goalLoc){
@@ -111,7 +106,7 @@ getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, Comp
 
         auto nextT = topNodePtr->getGScore() + 1;
         for(auto loc : neighbors){
-            if(!exploredSet->contains(loc, nextT)){
+            if(!exploredSet.contains(loc, nextT)){
                 frontier.emplace(new Node{loc, nextT, dm.getDistance(loc, goalLoc), topNodePtr});
             }
         }

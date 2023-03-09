@@ -12,7 +12,7 @@
 class SCMAPD {
 public:
     SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
-           Heuristic heuristic, bool debug, PathfindingStrategy strategy);
+           Heuristic heuristic);
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
@@ -27,7 +27,7 @@ private:
 
     Status status;
     BigH bigH;
-    bool debug;
+
     const std::vector<AgentInfo> agentInfos;
 
     [[nodiscard]] bool findSolution();

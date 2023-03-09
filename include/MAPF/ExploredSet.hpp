@@ -15,12 +15,12 @@ class ExploredSet {
 public:
     explicit ExploredSet() = default;
 
-    virtual void insert(const Node& node);
+    void insert(const Node& node);
 
-    virtual bool contains(const Node& node) const;
-    virtual bool contains(CompressedCoord loc, TimeStep t) const;
+    bool contains(const Node& node) const;
+    bool contains(CompressedCoord loc, TimeStep t) const;
 
-    virtual void clear();
+    void clear();
 protected:
     std::unordered_map<CompressedCoord, std::unordered_set<TimeStep>> exploredNodesSet;
 };

@@ -39,14 +39,6 @@ namespace utils{
         throw std::runtime_error("Invalid Heuristic option");
     }
 
-    inline PathfindingStrategy getStrategy(const std::string& sString){
-        if (sString == "LAZY") return PathfindingStrategy::LAZY;
-        if (sString == "EAGER") return PathfindingStrategy::EAGER;
-        if (sString == "FORWARD_ONLY") return PathfindingStrategy::FORWARD_ONLY;
-        if (sString == "UNBOUNDED") return PathfindingStrategy::UNBOUNDED;
-        throw std::runtime_error("Invalid Strategy option");
-    }
-
     inline Objective getObjective(const std::string& objString){
         if(objString == "MAKESPAN") return Objective::MAKESPAN;
         if(objString == "TTD") return Objective::TTD;

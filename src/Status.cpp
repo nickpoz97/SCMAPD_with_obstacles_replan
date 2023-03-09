@@ -9,12 +9,10 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks,
-               PathfindingStrategy strategy) :
+Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        pathsWrappers{initializePathsWrappers(agents)},
-        pathFindingStrategy{strategy}
+        pathsWrappers{initializePathsWrappers(agents)}
         {}
 
 const Task & Status::getTask(int i) const {
@@ -167,19 +165,6 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
 bool Status::hasIllegalPositions(const Path& path) const{
     const auto& dm = ambient.getDistanceMatrix();
     return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
-}
-
-std::optional<int> Status::getMaxPosVisits() const{
-    switch (pathFindingStrategy) {
-        case PathfindingStrategy::EAGER:
-            return 2;
-        case PathfindingStrategy::FORWARD_ONLY:
-            return 1;
-        case PathfindingStrategy::LAZY:
-            return static_cast<int>(AmbientMap::nDirections);
-        default:
-            return std::nullopt;
-    }
 }
 
 int Status::getNAgents() const {
