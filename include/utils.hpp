@@ -42,6 +42,7 @@ namespace utils{
     inline Objective getObjective(const std::string& objString){
         if(objString == "MAKESPAN") return Objective::MAKESPAN;
         if(objString == "TTD") return Objective::TTD;
+        if(objString == "TTT") return Objective::TTT;
         throw std::runtime_error("Invalid Objective option");
     }
 
