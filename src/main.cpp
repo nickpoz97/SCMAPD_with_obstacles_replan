@@ -1,12 +1,21 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <iostream>
+#include <filesystem>
+
 #include "SCMAPD.hpp"
 #include "utils.hpp"
 
 int main(int argc, char* argv[]){
     namespace po = boost::program_options;
+    namespace fs = std::filesystem;
     using std::string;
+
+    fs::path exeCommand = fs::path(argv[0]);
+    fs::path exeDir = (exeCommand.is_absolute() ? exeCommand : fs::current_path() / exeCommand).remove_filename();
+
+    auto defaultGridPath = exeDir / "data" / "grid.txt";
+    auto defaultDMPath = exeDir / "data" / "distance_matrix.npy";
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -14,8 +23,8 @@ int main(int argc, char* argv[]){
         ("help", "produce help message")
 
         // params for the input instance && experiment settings
-        ("m", po::value<string>()->default_value("./data/grid.txt"), "input file for map")
-        ("dm", po::value<string>()->default_value("./data/distance_matrix.npy"), "distance matrix file")
+        ("m", po::value<string>()->default_value(defaultGridPath), "input file for map")
+        ("dm", po::value<string>()->default_value(defaultDMPath), "distance matrix file")
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")
