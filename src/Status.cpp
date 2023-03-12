@@ -155,7 +155,7 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
         std::back_inserter(pWs),
         [](const AgentInfo& a) -> PathWrapper {
             return {
-                {a.startPos},{},{}
+                {a.startPos},{Waypoint{a.startPos}},{}
             };
         }
     );
