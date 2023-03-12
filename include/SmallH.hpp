@@ -2,12 +2,12 @@
 #define SIMULTANEOUS_CMAPD_SMALLH_HPP
 
 #include <vector>
-#include <boost/heap/binomial_heap.hpp>
+#include <boost/heap/fibonacci_heap.hpp>
 #include "Assignment.hpp"
 #include "Status.hpp"
 #include "AgentInfo.hpp"
 
-using SmallHHeap = boost::heap::binomial_heap<Assignment, boost::heap::compare<std::greater<>>>;
+using SmallHHeap = boost::heap::fibonacci_heap<Assignment, boost::heap::compare<std::greater<>>>;
 using SmallHHandles = std::unordered_map<int, SmallHHeap::handle_type>;
 
 class SmallH {

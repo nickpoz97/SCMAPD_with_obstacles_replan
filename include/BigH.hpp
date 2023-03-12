@@ -6,7 +6,7 @@
 
 // todo check if heap is max or min
 using SmallHComp = std::function<bool(const SmallH&,const SmallH&)>;
-using BigHHeap = boost::heap::binomial_heap<SmallH, boost::heap::compare<SmallHComp>>;
+using BigHHeap = boost::heap::fibonacci_heap<SmallH, boost::heap::compare<SmallHComp>>;
 using BigHHandles = std::unordered_map<int, BigHHeap::handle_type>;
 
 class BigH {
@@ -22,7 +22,7 @@ public:
                      std::unordered_set<int> &&newTaskIndices);
 
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
-
+    void clear();
 private:
     int v;
     Heuristic heuristic;
@@ -33,6 +33,8 @@ private:
     static SmallHComp getComparator(Heuristic h);
 
     bool checkOrder() const;
+
+    bool checkIntegrity() const;
 };
 
 

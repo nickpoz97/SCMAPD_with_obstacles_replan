@@ -45,6 +45,7 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
         assert(!status.checkAllConflicts());
 
         if(!bigH.update(k, taskId, status)){
+            bigH.clear();
             return false;
         }
     }

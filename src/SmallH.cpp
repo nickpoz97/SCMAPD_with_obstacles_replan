@@ -18,13 +18,12 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         auto handle = heap.emplace(aInfo);
 
         if(!pWs.empty()){
-            const auto& pW = pWs[agentIndex];
-            (*handle) = pW;
-            // needs update
+            (*handle) = pWs[agentIndex];
         }
 
         if(!(*handle).addTask(taskId, status)){
             heap.erase(handle);
+            assert(heap.size() == heapHandles.size());
             continue;
         }
         heap.update(handle);
@@ -59,6 +58,7 @@ void SmallH::updateTopElements(const Status &status) {
             if(!(*handle).internalUpdate(status)){
                 heap.erase(handle);
                 heapHandles.erase(agentId);
+                assert(heap.size() == heapHandles.size());
                 continue;
             }
             heap.update(handle);
@@ -81,11 +81,10 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     if(!(*targetHandle).addTask(otherTaskId, status)){
         heap.erase(targetHandle);
         heapHandles.erase(k);
+        assert(heap.size() == heapHandles.size());
         return;
     }
     heap.update(targetHandle);
-
-    assert(heap.size() == heapHandles.size());
     assert(checkOrder());
 }
 
@@ -101,6 +100,7 @@ int SmallH::getTopAgentId() const{
 }
 
 const Assignment &SmallH::getTopAssignment() const {
+    assert(!heap.empty());
     return heap.top();
 }
 
@@ -119,6 +119,7 @@ std::vector<std::pair<TimeStep, Assignment>> SmallH::getOrderedVector() const{
 }
 
 bool SmallH::empty() const{
+    assert(heap.size() == heapHandles.size());
     return heap.empty();
 }
 [[nodiscard]] ExtractedPath SmallH::getTopWrappedPath() const{
@@ -135,4 +136,3 @@ const Assignment &SmallH::getSecondTopAssignment() const {
     assert(heap.size() >= 2);
     return *std::next(heap.ordered_begin(), 2);
 }
-
