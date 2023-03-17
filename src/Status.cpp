@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <queue>
 #include <random>
 
@@ -300,4 +301,64 @@ std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n
         }
     }
     return taskIndicesToRemove;
+}
+
+std::string
+Status::getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const {
+    auto rowStrings = ambient.getRowsStrings();
+    auto dm = ambient.getDistanceMatrix();
+
+    for (int i = 0 ; i < pathsWrappers.size() ; ++i){
+        if(i == agentId){
+            continue;
+        }
+        const auto& path = pathsWrappers.getPath(i);
+        auto coord2D = dm.from1Dto2D(path[std::min(t, static_cast<int>(path.size()-1))]);
+
+        // check if agents are not in illegal positions
+        assert(ambient.isValid(coord2D));
+
+        // check if another agent is present
+        assert(rowStrings[coord2D.row][coord2D.col] != 'o');
+
+        rowStrings[coord2D.row][coord2D.col] = 'o';
+    }
+
+    auto actual2D = dm.from1Dto2D(actual);
+    // check if agents are not in illegal positions
+    assert(ambient.isValid(actual2D));
+    // check if another agent is present
+    assert(rowStrings[actual2D.row][actual2D.col] != 'o');
+    rowStrings[actual2D.row][actual2D.col] = 'a';
+
+    std::string gridString;
+    gridString.reserve(ambient.getNRows() * (ambient.getNCols() + 1));
+    for(const auto& rowString : rowStrings){
+        gridString += rowString + '\n';
+    }
+
+    return gridString;
+}
+
+std::string Status::getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const{
+    auto dm = ambient.getDistanceMatrix();
+    auto rowStrings = ambient.getRowsStrings();
+
+    auto fillCharCell = [&] (CompressedCoord cc, char fillWithChar){
+        auto coord = dm.from1Dto2D(cc);
+        assert(ambient.isValid(coord));
+        rowStrings[coord.row][coord.col] = fillWithChar;
+    };
+
+    fillCharCell(start, 's');
+    fillCharCell(actual, 'a');
+    fillCharCell(end, 'e');
+
+    std::string gridString;
+    gridString.reserve(ambient.getNRows() * (ambient.getNCols() + 1));
+    for(const auto& rowString : rowStrings){
+        gridString += rowString + '\n';
+    }
+
+    return gridString;
 }

@@ -52,7 +52,7 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
     return true;
 }
 
-void SCMAPD::printResult() const{
+void SCMAPD::printResult(bool printAgentsInfo) const{
     auto nAgents = status.getNAgents();
 
     const auto& pathWrappers = status.getPathWrappers();
@@ -60,19 +60,21 @@ void SCMAPD::printResult() const{
     using namespace nlohmann;
     json j;
 
-    j["agents"] = json::array();
+    if (printAgentsInfo){
+        j["agents"] = json::array();
 
-    for(int i = 0 ; i < nAgents ; ++i){
-        const auto& pW = pathWrappers[i];
+        for(int i = 0 ; i < nAgents ; ++i){
+            const auto& pW = pathWrappers[i];
 
-        j["agents"].push_back({
-            {"index", i},
-            {"ttt", pW.getLastDeliveryTimeStep()},
-            {"ttd", pW.getTTD()},
-            {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
-            {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
-            {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
-        });
+            j["agents"].push_back({
+                {"index", i},
+                {"ttt", pW.getLastDeliveryTimeStep()},
+                {"ttd", pW.getTTD()},
+                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
+                {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
+                {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
+            });
+        }
     }
 
     j["stats"] = {

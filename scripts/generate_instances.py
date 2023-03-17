@@ -2,6 +2,8 @@ import argparse
 import random
 import os
 
+from generate_overlapping_instances import gen_overlapping_instances
+
 class NoMorePositions(Exception):
 
     def __init__(self, n_agents: int, n_tasks: int, n_positions: int, *args: object) -> None:
@@ -15,7 +17,7 @@ class NoMorePositions(Exception):
         return f"{self.n_agents} agents + {self.n_tasks} tasks * 2 = {val} > {self.n_positions} available positions"
     
 
-def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir):
+def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap=True):
     # extract possible positions for tasks and agents
     candidates = list()
 
@@ -34,19 +36,25 @@ def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir):
                     grid[rowi][coli] = '@'
 
     # generate and print instances
-    if n_agents + 2 * n_tasks > len(candidates):
+    if not overlap and n_agents + 2 * n_tasks > len(candidates):
         raise NoMorePositions(n_agents, n_tasks, len(candidates)) 
 
     os.makedirs(out_dir, exist_ok=True)
 
     for i in range(n_instances):
-        instance_grid = grid.copy()
+        #instance_grid = grid.copy()
 
-        random.shuffle(candidates)
         stringify_coord = lambda coord: str(coord[0]) + ',' + str(coord[1])
 
-        agents_coords = candidates[:n_agents]
-        tasks_coords = candidates[n_agents:n_agents + 2 * n_tasks]
+        agents_coords = list()
+        tasks_coords = list()
+
+        if not overlap:
+            random.shuffle(candidates)
+            agents_coords = candidates[:n_agents]
+            tasks_coords = candidates[n_agents:n_agents + 2 * n_tasks]
+        else:
+            agents_coords, tasks_coords = gen_overlapping_instances(candidates, n_agents, n_tasks)
 
         agents = ['\n' + stringify_coord(coord) for coord in agents_coords]
 
@@ -67,17 +75,18 @@ def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir):
             tf.writelines(tasks)
             tf.write('\n')
 
-        for row, col in agents_coords:
-            instance_grid[row][col] = 'a'
-        for j, (row, col) in enumerate(tasks_coords):
-            instance_grid[row][col] = 's' if j % 2 == 0 else 'g'
+        # for row, col in agents_coords:
+        #     instance_grid[row][col] = 'a'
+        # for j, (row, col) in enumerate(tasks_coords):
+        #     instance_grid[row][col] = 's' if j % 2 == 0 else 'g'
 
         grid_string = ''
         for j in range(len(grid)):
             grid_string += ''.join(grid[j]) + '\n'
             
-        with open(os.path.join(out_dir, instance_grid_path), "w") as igf:
-            igf.write(grid_string)
+        if not overlap:
+            with open(os.path.join(out_dir, instance_grid_path), "w") as igf:
+                igf.write(grid_string)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate random instances")
@@ -87,6 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("t", metavar="T", type=int, help="number of tasks")
     parser.add_argument("n", metavar="N", type=int, help="number of instances")
     parser.add_argument("out", metavar="output_dir_path", type=str, help="instances output location")
+    parser.add_argument("overlap", metavar="output_dir_path", type=bool, help="overlap tasks")
 
     args = parser.parse_args()
 
@@ -95,5 +105,6 @@ if __name__ == "__main__":
     n_tasks = args.t
     n_instances = args.n
     out_dir = args.out
+    overlap = args.overlap
 
-    gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir)
+    gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap)

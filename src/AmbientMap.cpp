@@ -5,7 +5,7 @@
 #include "DistanceMatrix.hpp"
 
 
-std::vector<std::vector<CellType>> AmbientMap::getGrid(const std::filesystem::path &gridPath) {
+std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::path &gridPath) {
     std::fstream fs(gridPath.c_str(), std::ios::in);
 
     if(!fs.is_open()){
@@ -76,7 +76,7 @@ std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int d
 
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, const std::filesystem::path &distanceMatrixPath) :
     distanceMatrix{distanceMatrixPath},
-    grid{getGrid(gridPath)}
+    grid{loadGrid(gridPath)}
 {
     if(distanceMatrix.nRows != grid.size() || (!grid.empty() && distanceMatrix.nCols != grid[0].size())){
         throw std::runtime_error("Grid file and distance matrix file do not refer to same ambient");
@@ -85,4 +85,22 @@ AmbientMap::AmbientMap(const std::filesystem::path &gridPath, const std::filesys
 
 const DistanceMatrix& AmbientMap::getDistanceMatrix() const{
     return distanceMatrix;
+}
+
+const std::vector<std::vector<CellType>>& AmbientMap::getGrid() const {
+    return grid;
+}
+
+std::vector<std::string> AmbientMap::getRowsStrings() const {
+    std::vector<std::string> rowStrings;
+    rowStrings.reserve(getNRows());
+
+    for (const auto& row : grid){
+        std::string rowString;
+        rowString.reserve(getNCols());
+        std::ranges::transform(row, std::back_inserter(rowString), [](CellType cell){return static_cast<char>(cell);});
+        rowStrings.push_back(std::move(rowString));
+    }
+
+    return rowStrings;
 }

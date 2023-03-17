@@ -49,6 +49,9 @@ public:
 
     [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
     [[nodiscard]] VerbosePath toVerbosePath(int i) const;
+
+    std::string getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const;
+    std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

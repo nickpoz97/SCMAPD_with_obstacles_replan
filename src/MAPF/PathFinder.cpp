@@ -102,6 +102,16 @@ getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, Comp
             return topNodePtr->getPathList();
         }
 
+#ifndef NDEBUG
+        auto agentsSnapshot = status.getAgentsSnapshot(
+                agentId,
+                topNodePtr->getGScore(),
+                topNodePtr->getLocation()
+        );
+
+        auto targetSnapshots = status.getTargetSnapshot(startLoc, goalLoc, topNodePtr->getLocation());
+#endif
+
         auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore(), true);
 
         auto nextT = topNodePtr->getGScore() + 1;
