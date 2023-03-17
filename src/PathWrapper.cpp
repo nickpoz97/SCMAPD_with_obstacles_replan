@@ -123,14 +123,14 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
     insertNewWaypoints(newTask, bestPickupIt, bestDeliveryIt);
 }
 
-void PathWrapper::restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
-                                          std::_List_iterator<Waypoint> waypointGoal) {
+void PathWrapper::restorePreviousWaypoints(WaypointsList::iterator waypointStart,
+                                           WaypointsList::iterator waypointGoal) {
     waypoints.erase(waypointStart);
     waypoints.erase(waypointGoal);
 }
 
-std::pair<WaypointsList::iterator, WaypointsList::iterator> PathWrapper::insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                                                                           std::_List_iterator<Waypoint> waypointGoal) {
+std::pair<WaypointsList::iterator, WaypointsList::iterator> PathWrapper::insertNewWaypoints(const Task &task, WaypointsList::iterator waypointStart,
+                                                                                            WaypointsList::iterator waypointGoal) {
     return {
             waypoints.insert(waypointStart, getTaskPickupWaypoint(task)),
             waypoints.insert(waypointGoal, getTaskDeliveryWaypoint(task))

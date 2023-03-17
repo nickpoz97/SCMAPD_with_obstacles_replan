@@ -17,7 +17,7 @@ target_link_libraries(${EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories( ${Boost_INCLUDE_DIRS} )
-target_link_libraries(${EXE} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${EXE} PRIVATE Boost::program_options)
 
 set(CMAKE_CXX_FLAGS_SANIT "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" )
 message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG} -O0")

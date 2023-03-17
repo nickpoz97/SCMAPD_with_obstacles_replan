@@ -37,13 +37,11 @@ public:
 
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
     [[nodiscard]] const std::vector<std::vector<CellType>>& getGrid() const;
-
+    [[nodiscard]] std::vector<std::string> getRowsStrings() const;
 private:
     const DistanceMatrix distanceMatrix;
     std::vector<std::vector<CellType>> grid;
     static std::vector<std::vector<CellType>> loadGrid(const std::filesystem::path &gridPath);
-
-    [[nodiscard]] std::vector<std::string> getRowsStrings() const;
 };
 
 constexpr int AmbientMap::getHoldDirectionIndex() {

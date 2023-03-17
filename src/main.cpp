@@ -23,8 +23,8 @@ int main(int argc, char* argv[]){
         ("help", "produce help message")
 
         // params for the input instance && experiment settings
-        ("m", po::value<string>()->default_value(defaultGridPath), "input file for map")
-        ("dm", po::value<string>()->default_value(defaultDMPath), "distance matrix file")
+        ("m", po::value<string>()->default_value(defaultGridPath.string()), "input file for map")
+        ("dm", po::value<string>()->default_value(defaultDMPath.string()), "distance matrix file")
         ("a", po::value<string>()->required(), "agents file")
         ("t", po::value<string>()->required(), "tasks file")
         ("h", po::value<string>()->required(), "heuristic")

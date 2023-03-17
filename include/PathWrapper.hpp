@@ -33,10 +33,9 @@ private:
     Path path;
     WaypointsList waypoints;
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, std::_List_iterator<Waypoint> waypointStart,
-                                                                                   std::_List_iterator<Waypoint> waypointGoal);
-    void restorePreviousWaypoints(std::_List_iterator<Waypoint> waypointStart,
-                                  std::_List_iterator<Waypoint> waypointGoal);
+    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, WaypointsList::iterator waypointStart,
+                                                                                   WaypointsList::iterator waypointGoal);
+    void restorePreviousWaypoints(WaypointsList::iterator waypointStart, WaypointsList::iterator waypointGoal);
 
     bool checkCapacityConstraint(int capacity) const;
 
