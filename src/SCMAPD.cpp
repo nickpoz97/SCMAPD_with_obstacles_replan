@@ -23,11 +23,9 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 
     int nIterations = 0;
 
-    auto getExecutionSeconds = [this](){
-        return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count();
-    };
+    auto optimizationBegin = std::chrono::steady_clock::now();
 
-    while( getExecutionSeconds() <= cutOffTime ){
+    while( std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - optimizationBegin).count() ){
         bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr);
 
         // no random elements
