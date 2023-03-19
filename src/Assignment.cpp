@@ -48,7 +48,7 @@ Assignment::addTask(int taskId, const Status &status) {
     }
 
     oldTTD = tmpOldTTD;
-    idealGoalTime = computeIdealGoalTime(status);
+    idealCost = computeIdealCost(status);
 
     satisfiedTasksIds.emplace(taskId);
 #ifndef NDEBUG
@@ -106,31 +106,28 @@ int operator<=>(const Assignment &a, const Assignment &b) {
 
     int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
     int pathSizeScore = sgn(std::ssize(a.getPath()) - std::ssize(b.getPath())) * 2;
-    int idealSpanScore = sgn(a.getIdealGoalTime() - b.getIdealGoalTime());
+    int idealCost = sgn(a.getIdealCost() - b.getIdealCost());
 
-    return mcaScore + pathSizeScore + idealSpanScore;
+    return mcaScore + pathSizeScore + idealCost;
 }
 
-TimeStep Assignment::computeIdealGoalTime(const Status &status) const{
+TimeStep Assignment::computeIdealCost(const Status &status) const{
     assert(!getWaypoints().empty());
-    TimeStep igt = 0;
+    TimeStep cost = 0;
     const auto& dm = status.getDistanceMatrix();
 
-    igt += dm.getDistance(getStartPosition(), getWaypoints().cbegin()->getPosition());
-
-    for(const auto& wp : getWaypoints()){
-        if(wp.getDemand() == Demand::DELIVERY) { igt += status.getTask(wp.getTaskIndex()).idealGoalTime; }
+    cost += dm.getDistance(getStartPosition(), getWaypoints().cbegin()->getPosition());
+    auto prevPos = getStartPosition();
+    for(const auto& wp: getWaypoints()){
+        if(wp.getDemand() == Demand::END){
+            break;
+        }
+        auto actualPos = wp.getPosition();
+        cost += dm.getDistance(prevPos, actualPos);
+        prevPos = actualPos;
     }
 
-    if(getWaypoints().size() >= 3) {
-        igt += dm.getDistance(getWaypoints().crbegin()->getPosition(), (std::next(getWaypoints().crbegin()))->getPosition());
-    }
-
-    return igt;
-}
-
-TimeStep Assignment::getIdealGoalTime() const {
-    return idealGoalTime;
+    return cost;
 }
 
 Assignment &Assignment::operator=(const PathWrapper &otherPW) {

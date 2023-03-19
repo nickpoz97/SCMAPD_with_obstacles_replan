@@ -59,20 +59,16 @@ public:
     // this should be called when waypoints and/or constraints are changed
     [[nodiscard]] bool internalUpdate(const Status &status);
 
-    [[nodiscard]] TimeStep getIdealGoalTime() const;
-
     Assignment& operator=(const PathWrapper& otherPW);
 private:
     int index;
     int capacity;
 
-    int idealGoalTime = 0;
-
     TimeStep oldTTD = 0;
 
     [[nodiscard]] TimeStep getActualTTD() const;
 
-    TimeStep computeIdealGoalTime(const Status &status) const;
+    TimeStep computeIdealCost(const Status &status) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

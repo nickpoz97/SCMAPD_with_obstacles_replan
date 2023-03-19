@@ -188,3 +188,13 @@ int PathWrapper::randomTaskId(int magicNumber) const {
 
     return *shuffled_tasks.begin();
 }
+
+TimeStep PathWrapper::getIdealCost() const {
+    return idealCost;
+}
+
+TimeStep PWsVector::getIdealCost() const {
+    return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
+        return sum += pW.getIdealCost();
+    });
+}

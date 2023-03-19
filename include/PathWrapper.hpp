@@ -29,6 +29,7 @@ public:
 
     PathWrapper& operator=(const PathWrapper& other) = default;
     PathWrapper& operator=(PathWrapper&& other) = default;
+    [[nodiscard]] TimeStep getIdealCost() const;
 private:
     Path path;
     WaypointsList waypoints;
@@ -43,6 +44,7 @@ private:
                                             WaypointsList::iterator newPickupWpIt) const ;
 protected:
     std::unordered_set<int> satisfiedTasksIds;
+    int idealCost = 0;
 
     void
     insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
@@ -57,6 +59,7 @@ public:
     [[nodiscard]] TimeStep getSpan(int agentId) const;
     [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
     [[nodiscard]] const Path& getPath(int agentId) const;
+    [[nodiscard]] TimeStep getIdealCost() const;
 };
 
 struct ExtractedPath{

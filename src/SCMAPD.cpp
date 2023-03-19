@@ -81,7 +81,8 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
             {"ttt", pathWrappers.getTTT()},
             {"ttd", pathWrappers.getTTD()},
             {"status_hash", hash_value(status)},
-            {"conflicts", status.checkAllConflicts()}
+            {"conflicts", status.checkAllConflicts()},
+            {"ideal_ttt", pathWrappers.getIdealCost()}
     };
 
     fmt::print("{}", j.dump(1));
