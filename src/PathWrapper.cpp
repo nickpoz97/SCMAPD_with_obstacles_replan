@@ -1,3 +1,9 @@
+#include "MAPF/PathFinder.hpp"
+#include "Assignment.hpp"
+#include <set>
+#include <fstream>
+#include <cassert>
+#include <array>
 #include <PathWrapper.hpp>
 #include <utility>
 #include <random>
@@ -197,4 +203,9 @@ TimeStep PWsVector::getIdealCost() const {
     return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
         return sum += pW.getIdealCost();
     });
+}
+
+TimeStep PathWrapper::getActualTTD() const{
+    assert(!getWaypoints().empty());
+    return getWaypoints().crbegin()->getCumulatedDelay();
 }

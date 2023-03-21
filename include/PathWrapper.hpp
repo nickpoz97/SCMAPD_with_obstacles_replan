@@ -30,6 +30,7 @@ public:
     PathWrapper& operator=(const PathWrapper& other) = default;
     PathWrapper& operator=(PathWrapper&& other) = default;
     [[nodiscard]] TimeStep getIdealCost() const;
+    [[nodiscard]] TimeStep getActualTTD() const;
 private:
     Path path;
     WaypointsList waypoints;

@@ -57,16 +57,15 @@ public:
     friend int operator<=>(const Assignment &a, const Assignment &b);
 
     // this should be called when waypoints and/or constraints are changed
-    [[nodiscard]] bool internalUpdate(const Status &status);
+    [[nodiscard]] bool internalUpdate(const Status &status, bool updateMCA);
 
     Assignment& operator=(const PathWrapper& otherPW);
 private:
     int index;
     int capacity;
+    int mca = 0;
 
     TimeStep oldTTD = 0;
-
-    [[nodiscard]] TimeStep getActualTTD() const;
 
     TimeStep computeIdealCost(const Status &status) const;
 };

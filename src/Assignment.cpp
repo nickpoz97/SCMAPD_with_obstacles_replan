@@ -5,6 +5,7 @@
 
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
+#include "PathWrapper.hpp"
 
 Assignment::Assignment(const AgentInfo &agentInfo) :
         PathWrapper{{agentInfo.startPos}, {Waypoint{agentInfo.startPos}}, {}},
@@ -17,7 +18,7 @@ Assignment::Assignment(const AgentInfo &agentInfo) :
 }
 
 TimeStep Assignment::getMCA() const {
-    return getActualTTD() - oldTTD;
+    return mca;
 }
 
 int Assignment::getAgentId() const {
@@ -43,11 +44,12 @@ Assignment::addTask(int taskId, const Status &status) {
 
     insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
 
-    if(!internalUpdate(status)){
+    if(!internalUpdate(status, true)){
         return false;
     }
 
     oldTTD = tmpOldTTD;
+    mca = getActualTTD() - oldTTD;
     idealCost = computeIdealCost(status);
 
     satisfiedTasksIds.emplace(taskId);
@@ -81,19 +83,17 @@ Assignment::addTask(int taskId, const Status &status) {
     return true;
 }
 
-TimeStep Assignment::getActualTTD() const{
-    assert(!getWaypoints().empty());
-    return getWaypoints().crbegin()->getCumulatedDelay();
-}
-
 bool
-Assignment::internalUpdate(const Status &status) {
+Assignment::internalUpdate(const Status &status, bool updateMCA) {
     auto result{PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index)};
     if(!result.has_value()){
         return false;
     }
 
     pathAndWaypointsUpdate(std::move(result.value()));
+    if(updateMCA){
+        mca = getActualTTD() - status.getPathWrappers()[index].getActualTTD();
+    }
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));
