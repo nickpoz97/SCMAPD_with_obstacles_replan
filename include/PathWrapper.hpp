@@ -42,6 +42,8 @@ private:
 
     [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
                                             WaypointsList::iterator newPickupWpIt) const ;
+
+    [[nodiscard]] TimeStep computeApproxSpan(const DistanceMatrix &dm, WaypointsList::const_iterator startIt) const;
 protected:
     std::unordered_set<int> satisfiedTasksIds;
     int idealCost = 0;

@@ -103,7 +103,8 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
     auto bestPickupIt = waypoints.begin();
     auto bestDeliveryIt = bestPickupIt;
 
-    TimeStep bestApproxTTD = std::numeric_limits<decltype(bestApproxTTD)>::max();
+    TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
+    TimeStep bestApproxSpan = std::numeric_limits<TimeStep>::max();
 
     // search for best position for task start and goal
     for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
@@ -111,10 +112,14 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
             auto [newStartIt, newGoalIt] = insertNewWaypoints(newTask, wpPickupIt, wpDeliveryIt);
             if(checkCapacityConstraint(agentCapacity)){
                 auto newApproxTtd = computeApproxTTD(dm, tasksVector, newStartIt);
-                if(newApproxTtd < bestApproxTTD){
+                std::optional<TimeStep> approxSpan{};
+                if(newApproxTtd < bestApproxTTD || newApproxTtd == bestApproxTTD
+                    && (approxSpan = computeApproxSpan(dm, wpPickupIt)).value() < bestApproxSpan)
+                {
                     bestApproxTTD = newApproxTtd;
                     bestPickupIt = wpPickupIt;
                     bestDeliveryIt = wpDeliveryIt;
+                    bestApproxSpan = approxSpan.value_or(computeApproxSpan(dm, wpPickupIt));
                 }
             }
             restorePreviousWaypoints(newStartIt, newGoalIt);
@@ -191,6 +196,19 @@ int PathWrapper::randomTaskId(int magicNumber) const {
 
 TimeStep PathWrapper::getIdealCost() const {
     return idealCost;
+}
+
+TimeStep PathWrapper::computeApproxSpan(const DistanceMatrix &dm, WaypointsList::const_iterator startIt) const {
+    auto span = 0;
+    auto prevPos = startIt == waypoints.cbegin() ? getInitialPos() : std::prev(startIt)->getPosition();
+
+    for (auto it = startIt ; it->getDemand() != Demand::END ; ++it){
+        auto actualPos = startIt->getPosition();
+        span += dm.getDistance(prevPos, actualPos);
+        prevPos = actualPos;
+    }
+
+    return span;
 }
 
 TimeStep PWsVector::getIdealCost() const {

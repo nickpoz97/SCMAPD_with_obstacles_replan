@@ -105,7 +105,7 @@ int operator<=>(const Assignment &a, const Assignment &b) {
     auto sgn = [](auto val){return (0 < val) - (val < 0);};
 
     int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
-    int pathSizeScore = sgn(std::ssize(a.getPath()) - std::ssize(b.getPath())) * 2;
+    int pathSizeScore = sgn(a.getLastDeliveryTimeStep() - b.getLastDeliveryTimeStep()) * 2;
     int idealCost = sgn(a.getIdealCost() - b.getIdealCost());
 
     return mcaScore + pathSizeScore + idealCost;
