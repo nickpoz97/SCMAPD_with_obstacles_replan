@@ -101,7 +101,6 @@ bool BigH::update(int k, int taskId, const Status &status) {
 
         // atomic
         (*sHHandle).addTaskToAgent(k, taskId, status);
-        heap.update(sHHandle);
         (*sHHandle).updateTopElements(status);
         heap.update(sHHandle);
 

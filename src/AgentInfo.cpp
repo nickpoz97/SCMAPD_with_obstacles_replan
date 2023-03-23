@@ -22,22 +22,20 @@ loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm
     std::getline(fs, line);
     size_t nAgents = std::stoi(line);
 
-    std::vector<AgentInfo> agents;
-    agents.reserve(nAgents);
+    std::vector<AgentInfo> agentInfos;
+    agentInfos.reserve(nAgents);
 
     for (int i = 0 ; i < nAgents; ++i){
+        // row,col
         std::getline(fs, line);
 
-        std::string xCoordString, yCoordString;
+        std::string colString, rowString;
         auto coordStream = std::stringstream(line);
-        std::getline(coordStream, yCoordString, horizontalSep);
-        std::getline(coordStream, xCoordString, horizontalSep);
+        std::getline(coordStream, rowString, horizontalSep);
+        std::getline(coordStream, colString, horizontalSep);
 
-        //CompressedCoord cc = DistanceMatrix::from2Dto1D(std::stoi(xCoordString), std::stoi(yCoordString), nCols);
-
-        Coord position{std::stoi(yCoordString), std::stoi(xCoordString)};
-        agents.push_back({dm.from2Dto1D(position), capacity, i});
+        agentInfos.push_back({dm.from2Dto1D(std::stoi(rowString), std::stoi(colString)), capacity, i});
     }
 
-    return agents;
+    return agentInfos;
 }

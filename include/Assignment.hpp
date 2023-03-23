@@ -28,17 +28,11 @@ public:
      */
     explicit Assignment(const AgentInfo &agentInfo);
 
-    /// @return agent capacity
-    [[maybe_unused]] [[nodiscard]] int getCapacity() const;
-
     /// @return difference between actual TTD and TTD before last task addition to path
     [[nodiscard]] TimeStep getMCA() const;
 
     /// @return agent numerical id
     [[nodiscard]] int getAgentId() const;
-
-    /// @return agent initial position
-    [[nodiscard]] CompressedCoord getStartPosition() const;
 
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
@@ -62,12 +56,9 @@ public:
     Assignment& operator=(const PathWrapper& otherPW);
 private:
     int index;
-    int capacity;
     int mca = 0;
 
     TimeStep oldTTD = 0;
-
-    TimeStep computeIdealCost(const Status &status) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

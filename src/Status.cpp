@@ -155,9 +155,7 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
         agents,
         std::back_inserter(pWs),
         [](const AgentInfo& a) -> PathWrapper {
-            return {
-                {a.startPos},{Waypoint{a.startPos}},{}
-            };
+            return PathWrapper{a};
         }
     );
     return pWs;
@@ -215,7 +213,7 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
             }
             switch (mt) {
                 case Metric::ARRIVAL_TIME:
-                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getRealArrivalTime());
                     break;
                 case Metric::DELAY:
                     orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));

@@ -1,8 +1,6 @@
 #include "Waypoint.hpp"
 #include "Task.hpp"
 
-Waypoint::operator CompressedCoord() const {return position;}
-
 Waypoint::operator std::string() const {
     auto taskString = taskIndex.has_value() ? fmt::format("taskId: {}", taskIndex.value()) : "no task";
     return fmt::format("[pos: {}, demand: {}, {}]",
@@ -12,30 +10,18 @@ Waypoint::operator std::string() const {
 Waypoint::Waypoint(CompressedCoord position, Demand demand, int taskIndex) :
     position(position),
     demand(demand),
-    taskIndex(taskIndex) {}
+    taskIndex(taskIndex) {
+    assert(demand != Demand::END);
+}
 
 TimeStep
-Waypoint::update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay) {
-    arrivalTime = newArrivalTime;
-    auto localDelay = 0;
-    if (demand == Demand::DELIVERY) {
-        localDelay = arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
-    }
-#ifndef NDEBUG
-    if(localDelay < 0) { throw std::runtime_error("negative delay"); }
-#endif
-    cumulatedDelay = previousCumulatedDelay + localDelay;
-
-    return cumulatedDelay;
+Waypoint::update(TimeStep newArrivalTime) {
+    realArrivalTime = newArrivalTime;
+    return realArrivalTime.value();
 }
 
-TimeStep Waypoint::getCumulatedDelay() const {
-    return cumulatedDelay;
-}
-
-TimeStep Waypoint::getArrivalTime() const {
-    assert(arrivalTime.has_value());
-    return arrivalTime.value();
+TimeStep Waypoint::getRealArrivalTime() const {
+    return realArrivalTime.value();
 }
 
 Waypoint::Waypoint(CompressedCoord robotStartPosition) :
@@ -53,12 +39,15 @@ Demand Waypoint::getDemand() const {
 }
 
 int Waypoint::getTaskIndex() const {
-    assert(taskIndex.has_value());
     return taskIndex.value();
 }
 
 TimeStep Waypoint::getDelay(const std::vector<Task>& tasks) const {
-    return arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+    return realArrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+}
+
+void Waypoint::reset() {
+    realArrivalTime.reset();
 }
 
 Waypoint getTaskPickupWaypoint(const Task& task){
@@ -93,10 +82,14 @@ nlohmann::json getWpsJson(const WaypointsList &wpList, const DistanceMatrix &dm)
         j.push_back({
             {"coords", static_cast<json>(dm.from1Dto2D(wp.getPosition())).dump()},
             {"demand", wp.getDemand()},
-            {"arrival_time", wp.getArrivalTime()},
+            {"arrival_time", wp.getRealArrivalTime()},
             {"task_id", wp.getTaskIndex()}
         });
     }
 
     return j;
+}
+
+void WaypointsList::reset() {
+    std::for_each(begin(), end(), [](Waypoint& wp){wp.reset();});
 }

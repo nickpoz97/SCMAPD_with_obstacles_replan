@@ -5,11 +5,12 @@
 #include "Coord.hpp"
 #include "Waypoint.hpp"
 #include "NewTypes.hpp"
+#include "AgentInfo.hpp"
 
 struct PathWrapper{
 public:
     PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
-    PathWrapper() = default;
+    explicit PathWrapper(const AgentInfo& agentInfo);
     PathWrapper(const PathWrapper&) = default;
     PathWrapper(PathWrapper&&) = default;
 
@@ -35,21 +36,22 @@ private:
     Path path;
     WaypointsList waypoints;
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, WaypointsList::iterator waypointStart,
-                                                                                   WaypointsList::iterator waypointGoal);
-    void restorePreviousWaypoints(WaypointsList::iterator waypointStart, WaypointsList::iterator waypointGoal);
-
-    bool checkCapacityConstraint(int capacity) const;
+    bool checkCapacityConstraint() const;
 
     [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                            WaypointsList::iterator newPickupWpIt) const ;
+                                            std::_List_const_iterator<Waypoint> newPickupWpIt) const ;
 protected:
+    int capacity{};
     std::unordered_set<int> satisfiedTasksIds;
-    int idealCost = 0;
+    TimeStep idealCost{};
+    TimeStep ttd{};
+    TimeStep realCost{};
 
     void
-    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                        int agentCapacity);
+    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector);
+
+    TimeStep computeIdealCost(const DistanceMatrix &dm) const;
+    TimeStep computeTTD(const std::vector<Task> &tasks) const;
 };
 
 class PWsVector : public std::vector<PathWrapper>{

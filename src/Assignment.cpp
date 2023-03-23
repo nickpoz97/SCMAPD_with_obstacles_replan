@@ -1,21 +1,15 @@
 #include <array>
 #include <cassert>
 #include <fstream>
-#include <set>
 
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
 #include "PathWrapper.hpp"
 
 Assignment::Assignment(const AgentInfo &agentInfo) :
-        PathWrapper{{agentInfo.startPos}, {Waypoint{agentInfo.startPos}}, {}},
-        index{agentInfo.index},
-        capacity{agentInfo.capacity}
+        PathWrapper{agentInfo},
+        index{agentInfo.index}
     {}
-
-[[maybe_unused]] int Assignment::getCapacity() const {
-    return capacity;
-}
 
 TimeStep Assignment::getMCA() const {
     return mca;
@@ -23,10 +17,6 @@ TimeStep Assignment::getMCA() const {
 
 int Assignment::getAgentId() const {
     return index;
-}
-
-CompressedCoord Assignment::getStartPosition() const {
-    return PathWrapper::getInitialPos();
 }
 
 bool Assignment::empty() const {
@@ -39,19 +29,13 @@ Assignment::addTask(int taskId, const Status &status) {
 #ifndef NDEBUG
     auto oldWaypointSize = getWaypoints().size();
 #endif
-    // safe for NoPathException
-    auto tmpOldTTD = getActualTTD();
-
-    insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
+    insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks());
 
     if(!internalUpdate(status, true)){
         return false;
     }
 
-    oldTTD = tmpOldTTD;
-    mca = getActualTTD() - oldTTD;
-    idealCost = computeIdealCost(status);
-
+    idealCost = computeIdealCost(status.getDistanceMatrix());
     satisfiedTasksIds.emplace(taskId);
 #ifndef NDEBUG
     assert(oldWaypointSize == getWaypoints().size() - 2);
@@ -85,15 +69,21 @@ Assignment::addTask(int taskId, const Status &status) {
 
 bool
 Assignment::internalUpdate(const Status &status, bool updateMCA) {
-    auto result{PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index)};
+    // safe for NoPathException
+    auto tmpOldTTD = getActualTTD();
+
+    auto result{PathFinder::multiAStar(getWaypoints(), getInitialPos(), status, index)};
     if(!result.has_value()){
         return false;
     }
 
     pathAndWaypointsUpdate(std::move(result.value()));
-    if(updateMCA){
-        mca = getActualTTD() - status.getPathWrappers()[index].getActualTTD();
-    }
+
+    ttd = computeTTD(status.getTasks());
+    realCost = std::next(getWaypoints().crbegin())->getRealArrivalTime();
+
+    oldTTD = tmpOldTTD;
+    mca = ttd - oldTTD;
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));
@@ -105,29 +95,10 @@ int operator<=>(const Assignment &a, const Assignment &b) {
     auto sgn = [](auto val){return (0 < val) - (val < 0);};
 
     int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
-    int pathSizeScore = sgn(std::ssize(a.getPath()) - std::ssize(b.getPath())) * 2;
+    int pathSizeScore = sgn(a.getLastDeliveryTimeStep() - a.getLastDeliveryTimeStep()) * 2;
     int idealCost = sgn(a.getIdealCost() - b.getIdealCost());
 
     return mcaScore + pathSizeScore + idealCost;
-}
-
-TimeStep Assignment::computeIdealCost(const Status &status) const{
-    assert(!getWaypoints().empty());
-    TimeStep cost = 0;
-    const auto& dm = status.getDistanceMatrix();
-
-    cost += dm.getDistance(getStartPosition(), getWaypoints().cbegin()->getPosition());
-    auto prevPos = getStartPosition();
-    for(const auto& wp: getWaypoints()){
-        if(wp.getDemand() == Demand::END){
-            break;
-        }
-        auto actualPos = wp.getPosition();
-        cost += dm.getDistance(prevPos, actualPos);
-        prevPos = actualPos;
-    }
-
-    return cost;
 }
 
 Assignment &Assignment::operator=(const PathWrapper &otherPW) {

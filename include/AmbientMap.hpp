@@ -22,6 +22,7 @@ enum class CellType: char {
 
 class AmbientMap {
 public:
+    // NORTH, EAST, SOUTH, WEST, HOLD
     static constexpr std::array<Direction,5> directionVector{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0, 0}}};
     static constexpr int nDirections = directionVector.size();
     static constexpr int getHoldDirectionIndex();

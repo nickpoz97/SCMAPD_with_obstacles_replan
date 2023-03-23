@@ -57,7 +57,7 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 #ifndef NDEBUG
         try {
 #endif
-            cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
+            w.update(t);
 
 #ifndef NDEBUG
         }

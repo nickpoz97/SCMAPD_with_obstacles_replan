@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include "AmbientMap.hpp"
@@ -16,6 +15,7 @@ std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::p
     int nRows = 0;
     while(std::getline(fs, line)){ ++nRows; }
 
+    // return to beginning of file
     fs.clear();
     fs.seekg(0);
 
@@ -28,15 +28,17 @@ std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::p
         std::vector<CellType> row;
         row.reserve(line.size());
 
+        // remove blank characters
         trim(line);
 
+        // endpoints are part of the floor
         auto charConverter = [](char c){
             if(c != static_cast<char>(CellType::ENDPOINT)){
                 return static_cast<CellType>(c);
             }
             return CellType::FLOOR;
         };
-        std::transform(line.cbegin(), line.cend(), std::back_inserter(row), charConverter);
+        std::ranges::transform(line, std::back_inserter(row), charConverter);
 
         grid.push_back(row);
     }
