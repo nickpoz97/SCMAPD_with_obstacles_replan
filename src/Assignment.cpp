@@ -1,7 +1,6 @@
 #include <array>
 #include <cassert>
 #include <fstream>
-#include <set>
 
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
@@ -17,15 +16,11 @@ Assignment::Assignment(const AgentInfo &agentInfo) :
 }
 
 TimeStep Assignment::getMCA() const {
-    return getActualTTD() - oldTTD;
+    return getTTD() - oldTTD;
 }
 
 int Assignment::getAgentId() const {
     return index;
-}
-
-CompressedCoord Assignment::getStartPosition() const {
-    return PathWrapper::getInitialPos();
 }
 
 bool Assignment::empty() const {
@@ -39,7 +34,7 @@ Assignment::addTask(int taskId, const Status &status) {
     auto oldWaypointSize = getWaypoints().size();
 #endif
     // safe for NoPathException
-    auto tmpOldTTD = getActualTTD();
+    auto tmpOldTTD = getTTD();
 
     insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
 
@@ -81,19 +76,16 @@ Assignment::addTask(int taskId, const Status &status) {
     return true;
 }
 
-TimeStep Assignment::getActualTTD() const{
-    assert(!getWaypoints().empty());
-    return getWaypoints().crbegin()->getCumulatedDelay();
-}
-
 bool
 Assignment::internalUpdate(const Status &status) {
-    auto result{PathFinder::multiAStar(getWaypoints(), getStartPosition(), status, index)};
+    auto result{PathFinder::multiAStar(getWaypoints(), getInitialPos(), status, index)};
     if(!result.has_value()){
         return false;
     }
 
     pathAndWaypointsUpdate(std::move(result.value()));
+
+    oldTTD = status.getPathWrappers().getTasksDelay(getAgentId());
 
     assert(!status.hasIllegalPositions(getPath()));
     assert(!status.checkPathWithStatus(getPath(), index));
@@ -104,11 +96,11 @@ int operator<=>(const Assignment &a, const Assignment &b) {
     // signum function
     auto sgn = [](auto val){return (0 < val) - (val < 0);};
 
-    int mcaScore = sgn(a.getMCA() - b.getMCA()) * 4;
-    int pathSizeScore = sgn(a.getLastDeliveryTimeStep() - b.getLastDeliveryTimeStep()) * 2;
+    int mcaScore = sgn(a.getMCA() - b.getMCA());
+    int pathSizeScore = sgn(a.getLastDeliveryTimeStep() - b.getLastDeliveryTimeStep());
     int idealCost = sgn(a.getIdealCost() - b.getIdealCost());
 
-    return mcaScore + pathSizeScore + idealCost;
+    return mcaScore * 4 + pathSizeScore * 2 + idealCost;
 }
 
 TimeStep Assignment::computeIdealCost(const Status &status) const{
@@ -116,8 +108,8 @@ TimeStep Assignment::computeIdealCost(const Status &status) const{
     TimeStep cost = 0;
     const auto& dm = status.getDistanceMatrix();
 
-    cost += dm.getDistance(getStartPosition(), getWaypoints().cbegin()->getPosition());
-    auto prevPos = getStartPosition();
+    cost += dm.getDistance(getInitialPos(), getWaypoints().cbegin()->getPosition());
+    auto prevPos = getInitialPos();
     for(const auto& wp: getWaypoints()){
         if(wp.getDemand() == Demand::END){
             break;

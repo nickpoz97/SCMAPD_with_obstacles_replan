@@ -213,6 +213,6 @@ TimeStep PathWrapper::computeApproxSpan(const DistanceMatrix &dm, WaypointsList:
 
 TimeStep PWsVector::getIdealCost() const {
     return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
-        return sum += pW.getIdealCost();
+        return sum + pW.getIdealCost();
     });
 }

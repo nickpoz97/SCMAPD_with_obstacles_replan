@@ -37,9 +37,6 @@ public:
     /// @return agent numerical id
     [[nodiscard]] int getAgentId() const;
 
-    /// @return agent initial position
-    [[nodiscard]] CompressedCoord getStartPosition() const;
-
     /// @return true if agent contains no waypoints
     [[nodiscard]] bool empty() const;
 
@@ -65,8 +62,6 @@ private:
     int capacity;
 
     TimeStep oldTTD = 0;
-
-    [[nodiscard]] TimeStep getActualTTD() const;
 
     TimeStep computeIdealCost(const Status &status) const;
 };
