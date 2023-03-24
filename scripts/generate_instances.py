@@ -2,7 +2,7 @@ import argparse
 import random
 import os
 
-from generate_overlapping_instances import gen_overlapping_instances
+from generate_overlapping_instances import gen_overlapping_instances, gen_paper_overlapping_instances
 
 class NoMorePositions(Exception):
 
@@ -17,9 +17,13 @@ class NoMorePositions(Exception):
         return f"{self.n_agents} agents + {self.n_tasks} tasks * 2 = {val} > {self.n_positions} available positions"
     
 
-def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap=True):
+def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap=True, paper=True):
     # extract possible positions for tasks and agents
     candidates = list()
+
+    #only used for paper
+    robot_candidates = list()
+    tasks_candidates = list()
 
     assert(os.path.isfile(grid_path))
     with open(grid_path, "r") as file:
@@ -32,6 +36,10 @@ def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap=Tr
             for coli, symbol in enumerate(l.strip()):
                 if symbol == 'G':
                     candidates.append((rowi, coli))
+                if symbol == 'R':
+                    robot_candidates.append((rowi, coli))
+                if symbol == 'T':
+                    tasks_candidates.append((rowi, coli))
                 if symbol == '@': 
                     grid[rowi][coli] = '@'
 
@@ -53,8 +61,10 @@ def gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap=Tr
             random.shuffle(candidates)
             agents_coords = candidates[:n_agents]
             tasks_coords = candidates[n_agents:n_agents + 2 * n_tasks]
-        else:
+        elif not paper:
             agents_coords, tasks_coords = gen_overlapping_instances(candidates, n_agents, n_tasks)
+        else:
+            agents_coords, tasks_coords = gen_paper_overlapping_instances(robot_candidates, tasks_candidates, n_agents, n_tasks)
 
         agents = ['\n' + stringify_coord(coord) for coord in agents_coords]
 
