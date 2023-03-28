@@ -5,7 +5,8 @@
 #include <queue>
 #include "MAPF/PathFinder.hpp"
 #include "MAPF/Node.hpp"
-#include "MAPF/ExploredSet.hpp"
+
+using NodeShrPtr = std::shared_ptr<Node>;
 
 static std::optional<std::list<CompressedCoord>> getPartialPath(
     const Status &status,
@@ -22,106 +23,116 @@ holdPosition(
     std::list<CompressedCoord> &pathList
 );
 
+template <>
+struct std::hash<NodeShrPtr> {
+    size_t operator()(const NodeShrPtr& node) const {
+        size_t seed = 0;
+        boost::hash_combine(seed, node->getLocation());
+        boost::hash_combine(seed, node->getGScore());
+        boost::hash_combine(seed, node->getTargetPosition());
+        return seed;
+    }
+};
+
+static void updateWaypointsStats(WaypointsList& waypointsList, const Path& path, const std::vector<Task>& tasksVector);
+
+using Frontier = std::priority_queue<
+    NodeShrPtr,
+    std::vector<NodeShrPtr>,
+    decltype([](const NodeShrPtr& a, const NodeShrPtr& b){return *a > *b;})
+>;
+
+using ExploredSet = std::unordered_set<
+    NodeShrPtr,
+    std::hash<NodeShrPtr>,
+    decltype([](const NodeShrPtr& a, const NodeShrPtr& b){return *a == *b;})
+>;
+
 std::optional<std::pair<Path, WaypointsList>>
 PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
     if(waypoints.empty()){
         throw std::runtime_error("No waypoints");
     }
 
+    // start position end end position should be the same
     if(waypoints.crbegin()->getDemand() != Demand::END || waypoints.crbegin()->getPosition() != agentLoc){
         throw std::runtime_error("Wrong end waypoint");
     }
 
-    std::list<CompressedCoord> pathList{agentLoc};
-
-    auto actualLoc = agentLoc;
-    TimeStep cumulatedDelay = 0;
-    TimeStep t = 0;
-
-    for(auto & w : waypoints){
-        auto goalLoc = w.getPosition();
-        auto partialPath = getPartialPath(status, agentId, actualLoc, goalLoc, t);
-
-        if(!partialPath.has_value()){
-            return std::nullopt;
-        }
-
-        // remove first pos (already in pathlist)
-        partialPath.value().pop_front();
-
-        pathList.splice(pathList.cend(), partialPath.value());
-
-        t = static_cast<int>(pathList.size()) - 1;
-        // old goal is new start position
-        actualLoc = goalLoc;
-#ifndef NDEBUG
-        try {
-#endif
-            cumulatedDelay = w.update(t, status.getTasks(), cumulatedDelay);
-
-#ifndef NDEBUG
-        }
-        catch (std::runtime_error& e){
-            throw std::runtime_error("runtime error in waypoint catched");
-        }
-#endif
-    }
-
-    return std::pair{Path{pathList.begin(), pathList.end()}, waypoints};
-}
-
-static std::optional<std::list<CompressedCoord>>
-getPartialPath(const Status &status, int agentId, CompressedCoord startLoc, CompressedCoord goalLoc, TimeStep t) {
-    ExploredSet exploredSet{};
-
-    const auto& dm = status.getDistanceMatrix();
-
-    using NodePtr = std::shared_ptr<Node>;
-
-    auto compareNodesPtr = [](const std::shared_ptr<Node>& nA, const std::shared_ptr<Node>& nB){
-        return *nA > *nB;
-    };
-
-    std::priority_queue<NodePtr, std::vector<NodePtr>, decltype(compareNodesPtr)> frontier;
-    frontier.emplace(new Node{startLoc, t, dm.getDistance(startLoc, goalLoc)});
-
-    const std::list<CompressedCoord> pathList{};
-
-    while (!frontier.empty()){
-        auto topNodePtr = frontier.top();
-        frontier.pop();
-
-        // do not explore this node
-        if(exploredSet.contains(*topNodePtr)){
-            continue;
-        }
-        exploredSet.insert(*topNodePtr);
-
-        // path found
-        if(topNodePtr->getLocation() == goalLoc){
-            return topNodePtr->getPathList();
-        }
-
-#ifndef NDEBUG
-        auto agentsSnapshot = status.getAgentsSnapshot(
-                agentId,
-                topNodePtr->getGScore(),
-                topNodePtr->getLocation()
+    std::list<CompressedCoord> pathList;
+    {
+        int i = 0;
+        // <order, location>
+        std::vector<std::pair<int, CompressedCoord>> goals;
+        goals.reserve(waypoints.size());
+        std::ranges::transform(
+            waypoints,
+            std::back_inserter(goals),
+            [&i](const Waypoint& wp) -> std::pair<int, CompressedCoord> {return {i++, wp.getPosition()};}
         );
 
-        auto targetSnapshots = status.getTargetSnapshot(startLoc, goalLoc, topNodePtr->getLocation());
-#endif
+        Frontier frontier;
+        const auto &dm = status.getDistanceMatrix();
 
-        auto neighbors = status.getValidNeighbors(agentId, topNodePtr->getLocation(), topNodePtr->getGScore(), true);
+        frontier.emplace(new Node{agentLoc, 0, dm, *goals.cbegin()});
+        ExploredSet exploredSet{};
 
-        auto nextT = topNodePtr->getGScore() + 1;
-        for(auto loc : neighbors){
-            if(!exploredSet.contains(loc, nextT)){
-                frontier.emplace(new Node{loc, nextT, dm.getDistance(loc, goalLoc), topNodePtr});
+        while (!frontier.empty()) {
+            const auto topNode = frontier.top();
+            frontier.pop();
+
+            // do not explore this node
+            if (exploredSet.contains(topNode)) {
+                continue;
+            }
+            exploredSet.insert(topNode);
+
+            // entire path found
+            if (topNode->getTargetPosition() == waypoints.crbegin()->getPosition() &&
+                topNode->getLocation() == waypoints.crbegin()->getPosition()) {
+                pathList = topNode->getPathList();
+                break;
+            }
+
+            //#ifndef NDEBUG
+            //        auto agentsSnapshot = status.getAgentsSnapshot(
+            //                agentId,
+            //                topNodePtr->getGScore(),
+            //                topNodePtr->getLocation()
+            //        );
+            //
+            //        auto targetSnapshots = status.getTargetSnapshot(startLoc, goalLoc, topNodePtr->getLocation());
+            //#endif
+
+            auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true);
+
+            auto nextT = topNode->getGScore() + 1;
+            for (auto loc: neighbors) {
+                NodeShrPtr neighbor {new Node{loc, nextT, dm, goals[topNode->getNextTargetIndex()], topNode.get()}};
+                if (!exploredSet.contains(neighbor)) {
+                    frontier.push(neighbor);
+                }
             }
         }
     }
-    return std::nullopt;
+
+    Path path{pathList.begin(), pathList.end()};
+    updateWaypointsStats(waypoints, path, status.getTasks());
+
+    return std::pair{path, waypoints};
+}
+
+static void updateWaypointsStats(WaypointsList& waypointsList, const Path& path, const std::vector<Task>& tasksVector){
+    TimeStep cumulatedDelay = 0;
+    auto wpIt = waypointsList.begin();
+
+    for(int t = 0 ; t < path.size(); ++t){
+        assert(wpIt != waypointsList.end());
+        if (wpIt->getPosition() == path[t]){
+            cumulatedDelay = wpIt->update(t, tasksVector, cumulatedDelay);
+            ++wpIt;
+        }
+    }
 }
 
 static void

@@ -11,7 +11,7 @@
 
 class Node {
 public:
-    Node(CompressedCoord loc, TimeStep t, int hScore, std::shared_ptr<Node> parentPtr = nullptr);
+    Node(CompressedCoord loc, TimeStep t, const DistanceMatrix& dm, const std::pair<int, CompressedCoord>& goal, const Node* parentPtr = nullptr);
 
     [[nodiscard]] int getFScore() const;
 
@@ -19,18 +19,27 @@ public:
 
     [[nodiscard]] std::list<CompressedCoord> getPathList() const;
 
-    friend int operator<=>(const Node& a, const Node& b);
+    friend int operator>(const Node& a, const Node& b);
 
     [[nodiscard]] CompressedCoord getLocation() const;
 
     [[nodiscard]] TimeStep getGScore() const;
 
-private:
-    const std::shared_ptr<Node> father;
-    const CompressedCoord location;
+    [[nodiscard]] int getNextTargetIndex() const;
 
-    const int g;
-    const int h;
+    [[nodiscard]] CompressedCoord getTargetPosition() const;
+
+    [[nodiscard]] int getTargetIndex() const;
+private:
+    const Node* father;
+    CompressedCoord location;
+    CompressedCoord targetPosition;
+    int targetIndex;
+
+    [[nodiscard]] bool targetReached() const;
+
+    int g;
+    int h;
 };
 
 

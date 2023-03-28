@@ -134,7 +134,7 @@ bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
     for(int t = 0 ; t < std::max(pA.size(), pB.size()) ; ++t) {
         bool nodeConflict =
                 pA[std::min(t, static_cast<int>(pA.size() - 1))] == pB[std::min(t, static_cast<int>(pB.size() - 1))];
-        bool edgeConflict = t < static_cast<int>(std::min(pA.size(), pB.size())) - 1 && pA[t] == pB[t + 1] && pA[t + 1] == pB[t];
+        bool edgeConflict = t < std::min(std::ssize(pA), std::ssize(pB)) - 1 && pA[t] == pB[t + 1] && pA[t + 1] == pB[t];
 
         if(nodeConflict || edgeConflict){
             return true;
