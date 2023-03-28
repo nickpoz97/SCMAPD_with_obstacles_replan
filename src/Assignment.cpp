@@ -98,7 +98,7 @@ int operator<=>(const Assignment &a, const Assignment &b) {
 
     int mcaScore = sgn(a.getMCA() - b.getMCA());
     int pathSizeScore = sgn(a.getLastDeliveryTimeStep() - b.getLastDeliveryTimeStep());
-    int idealCost = sgn(a.getIdealCost() - b.getIdealCost());
+    int idealCost = sgn(a.getIdealTTD() - b.getIdealTTD());
 
     return mcaScore * 4 + pathSizeScore * 2 + idealCost;
 }

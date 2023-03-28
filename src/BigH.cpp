@@ -4,7 +4,6 @@
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){
-        // todo not tested
         case Heuristic::RMCA_A:
             return [](const SmallH& a, const SmallH& b) -> bool {
                 auto getVal = [](const SmallH& sH){
@@ -20,7 +19,6 @@ SmallHComp BigH::getComparator(Heuristic h) {
 
                 return aVal < bVal || (aVal == bVal && a.getTopAssignment() > b.getTopAssignment());
             };
-        // todo not tested
         case Heuristic::RMCA_R:
 
             return [](const SmallH& a, const SmallH& b) -> bool {
