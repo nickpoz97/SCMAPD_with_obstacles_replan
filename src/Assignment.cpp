@@ -36,7 +36,7 @@ Assignment::addTask(int taskId, const Status &status) {
     // safe for NoPathException
     auto tmpOldTTD = getTTD();
 
-    insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
+    idealTTD = insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
 
     if(!internalUpdate(status)){
         return false;

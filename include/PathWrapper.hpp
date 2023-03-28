@@ -30,6 +30,7 @@ public:
     PathWrapper& operator=(const PathWrapper& other) = default;
     PathWrapper& operator=(PathWrapper&& other) = default;
     [[nodiscard]] TimeStep getIdealCost() const;
+    [[nodiscard]] TimeStep getIdealTTD() const;
 private:
     Path path;
     WaypointsList waypoints;
@@ -41,14 +42,16 @@ private:
     bool checkCapacityConstraint(int capacity) const;
 
     [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                            WaypointsList::iterator newPickupWpIt) const ;
+                                            WaypointsList::const_iterator newPickupWpIt) const ;
 
     [[nodiscard]] TimeStep computeApproxSpan(const DistanceMatrix &dm, WaypointsList::const_iterator startIt) const;
+    [[nodiscard]] TimeStep computeIdealTTD(const DistanceMatrix &dm, const std::vector<Task> &tasks) const;
 protected:
     std::unordered_set<int> satisfiedTasksIds;
-    int idealCost = 0;
+    TimeStep idealCost = 0;
+    TimeStep idealTTD = 0;
 
-    void
+    TimeStep
     insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
                         int agentCapacity);
 };
@@ -62,6 +65,7 @@ public:
     [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
     [[nodiscard]] const Path& getPath(int agentId) const;
     [[nodiscard]] TimeStep getIdealCost() const;
+    [[nodiscard]] TimeStep getRelativeTTD() const;
 };
 
 struct ExtractedPath{

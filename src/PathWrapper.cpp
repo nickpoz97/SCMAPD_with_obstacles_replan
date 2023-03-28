@@ -89,15 +89,17 @@ void PathWrapper::pathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&update
     waypoints = std::move(updatedData.second);
 }
 
-void
+TimeStep
 PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
                                 int agentCapacity) {
     assert(waypoints.crend()->getDemand() == Demand::END);
 
+    // only end waypoint
     if(waypoints.size() == 1){
+        assert(waypoints.cbegin()->getDemand() == Demand::END);
         waypoints.push_front(getTaskDeliveryWaypoint(newTask));
         waypoints.push_front(getTaskPickupWaypoint(newTask));
-        return;
+        return computeIdealTTD(dm, tasksVector);
     }
 
     auto bestPickupIt = waypoints.begin();
@@ -126,6 +128,8 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
         }
     }
     insertNewWaypoints(newTask, bestPickupIt, bestDeliveryIt);
+
+    return computeIdealTTD(dm, tasksVector);
 }
 
 void PathWrapper::restorePreviousWaypoints(WaypointsList::iterator waypointStart,
@@ -143,7 +147,7 @@ std::pair<WaypointsList::iterator, WaypointsList::iterator> PathWrapper::insertN
 }
 
 TimeStep PathWrapper::computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                      WaypointsList::iterator newPickupWpIt) const{
+                                      WaypointsList::const_iterator newPickupWpIt) const{
 
     assert(newPickupWpIt != waypoints.end());
 
@@ -162,6 +166,7 @@ TimeStep PathWrapper::computeApproxTTD(const DistanceMatrix &dm, const std::vect
         prevArrivalTime = arrivalTime;
     }
 
+    assert(!(waypoints.size() == 3) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt));
     return ttd;
 }
 
@@ -211,8 +216,22 @@ TimeStep PathWrapper::computeApproxSpan(const DistanceMatrix &dm, WaypointsList:
     return span;
 }
 
+TimeStep PathWrapper::getIdealTTD() const {
+    return idealTTD;
+}
+
+TimeStep PathWrapper::computeIdealTTD(const DistanceMatrix &dm, const std::vector<Task> &tasks) const {
+    return computeApproxTTD(dm, tasks, waypoints.cbegin());
+}
+
 TimeStep PWsVector::getIdealCost() const {
     return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
         return sum + pW.getIdealCost();
+    });
+}
+
+TimeStep PWsVector::getRelativeTTD() const {
+    return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
+        return sum + pW.getTTD() - pW.getIdealTTD();
     });
 }
