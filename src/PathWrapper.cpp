@@ -151,9 +151,9 @@ TimeStep PathWrapper::computeApproxTTD(const DistanceMatrix &dm, const std::vect
 
     assert(newPickupWpIt != waypoints.end());
 
-    auto ttd = newPickupWpIt == getWaypoints().begin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
-    auto prevWpPos = newPickupWpIt == getWaypoints().begin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
-    auto prevArrivalTime = newPickupWpIt == getWaypoints().begin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
+    auto ttd = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
+    auto prevWpPos = newPickupWpIt == getWaypoints().cbegin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
+    auto prevArrivalTime = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != getWaypoints().end() ; ++wpIt){
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
@@ -166,7 +166,7 @@ TimeStep PathWrapper::computeApproxTTD(const DistanceMatrix &dm, const std::vect
         prevArrivalTime = arrivalTime;
     }
 
-    assert(!(waypoints.size() == 3) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt));
+    assert(!(waypoints.size() == 3) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt->getPosition()));
     return ttd;
 }
 
@@ -232,6 +232,6 @@ TimeStep PWsVector::getIdealCost() const {
 
 TimeStep PWsVector::getRelativeTTD() const {
     return std::accumulate(cbegin(), cend(), 0, [](TimeStep sum, const PathWrapper& pW){
-        return sum + pW.getTTD() - pW.getIdealTTD();
+        return (sum + pW.getTTD()) - pW.getIdealTTD();
     });
 }

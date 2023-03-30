@@ -35,14 +35,14 @@ Assignment::addTask(int taskId, const Status &status) {
 #endif
     // safe for NoPathException
     auto tmpOldTTD = getTTD();
-
-    idealTTD = insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
+    auto tmpIdealTTD = insertTaskWaypoints(status.getTask(taskId), status.getDistanceMatrix(), status.getTasks(), capacity);
 
     if(!internalUpdate(status)){
         return false;
     }
 
     oldTTD = tmpOldTTD;
+    idealTTD = tmpIdealTTD;
     idealCost = computeIdealCost(status);
 
     satisfiedTasksIds.emplace(taskId);
