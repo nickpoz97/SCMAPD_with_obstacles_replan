@@ -43,10 +43,13 @@ const Path& PWsVector::getPath(int agentId) const {
     return operator[](agentId).getPath();
 }
 
-bool PathWrapper::removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices) {
+bool
+PathWrapper::removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const DistanceMatrix &dm,
+                                     const std::vector<Task> &tasks) {
     waypoints.remove_if([&](const Waypoint& wp){
         return wp.getDemand() != Demand::END && rmvTasksIndices.contains(wp.getTaskIndex());}
     );
+    idealTTD = computeIdealTTD(dm, tasks);
     return std::erase_if(satisfiedTasksIds,[&](int taskId){return rmvTasksIndices.contains(taskId);});
 }
 

@@ -13,7 +13,8 @@ public:
     PathWrapper(const PathWrapper&) = default;
     PathWrapper(PathWrapper&&) = default;
 
-    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices);
+    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const DistanceMatrix &dm,
+                                 const std::vector<Task> &tasks);
     TimeStep getTTD() const;
     TimeStep getLastDeliveryTimeStep() const;
 

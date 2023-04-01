@@ -142,7 +142,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
-        pW.removeTasksAndWaypoints(chosenTasks);
+        pW.removeTasksAndWaypoints(chosenTasks, status.getDistanceMatrix(), status.getTasks());
 
         auto result {PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId)};
 

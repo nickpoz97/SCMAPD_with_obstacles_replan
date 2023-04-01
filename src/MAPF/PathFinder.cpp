@@ -16,13 +16,6 @@ static std::optional<std::list<CompressedCoord>> getPartialPath(
     TimeStep t
 );
 
-static void
-holdPosition(
-    const Status &status,
-    int agentId,
-    std::list<CompressedCoord> &pathList
-);
-
 template <>
 struct std::hash<NodeShrPtr> {
     size_t operator()(const NodeShrPtr& node) const {
@@ -103,8 +96,12 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
             //
             //        auto targetSnapshots = status.getTargetSnapshot(startLoc, goalLoc, topNodePtr->getLocation());
             //#endif
+            std::optional<CompressedCoord> finalGoalPos =
+                topNode->getTargetIndex() == std::ssize(goals) - 1 ?
+                    std::make_optional<>(topNode->getTargetPosition()) :
+                    std::nullopt;
 
-            auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true);
+            auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true, finalGoalPos);
 
             auto nextT = topNode->getGScore() + 1;
             for (auto loc: neighbors) {
@@ -135,20 +132,3 @@ static void updateWaypointsStats(WaypointsList& waypointsList, const Path& path,
     }
 }
 
-static void
-holdPosition(const Status &status, int agentId, std::list<CompressedCoord> &pathList) {
-    if(pathList.empty()){
-        return;
-    }
-
-    auto totalTimeSteps = status.getLongestPathSize();
-    TimeStep firstTimeStep = std::ssize(pathList) - 1;
-    auto loc = *pathList.rbegin();
-
-    // using t = 0 would not work
-    for(int t = firstTimeStep ; t < totalTimeSteps ; ++t){
-        auto nextLoc = status.holdOrAvailablePos(agentId, loc, t);
-        pathList.push_back(nextLoc);
-        loc = nextLoc;
-    }
-}

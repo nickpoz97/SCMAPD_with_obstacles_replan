@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <fmt/core.h>
-#include <fmt/format.h>
 #include <queue>
 #include <random>
 
@@ -35,7 +34,7 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
 }
 
 std::vector<CompressedCoord>
-Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const {
+Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction, std::optional<CompressedCoord> finalGoalPos) const {
     std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
@@ -44,7 +43,7 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
             continue;
         }
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !checkDynamicObstacle(agentId, c, result.value(), t)){
+        if(result.has_value() && !checkDynamicObstacle(agentId, c, result.value(), result == finalGoalPos, t)){
             neighbors.push_back(result.value());
         }
     }
@@ -52,22 +51,11 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
     return neighbors;
 }
 
-CompressedCoord Status::holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const{
-    // first check if agent can hold
-    if(checkDynamicObstacle(agentId, c, c, t)){
-        auto neighbors = getValidNeighbors(agentId, c, t, false);
-        if(!neighbors.empty()){
-            return neighbors[0];
-        }
-        throw std::runtime_error(fmt::format("Agent {} cannot move nor hold at timestep {}", agentId, t));
-    }
-    return c;
-}
-
-bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const{
+bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, bool isFinal,
+                                  TimeStep t1) const{
     assert(agentId >= 0 && agentId < getNAgents());
 
-    auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
+    auto predicate = [isFinal, t1, coord1, coord2](const PathWrapper& pW){
         const auto& p = pW.getPath();
 
         // if path is empty there are no conflicts
@@ -76,10 +64,10 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
         }
         auto t2 = std::min(t1 + 1, static_cast<int>(p.size()-1));
 
-        // todo check this
         bool nodeConflict = coord2 == p[t2];
         bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
-        bool baseConflict = coord2 == *p.cbegin();
+        bool baseConflict = isFinal &&
+            std::ranges::any_of(p.cbegin() + t2, p.cend(), [&](CompressedCoord c){return c == coord2;});
 
         return nodeConflict || edgeConflict || baseConflict;
     };

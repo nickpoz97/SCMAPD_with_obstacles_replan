@@ -18,7 +18,7 @@ public:
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
-    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
+    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction, std::optional<CompressedCoord> finalGoalPos) const;
 
     [[nodiscard]] const std::vector<Task> &getTasks() const;
 
@@ -33,7 +33,6 @@ public:
     static bool checkPathConflicts(const Path &pA, const Path &pB);
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
-    [[nodiscard]] CompressedCoord holdOrAvailablePos(int agentId, CompressedCoord c, TimeStep t) const;
     [[nodiscard]] TimeStep getLongestPathSize() const;
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
@@ -59,7 +58,8 @@ private:
 
     TimeStep longestPathSize = 0;
 
-    [[nodiscard]] bool checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;
+    [[nodiscard]] bool
+    checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, bool isFinal, TimeStep t1) const;
 
     static std::vector<PathWrapper> initializePathsWrappers(const std::vector<AgentInfo> &agents);
 };
