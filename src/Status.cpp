@@ -36,7 +36,7 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
 }
 
 std::vector<CompressedCoord>
-Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction, std::optional<CompressedCoord> finalGoalPos) const {
+Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const {
     std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
@@ -46,7 +46,7 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
         }
         auto result = ambient.movement(c, i);
         if(result.has_value() &&
-            (noConflicts || !checkDynamicObstacle(agentId, c, result.value(), result == finalGoalPos, t))){
+            (noConflicts || !checkDynamicObstacle(agentId, c, result.value(), t))){
             neighbors.push_back(result.value());
         }
     }
@@ -54,11 +54,11 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
     return neighbors;
 }
 
-bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, bool isFinal,
+bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2,
                                   TimeStep t1) const{
     assert(agentId >= 0 && agentId < getNAgents());
 
-    auto predicate = [isFinal, t1, coord1, coord2](const PathWrapper& pW){
+    auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
         const auto& p = pW.getPath();
 
         // if path is empty there are no conflicts
@@ -66,11 +66,11 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
             return false;
         }
         auto t2 = std::min(t1 + 1, static_cast<int>(p.size()-1));
+        assert(t2 > 0);
 
         bool nodeConflict = coord2 == p[t2];
         bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
-        bool baseConflict = isFinal &&
-            std::ranges::any_of(p.cbegin() + t2, p.cend(), [&](CompressedCoord c){return c == coord2;});
+        bool baseConflict = coord2 == *p.cbegin();
 
         return nodeConflict || edgeConflict || baseConflict;
     };

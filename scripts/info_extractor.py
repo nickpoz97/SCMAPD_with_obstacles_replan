@@ -3,6 +3,10 @@ import os
 import json
 
 def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str, heur: str, obj: str, metric: str, nt: int, method: str, cutoff: int):
+    if method == 'NO_LS':
+        method = 'WORST_TASKS' # placeholder
+        cutoff = 0
+    
     command = [
         exe_path,
         '--a', agents_file_path,

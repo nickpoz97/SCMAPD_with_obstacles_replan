@@ -62,7 +62,7 @@ int main(int argc, char* argv[]){
     };
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
-
+    
     SCMAPD idealScmapd{
         scmapd.getAmbient(), scmapd.getAgentsInfos(), scmapd.getTasks(), Heuristic::RMCA_R, true
     };

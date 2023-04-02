@@ -96,12 +96,8 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
             //
             //        auto targetSnapshots = status.getTargetSnapshot(startLoc, goalLoc, topNodePtr->getLocation());
             //#endif
-            std::optional<CompressedCoord> finalGoalPos =
-                topNode->getTargetIndex() == std::ssize(goals) - 1 ?
-                    std::make_optional<>(topNode->getTargetPosition()) :
-                    std::nullopt;
 
-            auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true, finalGoalPos);
+            auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true);
 
             auto nextT = topNode->getGScore() + 1;
             for (auto loc: neighbors) {
