@@ -9,10 +9,12 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks) :
+Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks,
+               bool noConflicts) :
         ambient(std::move(ambientMap)),
         tasksVector(std::move(tasks)),
-        pathsWrappers{initializePathsWrappers(agents)}
+        pathsWrappers{initializePathsWrappers(agents)},
+        noConflicts{noConflicts}
         {}
 
 const Task & Status::getTask(int i) const {
@@ -43,7 +45,8 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
             continue;
         }
         auto result = ambient.movement(c, i);
-        if(result.has_value() && !checkDynamicObstacle(agentId, c, result.value(), result == finalGoalPos, t)){
+        if(result.has_value() &&
+            (noConflicts || !checkDynamicObstacle(agentId, c, result.value(), result == finalGoalPos, t))){
             neighbors.push_back(result.value());
         }
     }
@@ -81,6 +84,10 @@ const DistanceMatrix& Status::getDistanceMatrix() const{
 }
 
 bool Status::checkPathWithStatus(const Path &path, int agentId) const{
+    if(noConflicts){
+        return false;
+    }
+
     auto predicate = [&](const PathWrapper& other){return checkPathConflicts(path, other.getPath());};
 
     return std::ranges::any_of(
@@ -96,6 +103,10 @@ bool Status::checkPathWithStatus(const Path &path, int agentId) const{
 }
 
 bool Status::checkAllConflicts() const {
+    if(noConflicts){
+        return false;
+    }
+
     for(int i = 0 ; i < pathsWrappers.size() ; ++i){
         for(int j = i+1 ; j < pathsWrappers.size() ; ++j){
             if(checkPathConflicts(i, j)){
@@ -349,4 +360,8 @@ std::string Status::getTargetSnapshot(CompressedCoord start, CompressedCoord end
     }
 
     return gridString;
+}
+
+const AmbientMap& Status::getAmbient() const{
+    return ambient;
 }

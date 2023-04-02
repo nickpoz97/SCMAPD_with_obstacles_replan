@@ -57,11 +57,18 @@ int main(int argc, char* argv[]){
 
     SCMAPD scmapd{
         loadData(
-            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, PathfindingStrategy::UNBOUNDED
+            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, false
         )
     };
+
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
-    scmapd.printResult(false);
+
+    SCMAPD idealScmapd{
+        scmapd.getAmbient(), scmapd.getAgentsInfos(), scmapd.getTasks(), Heuristic::RMCA_R, true
+    };
+    idealScmapd.solve(cutoffTime, nt, objective, mtd, metric);
+
+    scmapd.printResult(false, idealScmapd);
 
     //scmapd.printCheckMessage();
 

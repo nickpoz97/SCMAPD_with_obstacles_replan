@@ -5,10 +5,10 @@
 
 #include <nlohmann/json.hpp>
 
-SCMAPD::SCMAPD(AmbientMap &&ambientMap, std::vector<AgentInfo> &&agents, std::vector<Task> &&tasksVector,
-               Heuristic heuristic) :
+SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector,
+               Heuristic heuristic, bool noConflicts) :
     start{std::chrono::steady_clock::now()},
-    status(std::move(ambientMap), agents, std::move(tasksVector)),
+    status(std::move(ambientMap), agents, std::move(tasksVector), noConflicts),
     bigH{agents, status, heuristic},
     agentInfos{std::move(agents)}
     {
@@ -55,7 +55,7 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
     return true;
 }
 
-void SCMAPD::printResult(bool printAgentsInfo) const{
+void SCMAPD::printResult(bool printAgentsInfo, const SCMAPD& ideal) const{
     auto nAgents = status.getNAgents();
 
     const auto& pathWrappers = status.getPathWrappers();
@@ -87,8 +87,8 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
             {"ttd", pathWrappers.getTTD()},
             {"status_hash", hash_value(status)},
             {"conflicts", status.checkAllConflicts()},
-            {"ideal_ttt", pathWrappers.getIdealCost()},
-            {"relative_TTD", pathWrappers.getRelativeTTD()}
+            {"ideal_ttt", ideal.status.getPathWrappers().getTTT()},
+            {"relative_TTD", pathWrappers.getTTD() - ideal.status.getPathWrappers().getTTD()}
     };
 
     fmt::print("{}", j.dump(1));
@@ -170,9 +170,21 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
                 const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                Heuristic heuristic, PathfindingStrategy strategy) {
+                Heuristic heuristic, bool noConflicts) {
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
 
     return {std::move(ambientMap), loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
-            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic};
+            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic, noConflicts};
+}
+
+const std::vector<AgentInfo>& SCMAPD::getAgentsInfos() const{
+    return agentInfos;
+}
+
+const std::vector<Task>& SCMAPD::getTasks() const{
+    return status.getTasks();
+}
+
+const AmbientMap& SCMAPD::getAmbient() const{
+    return status.getAmbient();
 }

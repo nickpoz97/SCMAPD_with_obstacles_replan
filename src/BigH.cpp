@@ -26,13 +26,9 @@ SmallHComp BigH::getComparator(Heuristic h) {
                     auto fMCA = sH.getTopAssignment().getMCA();
                     auto sMCA = sH.getSecondTopAssignment().getMCA();
 
-                    assert(fMCA >= 0 && sMCA >= fMCA);
-                    if(fMCA == 0 && sMCA == 0){
-                        return 1.0f;
-                    }
-                    if(fMCA == 0 && sMCA >= 0){
-                        return std::numeric_limits<float>::infinity();
-                    }
+                    fMCA += fMCA >= 0 ? 1 : -1;
+                    sMCA += sMCA >= 0 ? 1 : -1;
+
                     return static_cast<float>(sMCA) / static_cast<float>(fMCA);
                 };
 

@@ -14,7 +14,7 @@
 
 class Status{
 public:
-    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks);
+    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks, bool noConflicts);
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
@@ -27,10 +27,8 @@ public:
     std::pair<int, int> update(ExtractedPath pathWrapper);
 
     [[nodiscard]] bool checkAllConflicts() const;
-    [[nodiscard]] bool checkPathConflicts(int i, int j) const;
     [[nodiscard]] bool checkPathWithStatus(const Path &path, int agentId) const;
 
-    static bool checkPathConflicts(const Path &pA, const Path &pB);
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
     [[nodiscard]] TimeStep getLongestPathSize() const;
@@ -46,6 +44,8 @@ public:
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);
 
+    [[nodiscard]] const AmbientMap& getAmbient() const;
+
     [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
     [[nodiscard]] VerbosePath toVerbosePath(int i) const;
 
@@ -55,6 +55,7 @@ private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;
     PWsVector pathsWrappers;
+    bool noConflicts;
 
     TimeStep longestPathSize = 0;
 
@@ -62,6 +63,9 @@ private:
     checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, bool isFinal, TimeStep t1) const;
 
     static std::vector<PathWrapper> initializePathsWrappers(const std::vector<AgentInfo> &agents);
+
+    [[nodiscard]] bool checkPathConflicts(int i, int j) const;
+    static bool checkPathConflicts(const Path &pA, const Path &pB);
 };
 
 inline std::size_t hash_value(const Status& s){
