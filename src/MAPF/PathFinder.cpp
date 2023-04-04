@@ -66,6 +66,7 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 
         Frontier frontier;
         const auto &dm = status.getDistanceMatrix();
+        int lastGoalIndex = std::ssize(goals) - 1;
 
         frontier.emplace(new Node{agentLoc, 0, dm, *goals.cbegin()});
         ExploredSet exploredSet{};
@@ -81,8 +82,9 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
             exploredSet.insert(topNode);
 
             // entire path found
-            if (topNode->getTargetPosition() == waypoints.crbegin()->getPosition() &&
-                topNode->getLocation() == waypoints.crbegin()->getPosition()) {
+            if (topNode->getTargetIndex() == lastGoalIndex &&
+                topNode->getLocation() == topNode->getTargetPosition() &&
+                !status.dockingConflict(topNode->getGScore(), topNode->getTargetPosition(), agentId)) {
                 pathList = topNode->getPathList();
                 break;
             }
@@ -101,7 +103,7 @@ PathFinder::multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const 
 
             auto nextT = topNode->getGScore() + 1;
             for (auto loc: neighbors) {
-                NodeShrPtr neighbor {new Node{loc, nextT, dm, goals[topNode->getNextTargetIndex()], topNode.get()}};
+                NodeShrPtr neighbor {new Node{loc, nextT, dm, goals[topNode->getNextTargetIndex(lastGoalIndex)], topNode.get()}};
                 if (!exploredSet.contains(neighbor)) {
                     frontier.push(neighbor);
                 }

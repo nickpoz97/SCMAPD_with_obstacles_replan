@@ -51,6 +51,8 @@ public:
 
     std::string getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const;
     std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
+
+    [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

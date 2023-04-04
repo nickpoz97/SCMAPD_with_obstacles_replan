@@ -25,7 +25,7 @@ public:
 
     [[nodiscard]] TimeStep getGScore() const;
 
-    [[nodiscard]] int getNextTargetIndex() const;
+    [[nodiscard]] int getNextTargetIndex(int lastIndex) const;
 
     [[nodiscard]] CompressedCoord getTargetPosition() const;
 

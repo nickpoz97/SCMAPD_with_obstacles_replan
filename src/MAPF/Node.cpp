@@ -50,8 +50,8 @@ bool Node::targetReached() const {
     return location == targetPosition;
 }
 
-int Node::getNextTargetIndex() const {
-    return targetReached() ? targetIndex + 1 : targetIndex;
+int Node::getNextTargetIndex(int lastIndex) const {
+    return targetReached() ? std::min(targetIndex + 1, lastIndex) : targetIndex;
 }
 
 CompressedCoord Node::getTargetPosition() const {

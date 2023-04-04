@@ -66,13 +66,12 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
             return false;
         }
         auto t2 = std::min(t1 + 1, static_cast<int>(p.size()-1));
-        assert(t2 > 0);
+        assert(t2 >= 0);
 
         bool nodeConflict = coord2 == p[t2];
         bool edgeConflict = t1 < (p.size() - 1) && coord1 == p[t2] && coord2 == p[t1];
-        bool baseConflict = coord2 == *p.cbegin();
 
-        return nodeConflict || edgeConflict || baseConflict;
+        return nodeConflict || edgeConflict;
     };
 
     return std::ranges::any_of(pathsWrappers.begin(), pathsWrappers.begin() + agentId, predicate) ||
@@ -364,4 +363,32 @@ std::string Status::getTargetSnapshot(CompressedCoord start, CompressedCoord end
 
 const AmbientMap& Status::getAmbient() const{
     return ambient;
+}
+
+bool Status::dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const {
+    if(noConflicts){
+        return false;
+    }
+
+    auto predicate = [sinceT, pos](const PathWrapper& pW){
+        const auto& path = pW.getPath();
+
+        // I am ahead of other path
+        if(sinceT >= path.size()){
+            return false;
+        }
+
+        return std::any_of(path.cbegin() + sinceT, path.cend(), [pos](CompressedCoord cc){return cc == pos;});
+    };
+
+    return std::any_of(
+        pathsWrappers.cbegin(),
+        pathsWrappers.cbegin() + agentId,
+        predicate
+    ) ||
+    std::any_of(
+        pathsWrappers.cbegin() + agentId + 1,
+        pathsWrappers.cend(),
+        predicate
+    );
 }
