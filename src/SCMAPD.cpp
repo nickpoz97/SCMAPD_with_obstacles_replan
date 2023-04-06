@@ -9,7 +9,7 @@ SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector
                bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
     status(std::move(ambientMap), agents, std::move(tasksVector), noConflicts),
-    bigH{agents, status, heuristic},
+    bigH{agents, status, heuristic, status.getAvailableTaskIds(0)},
     agentInfos{std::move(agents)},
     online{online}
     {
@@ -52,7 +52,13 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
+    int nextTasksIndex = bigH.getNHandledTasks();
+    TimeStep actualTimeStep = 0;
 
+
+    if(!findSolution()){
+        throw std::runtime_error("No solution");
+    }
 }
 
 bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
@@ -198,4 +204,16 @@ const std::vector<Task>& SCMAPD::getTasks() const{
 
 const AmbientMap& SCMAPD::getAmbient() const{
     return status.getAmbient();
+}
+
+std::vector<AgentInfo> SCMAPD::getAvailableAgents(TimeStep t) const {
+    std::vector<AgentInfo> availableAgents;
+
+    for(const auto& agentInfo : agentInfos){
+        if(status.isDocking(agentInfo.index, t)) {
+            availableAgents.push_back(agentInfo);
+        }
+    }
+
+    return availableAgents;
 }

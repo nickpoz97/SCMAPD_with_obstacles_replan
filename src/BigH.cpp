@@ -46,26 +46,21 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h) :
+BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::vector<int>& tasksIds) :
     v{h == Heuristic::MCA ? 1 : 2},
     heuristic{h},
     heap(getComparator(h)),
     heapHandles{}
     {
-        const auto& tasks = status.getTasks();
         heapHandles.reserve(agentInfos.size());
 
-        for(const auto& task : tasks){
-            auto taskId = task.index;
+        for(int taskId : tasksIds){
+            // only get tasks released at the beginning
+
             assert(taskId >= 0 && taskId < tasks.size());
             heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
         }
 
-        #ifndef NDEBUG
-        for(int i = 0 ; i < heapHandles.size() ; ++i){
-            assert((*heapHandles[i]).getTaskId() == i);
-        }
-        #endif
         assert(checkIntegrity());
         assert(checkOrder());
     }
@@ -161,4 +156,8 @@ bool BigH::checkIntegrity() const{
 void BigH::clear() {
     heap.clear();
     heapHandles.clear();
+}
+
+int BigH::getNHandledTasks() const {
+    return static_cast<int>(heap.size());
 }

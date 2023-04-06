@@ -11,7 +11,7 @@ using BigHHandles = std::unordered_map<int, BigHHeap::handle_type>;
 
 class BigH {
 public:
-    BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h);
+    BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::vector<int>& tasksIds);
 
     ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
@@ -22,6 +22,8 @@ public:
                      std::unordered_set<int> &&newTaskIndices);
 
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
+
+    int getNHandledTasks() const;
     void clear();
 private:
     int v;

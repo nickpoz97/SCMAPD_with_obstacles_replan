@@ -392,3 +392,26 @@ bool Status::dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) 
         predicate
     );
 }
+
+bool Status::isDocking(int agentId, TimeStep t) const {
+    TimeStep dockingTimeStep = std::ssize(pathsWrappers.getPath(agentId)) - 1;
+    return t >= dockingTimeStep;
+}
+
+std::vector<int> Status::getAvailableTaskIds(TimeStep t, int firstTaskId) const {
+    std::vector<int> taskIds;
+    assert(firstTaskId < tasksVector.size());
+
+    for(int i = firstTaskId ; i < std::ssize(tasksVector) ; ++i){
+        const auto& task = getTask(i);
+        if(task.releaseTime == t){
+            taskIds.push_back(task.index);
+        }
+        // nothing more to search
+        else if(task.releaseTime > t){
+            break;
+        }
+    }
+
+    return taskIds;
+}

@@ -45,6 +45,8 @@ private:
 
     void solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
     void solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
+
+    [[nodiscard]] std::vector<AgentInfo> getAvailableAgents(TimeStep t) const;
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
