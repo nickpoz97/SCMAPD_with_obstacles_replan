@@ -55,7 +55,7 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
     return true;
 }
 
-void SCMAPD::printResult(bool printAgentsInfo, const SCMAPD& ideal) const{
+void SCMAPD::printResult(bool printAgentsInfo) const{
     auto nAgents = status.getNAgents();
 
     const auto& pathWrappers = status.getPathWrappers();
@@ -87,8 +87,6 @@ void SCMAPD::printResult(bool printAgentsInfo, const SCMAPD& ideal) const{
             {"ttd", pathWrappers.getTTD()},
             {"status_hash", hash_value(status)},
             {"conflicts", status.checkAllConflicts()},
-            {"ideal_ttt", ideal.status.getPathWrappers().getTTT()},
-            {"relative_TTD", pathWrappers.getTTD() - ideal.status.getPathWrappers().getTTD()}
     };
 
     fmt::print("{}", j.dump(1));

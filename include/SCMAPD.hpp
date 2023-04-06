@@ -20,7 +20,7 @@ public:
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
-    void printResult(bool printAgentsInfo, const SCMAPD& ideal) const;
+    void printResult(bool printAgentsInfo) const;
 
     void printCheckMessage() const;
 private:

@@ -17,8 +17,11 @@ int main(int argc, char* argv[]){
     auto defaultGridPath = exeDir / "data" / "grid.txt";
     auto defaultDMPath = exeDir / "data" / "distance_matrix.npy";
 
+    bool ideal;
+
     // Declare the supported options.
     po::options_description desc("Allowed options");
+
     desc.add_options()
         ("help", "produce help message")
 
@@ -33,6 +36,7 @@ int main(int argc, char* argv[]){
         ("cutoff", po::value<int>()->default_value(10), "optimization threshold in seconds")
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
+        ("ideal", po::bool_switch(&ideal)->default_value(false), "ideal mode")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -57,18 +61,13 @@ int main(int argc, char* argv[]){
 
     SCMAPD scmapd{
         loadData(
-            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, false
+            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, ideal
         )
     };
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
-    
-    SCMAPD idealScmapd{
-        scmapd.getAmbient(), scmapd.getAgentsInfos(), scmapd.getTasks(), Heuristic::RMCA_R, true
-    };
-    idealScmapd.solve(cutoffTime, nt, objective, mtd, metric);
 
-    scmapd.printResult(false, idealScmapd);
+    scmapd.printResult(false);
 
     //scmapd.printCheckMessage();
 
