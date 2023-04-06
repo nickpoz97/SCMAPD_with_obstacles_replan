@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 struct Task {
-    Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm);
+    Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm, const TimeStep releaseTime = 0);
 
     const CompressedCoord startLoc;
     const CompressedCoord goalLoc;
@@ -26,6 +26,12 @@ private:
     static int getNextId();
 };
 
-std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep=',');
+std::vector<Task> loadTasks(
+    const std::filesystem::path &tasksFilePath,
+    const DistanceMatrix &dm,
+    char horizontalSep=',',
+    bool isNumerator = true,
+    int frequency = 0
+);
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP

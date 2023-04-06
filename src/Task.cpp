@@ -21,10 +21,10 @@ Task::operator std::string() const {
     );
 }
 
-Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm) :
+Task::Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix &dm, const TimeStep releaseTime) :
     startLoc{startLoc},
     goalLoc{goalLoc},
-    releaseTime{},
+    releaseTime{releaseTime},
     index{getNextId()},
     idealGoalTime{releaseTime + dm.getDistance(startLoc, goalLoc)}
 {}
@@ -36,7 +36,7 @@ int Task::getNextId() {
     return newId;
 }
 
-std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep){
+std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep, bool isNumerator, int frequency){
     std::ifstream fs (tasksFilePath, std::ios::in);
 
     if(!fs.is_open()){
@@ -54,6 +54,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const Di
 
     for (int i = 0 ; i < nTasks ; ++i){
         std::getline(fs, line);
+        TimeStep releaseTime = (frequency == 0) ? 0 : (isNumerator ? i / frequency : i * frequency);
 
         std::stringstream taskString{line};
         std::string value;
@@ -70,7 +71,7 @@ std::vector<Task> loadTasks(const std::filesystem::path &tasksFilePath, const Di
         std::getline(taskString, value, horizontalSep);
         int xEnd = std::stoi(value);
 
-        tasks.emplace_back(dm.from2Dto1D({yBegin, xBegin}), dm.from2Dto1D(yEnd, xEnd), dm);
+        tasks.emplace_back(dm.from2Dto1D({yBegin, xBegin}), dm.from2Dto1D(yEnd, xEnd), dm, releaseTime);
     }
 
     return tasks;

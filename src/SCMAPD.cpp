@@ -5,17 +5,26 @@
 
 #include <nlohmann/json.hpp>
 
-SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector,
-               Heuristic heuristic, bool noConflicts) :
+SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector, Heuristic heuristic,
+               bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
     status(std::move(ambientMap), agents, std::move(tasksVector), noConflicts),
     bigH{agents, status, heuristic},
-    agentInfos{std::move(agents)}
+    agentInfos{std::move(agents)},
+    online{online}
     {
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
+void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
+    if(online){
+        solveOnline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
+        return;
+    }
+    solveOffline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
+}
+
+void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     if(!findSolution()){
         throw std::runtime_error("No solution");
     }
@@ -40,6 +49,10 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
+}
+
+void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
+
 }
 
 bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
@@ -172,7 +185,7 @@ SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
 
     return {std::move(ambientMap), loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
-            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic, noConflicts};
+            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic, noConflicts, false};
 }
 
 const std::vector<AgentInfo>& SCMAPD::getAgentsInfos() const{

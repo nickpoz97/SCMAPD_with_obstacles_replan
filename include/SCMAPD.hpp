@@ -11,8 +11,8 @@
 
 class SCMAPD {
 public:
-    SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector,
-           Heuristic heuristic, bool noConflicts);
+    SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector, Heuristic heuristic,
+           bool noConflicts, bool online);
 
     [[nodiscard]] const std::vector<AgentInfo>& getAgentsInfos() const;
     [[nodiscard]] const std::vector<Task>& getTasks() const;
@@ -33,6 +33,7 @@ private:
     BigH bigH;
 
     const std::vector<AgentInfo> agentInfos;
+    bool online;
 
     [[nodiscard]] bool findSolution();
 
@@ -41,6 +42,9 @@ private:
     [[nodiscard]] bool removeTasks(const std::unordered_set<int> &chosenTasks);
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
+
+    void solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
+    void solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 };
 
 SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
