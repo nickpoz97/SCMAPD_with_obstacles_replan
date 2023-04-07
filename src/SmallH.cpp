@@ -1,14 +1,14 @@
 #include <algorithm>
 #include "SmallH.hpp"
 
-SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
-               const PWsVector &pWs) :
+SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
     taskId{taskId},
     v{v},
     heap{},
     heapHandles{}
 {
-    assert(pWs.empty() || pWs.size() == agentsInfos.size());
+    const auto& pWs = status.getPathWrappers();
+    assert(!pWs.empty() && pWs.size() == agentsInfos.size());
 
     heapHandles.reserve(agentsInfos.size());
 
@@ -17,9 +17,7 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
 
         auto handle = heap.emplace(aInfo);
 
-        if(!pWs.empty()){
-            (*handle) = pWs[agentIndex];
-        }
+        *handle = pWs[agentIndex];
 
         if(!(*handle).addTask(taskId, status)){
             heap.erase(handle);

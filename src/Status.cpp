@@ -415,3 +415,7 @@ std::vector<int> Status::getAvailableTaskIds(TimeStep t, int firstTaskId) const 
 
     return taskIds;
 }
+
+bool Status::noMoreTasks(int nextTasksIndex) const {
+    return nextTasksIndex == tasksVector.size();
+}

@@ -134,18 +134,19 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
 }
 
 void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &status,
-                       std::unordered_set<int> &&newTaskIndices) {
-    const auto& pathsWrapper = status.getPathWrappers();
+                       const std::unordered_set<int> &newTaskIndices) {
+    heapHandles.reserve(heapHandles.size() + newTaskIndices.size());
 
-    for (int taskId : newTaskIndices){
+    for(int taskId : newTaskIndices){
         // if tha UTI contains it this mean you re-added a task
         // this exploits the fact we should not have index value overflow
         assert(!heapHandles.contains(taskId));
-
-        heapHandles[taskId] = heap.emplace(agentInfos, taskId, v, status, pathsWrapper);
+        assert(taskId >= 0 && taskId < status.getTasks().size());
+        heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
     }
-    assert(heap.size() == newTaskIndices.size());
+
     assert(checkIntegrity());
+    assert(checkOrder());
 }
 
 bool BigH::checkIntegrity() const{

@@ -12,8 +12,7 @@ using SmallHHandles = std::unordered_map<int, SmallHHeap::handle_type>;
 
 class SmallH {
 public:
-    SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status,
-           const PWsVector &pWs = {});
+    SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status);
 
     void updateTopElements(const Status &status);
     void addTaskToAgent(int k, int otherTaskId, const Status &status);

@@ -9,7 +9,6 @@
 struct PathWrapper{
 public:
     PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
-    PathWrapper() = default;
     PathWrapper(const PathWrapper&) = default;
     PathWrapper(PathWrapper&&) = default;
 
