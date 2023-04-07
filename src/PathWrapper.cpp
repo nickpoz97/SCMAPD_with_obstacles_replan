@@ -102,6 +102,7 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
         assert(waypoints.cbegin()->getDemand() == Demand::END);
         waypoints.push_front(getTaskDeliveryWaypoint(newTask));
         waypoints.push_front(getTaskPickupWaypoint(newTask));
+        assert(waypoints.crbegin()->getDemand() == Demand::END);
         return computeIdealTTD(dm, tasksVector);
     }
 
@@ -127,6 +128,7 @@ PathWrapper::insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, 
                     bestApproxSpan = approxSpan.value_or(computeApproxSpan(dm, wpPickupIt));
                 }
             }
+            assert(waypoints.crbegin()->getDemand() == Demand::END);
             restorePreviousWaypoints(newStartIt, newGoalIt);
         }
     }

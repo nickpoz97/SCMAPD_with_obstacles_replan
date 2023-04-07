@@ -22,6 +22,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
         return;
     }
     solveOffline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
+    assert(status.allTasksSatisfied());
 }
 
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {

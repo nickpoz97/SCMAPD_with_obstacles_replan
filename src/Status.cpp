@@ -419,3 +419,19 @@ std::vector<int> Status::getAvailableTaskIds(TimeStep t, int firstTaskId) const 
 bool Status::noMoreTasks(int nextTasksIndex) const {
     return nextTasksIndex == tasksVector.size();
 }
+
+bool Status::allTasksSatisfied() const {
+
+    // 0 means task not satysfied
+    // > 1 means tasks satysfied by more pWs
+    auto rightTaskCount = [this](const Task& task){
+        return std::count_if(
+            pathsWrappers.cbegin(),
+            pathsWrappers.cend(),
+            [&task](const PathWrapper& pW){return pW.getSatisfiedTasksIds().contains(task.index);}
+        ) == 1;
+    };
+
+
+    return std::ranges::all_of(tasksVector, rightTaskCount);
+}

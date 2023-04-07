@@ -121,8 +121,14 @@ static void updateWaypointsStats(WaypointsList& waypointsList, const Path& path,
     TimeStep cumulatedDelay = 0;
     auto wpIt = waypointsList.begin();
 
-    for(int t = 0 ; t < path.size(); ++t){
+    for(int t = 0 ; t < std::ssize(path) ; ++t){
         assert(wpIt != waypointsList.end());
+        assert(!path.empty());
+        // handling not possible docking
+        if(wpIt->getDemand() == Demand::END){
+            wpIt->update(std::ssize(path) - 1, tasksVector, cumulatedDelay);
+            return;
+        }
         if (wpIt->getPosition() == path[t]){
             cumulatedDelay = wpIt->update(t, tasksVector, cumulatedDelay);
             ++wpIt;

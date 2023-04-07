@@ -56,7 +56,9 @@ public:
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
     [[nodiscard]] std::vector<int> getAvailableTaskIds(TimeStep t, int firstTaskId = 0) const;
 
-    bool noMoreTasks(int nextTasksIndex) const;
+    [[nodiscard]] bool noMoreTasks(int nextTasksIndex) const;
+
+    bool allTasksSatisfied() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

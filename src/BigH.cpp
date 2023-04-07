@@ -52,12 +52,12 @@ BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuri
     heap(getComparator(h)),
     heapHandles{}
     {
-        heapHandles.reserve(agentInfos.size());
+        heapHandles.reserve(tasksIds.size());
 
         for(int taskId : tasksIds){
             // only get tasks released at the beginning
 
-            assert(taskId >= 0 && taskId < tasks.size());
+            assert(taskId >= 0 && taskId < status.getTasks().size());
             heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
         }
 
