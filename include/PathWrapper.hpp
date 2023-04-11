@@ -5,15 +5,14 @@
 #include "Coord.hpp"
 #include "Waypoint.hpp"
 #include "NewTypes.hpp"
+#include "AgentInfo.hpp"
 
 struct PathWrapper{
 public:
-    PathWrapper(Path path, WaypointsList  wpList, std::unordered_set<int> satisfiedTasksIds);
+    explicit PathWrapper(const AgentInfo &agentInfo);
     PathWrapper(const PathWrapper&) = default;
     PathWrapper(PathWrapper&&) = default;
 
-    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const DistanceMatrix &dm,
-                                 const std::vector<Task> &tasks);
     TimeStep getTTD() const;
     TimeStep getLastDeliveryTimeStep() const;
 
@@ -27,33 +26,28 @@ public:
 
     int randomTaskId(int magicNumber) const;
 
-    PathWrapper& operator=(const PathWrapper& other) = default;
-    PathWrapper& operator=(PathWrapper&& other) = default;
-    [[nodiscard]] TimeStep getIdealCost() const;
+    PathWrapper& operator=(const PathWrapper&) = default;
+    PathWrapper& operator=(PathWrapper&&) = default;
+
     [[nodiscard]] TimeStep getIdealTTD() const;
+
+    [[nodiscard]] int getAgentId() const;
+    [[maybe_unused]] [[nodiscard]] int getCapacity() const;
+
+    [[nodiscard]] bool empty() const;
 private:
+    int index;
+    int capacity;
     Path path;
-    WaypointsList waypoints;
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, WaypointsList::iterator waypointStart,
-                                                                                   WaypointsList::iterator waypointGoal);
-    void restorePreviousWaypoints(WaypointsList::iterator waypointStart, WaypointsList::iterator waypointGoal);
-
-    bool checkCapacityConstraint(int capacity) const;
-
-    [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                            WaypointsList::const_iterator newPickupWpIt) const ;
-
-    [[nodiscard]] TimeStep computeApproxSpan(const DistanceMatrix &dm, WaypointsList::const_iterator startIt) const;
-    [[nodiscard]] TimeStep computeIdealTTD(const DistanceMatrix &dm, const std::vector<Task> &tasks) const;
+    TimeStep idealTTD;
 protected:
+    WaypointsList waypoints;
     std::unordered_set<int> satisfiedTasksIds;
-    TimeStep idealCost = 0;
-    TimeStep idealTTD = 0;
 
-    TimeStep
-    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                        int agentCapacity);
+    void setPath(Path path);
+
+    void setIdealTtd(TimeStep idealTtd);
 };
 
 class PWsVector : public std::vector<PathWrapper>{
@@ -64,8 +58,6 @@ public:
     [[nodiscard]] TimeStep getSpan(int agentId) const;
     [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
     [[nodiscard]] const Path& getPath(int agentId) const;
-    [[nodiscard]] TimeStep getIdealCost() const;
-    [[nodiscard]] TimeStep getRelativeTTD() const;
 };
 
 struct ExtractedPath{

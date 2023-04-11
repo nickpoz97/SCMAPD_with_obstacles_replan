@@ -49,8 +49,4 @@ private:
     [[nodiscard]] std::vector<AgentInfo> getAvailableAgents(TimeStep t) const;
 };
 
-SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
-                const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                Heuristic heuristic, bool noConflicts);
-
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

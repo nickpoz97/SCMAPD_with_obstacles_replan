@@ -19,7 +19,7 @@ Waypoint::update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeSt
     arrivalTime = newArrivalTime;
     auto localDelay = 0;
     if (demand == Demand::DELIVERY) {
-        localDelay = arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+        localDelay = newArrivalTime - tasks[*taskIndex].idealGoalTime;
     }
 #ifndef NDEBUG
     if(localDelay < 0) { throw std::runtime_error("negative delay"); }
@@ -35,7 +35,7 @@ TimeStep Waypoint::getCumulatedDelay() const {
 
 TimeStep Waypoint::getArrivalTime() const {
     assert(arrivalTime.has_value());
-    return arrivalTime.value();
+    return *arrivalTime;
 }
 
 Waypoint::Waypoint(CompressedCoord robotStartPosition) :
@@ -54,11 +54,12 @@ Demand Waypoint::getDemand() const {
 
 int Waypoint::getTaskIndex() const {
     assert(taskIndex.has_value());
-    return taskIndex.value();
+    return *taskIndex;
 }
 
 TimeStep Waypoint::getDelay(const std::vector<Task>& tasks) const {
-    return arrivalTime.value() - tasks[taskIndex.value()].idealGoalTime;
+    assert(arrivalTime.has_value() && taskIndex.has_value());
+    return *arrivalTime- tasks[*taskIndex].idealGoalTime;
 }
 
 Waypoint getTaskPickupWaypoint(const Task& task){

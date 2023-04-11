@@ -133,8 +133,7 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
     return vec;
 }
 
-void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &status,
-                       const std::unordered_set<int> &newTaskIndices) {
+void BigH::addNewTasks(const Status &status, const std::unordered_set<int> &newTaskIndices) {
     heapHandles.reserve(heapHandles.size() + newTaskIndices.size());
 
     for(int taskId : newTaskIndices){
@@ -142,7 +141,7 @@ void BigH::addNewTasks(const std::vector<AgentInfo> &agentInfos, const Status &s
         // this exploits the fact we should not have index value overflow
         assert(!heapHandles.contains(taskId));
         assert(taskId >= 0 && taskId < status.getTasks().size());
-        heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
+        heapHandles.emplace(taskId, heap.emplace(taskId, v, status));
     }
 
     assert(checkIntegrity());

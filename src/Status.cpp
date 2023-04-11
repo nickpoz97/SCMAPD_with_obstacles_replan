@@ -46,7 +46,7 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
         }
         auto result = ambient.movement(c, i);
         if(result.has_value() &&
-            (noConflicts || !checkDynamicObstacle(agentId, c, result.value(), t))){
+            (noConflicts || !checkDynamicObstacle(agentId, c, *result, t))){
             neighbors.push_back(result.value());
         }
     }
@@ -153,9 +153,7 @@ std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<Agent
         agents,
         std::back_inserter(pWs),
         [](const AgentInfo& a) -> PathWrapper {
-            return {
-                {a.startPos},{Waypoint{a.startPos}},{}
-            };
+            return PathWrapper{a};
         }
     );
     return pWs;

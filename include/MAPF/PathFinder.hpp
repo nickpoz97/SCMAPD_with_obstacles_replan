@@ -12,8 +12,8 @@
 #include "Status.hpp"
 
 namespace PathFinder{
-    [[nodiscard]] std::optional<std::pair<Path, WaypointsList>>
-    multiAStar(WaypointsList waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
+    [[nodiscard]] std::optional<Path>
+    multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
 }
 
 #endif //SIMULTANEOUS_CMAPD_PATHFINDER_HPP

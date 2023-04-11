@@ -1,23 +1,21 @@
 #include <algorithm>
 #include "SmallH.hpp"
 
-SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
+SmallH::SmallH(int taskId, int v) :
     taskId{taskId},
     v{v},
     heap{},
     heapHandles{}
-{
-    const auto& pWs = status.getPathWrappers();
-    assert(!pWs.empty() && pWs.size() == agentsInfos.size());
+{}
 
+SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
+    SmallH{taskId, v}
+{
     heapHandles.reserve(agentsInfos.size());
 
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
-
         auto handle = heap.emplace(aInfo);
-
-        *handle = pWs[agentIndex];
 
         if(!(*handle).addTask(taskId, status)){
             heap.erase(handle);
@@ -35,6 +33,36 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
         assert(!heapHandles.contains(i) || (*heapHandles[i]).getAgentId() == i);
     }
 #endif
+    assert(checkOrder());
+}
+
+SmallH::SmallH(int taskId, int v, const Status &status) :
+    SmallH{taskId, v}
+{
+    const auto& pWs = status.getPathWrappers();
+    assert(!pWs.empty());
+
+    heapHandles.reserve(pWs.size());
+
+    for (const auto& pW : pWs){
+        auto handle = heap.emplace(pW);
+
+        if(!(*handle).addTask(taskId, status)){
+            heap.erase(handle);
+            assert(heap.size() == heapHandles.size());
+            continue;
+        }
+        heap.update(handle);
+        heapHandles.emplace(pW.getAgentId(), handle);
+    }
+
+    assert(heap.size() == heapHandles.size());
+    #ifndef NDEBUG
+        for(const auto& pW : pWs){
+            auto i = pW.getAgentId();
+            assert(!heapHandles.contains(i) || (*heapHandles[i]).getAgentId() == i);
+        }
+    #endif
     assert(checkOrder());
 }
 

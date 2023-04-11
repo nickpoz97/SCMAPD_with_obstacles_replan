@@ -59,10 +59,17 @@ int main(int argc, char* argv[]){
     auto mtd{utils::getMethod(vm["mtd"].as<string>())};
     auto metric{utils::getMetric(vm["metric"].as<string>())};
 
+    AmbientMap ambientMap(gridFile, distanceMatrixFile);
+    auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
+    auto tasks = loadTasks(tasksFile, ambientMap.getDistanceMatrix());
+
     SCMAPD scmapd{
-        loadData(
-            robotsFile, tasksFile, gridFile, distanceMatrixFile, heur, ideal
-        )
+        std::move(ambientMap),
+        std::move(agents),
+        std::move(tasks),
+        heur,
+        ideal,
+        false
     };
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);

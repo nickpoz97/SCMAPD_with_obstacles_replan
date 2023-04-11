@@ -146,7 +146,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
-        bigH.addNewTasks(agentInfos, status, std::move(chosenTasks));
+        bigH.addNewTasks(status, std::move(chosenTasks));
 
         // maintain only better solutions
         if (findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
@@ -161,17 +161,14 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
-        pW.removeTasksAndWaypoints(chosenTasks, status.getDistanceMatrix(), status.getTasks());
 
-        auto result {PathFinder::multiAStar(pW.getWaypoints(), pW.getInitialPos(), status, agentId)};
-
-        if(!result.has_value()) {
+        Assignment a{pW};
+        if(!a.removeTasksAndWaypoints(chosenTasks, status)){
+            // some may have been updated
             return false;
         }
-
-        pW.pathAndWaypointsUpdate(std::move(result.value()));
+        pW = static_cast<PathWrapper>(a);
     }
-
     return true;
 }
 
@@ -185,15 +182,6 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
         default:
             return newResult.getTTT() <= oldResult.getTTT();
     }
-}
-
-SCMAPD loadData(const std::filesystem::path &agentsFile, const std::filesystem::path &tasksFile,
-                const std::filesystem::path &gridFile, const std::filesystem::path &distanceMatrixFile,
-                Heuristic heuristic, bool noConflicts) {
-    AmbientMap ambientMap(gridFile, distanceMatrixFile);
-
-    return {std::move(ambientMap), loadAgents(agentsFile, ambientMap.getDistanceMatrix()),
-            loadTasks(tasksFile, ambientMap.getDistanceMatrix()), heuristic, noConflicts, false};
 }
 
 const std::vector<AgentInfo>& SCMAPD::getAgentsInfos() const{
