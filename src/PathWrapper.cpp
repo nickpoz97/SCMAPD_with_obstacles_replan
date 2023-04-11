@@ -80,11 +80,6 @@ CompressedCoord PathWrapper::getInitialPos() const {
     return path[0];
 }
 
-void PathWrapper::pathAndWaypointsUpdate(std::pair<Path, WaypointsList> &&updatedData) {
-    path = std::move(updatedData.first);
-    waypoints = std::move(updatedData.second);
-}
-
 int PathWrapper::randomTaskId(int magicNumber) const {
     assert(!satisfiedTasksIds.empty());
     std::vector<int> shuffled_tasks{satisfiedTasksIds.cbegin(), satisfiedTasksIds.cend()};

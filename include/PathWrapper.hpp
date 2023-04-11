@@ -22,7 +22,6 @@ public:
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
-    void pathAndWaypointsUpdate(std::pair<Path, WaypointsList>&& updatedData);
 
     int randomTaskId(int magicNumber) const;
 
@@ -35,6 +34,8 @@ public:
     [[maybe_unused]] [[nodiscard]] int getCapacity() const;
 
     [[nodiscard]] bool empty() const;
+
+
 private:
     int index;
     int capacity;

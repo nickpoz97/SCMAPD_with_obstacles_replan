@@ -9,17 +9,19 @@ Waypoint::operator std::string() const {
         position, static_cast<int>(demand), taskString);
 }
 
-Waypoint::Waypoint(CompressedCoord position, Demand demand, int taskIndex) :
-    position(position),
+Waypoint::Waypoint(const Task& task, Demand demand) :
+    position(demand == Demand::DELIVERY ? task.goalLoc : task.startLoc),
     demand(demand),
-    taskIndex(taskIndex) {}
+    taskIndex(task.index),
+    idealGoalTime(demand == Demand::DELIVERY ? std::optional<TimeStep>{task.idealGoalTime} : std::nullopt)
+    {}
 
 TimeStep
-Waypoint::update(TimeStep newArrivalTime, const std::vector<Task> &tasks, TimeStep previousCumulatedDelay) {
+Waypoint::update(TimeStep newArrivalTime, TimeStep previousCumulatedDelay) {
     arrivalTime = newArrivalTime;
     auto localDelay = 0;
     if (demand == Demand::DELIVERY) {
-        localDelay = newArrivalTime - tasks[*taskIndex].idealGoalTime;
+        localDelay = newArrivalTime - *idealGoalTime;
     }
 #ifndef NDEBUG
     if(localDelay < 0) { throw std::runtime_error("negative delay"); }
@@ -63,11 +65,11 @@ TimeStep Waypoint::getDelay(const std::vector<Task>& tasks) const {
 }
 
 Waypoint getTaskPickupWaypoint(const Task& task){
-    return {task.startLoc, Demand::PICKUP, task.index};
+    return {task, Demand::PICKUP};
 }
 
 Waypoint getTaskDeliveryWaypoint(const Task& task){
-    return {task.goalLoc, Demand::DELIVERY, task.index};
+    return {task, Demand::DELIVERY};
 }
 
 VerbosePath getWpCoords(const WaypointsList &wpList, const DistanceMatrix &dm) {

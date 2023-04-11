@@ -14,7 +14,7 @@
 #include <nlohmann/json.hpp>
 
 struct Waypoint{
-    Waypoint(CompressedCoord position, Demand demand, int taskIndex);
+    Waypoint(const Task& task, Demand demand);
     explicit Waypoint(CompressedCoord robotStartPosition);
 
     explicit operator CompressedCoord() const;
@@ -22,7 +22,6 @@ struct Waypoint{
 
     TimeStep update(
         TimeStep newArrivalTime,
-        const std::vector<Task> &tasks,
         TimeStep previousCumulatedDelay
     );
 
@@ -40,6 +39,7 @@ private:
     CompressedCoord position;
     Demand demand;
     std::optional<int> taskIndex;
+    std::optional<TimeStep> idealGoalTime;
 
     TimeStep cumulatedDelay = 0;
     std::optional<TimeStep> arrivalTime{};

@@ -162,7 +162,7 @@ bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
 
-        Assignment a{pW};
+        Assignment a{pW, status};
         if(!a.removeTasksAndWaypoints(chosenTasks, status)){
             // some may have been updated
             return false;
@@ -186,10 +186,6 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
 
 const std::vector<AgentInfo>& SCMAPD::getAgentsInfos() const{
     return agentInfos;
-}
-
-const std::vector<Task>& SCMAPD::getTasks() const{
-    return status.getTasks();
 }
 
 const AmbientMap& SCMAPD::getAmbient() const{

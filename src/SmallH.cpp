@@ -15,9 +15,9 @@ SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, con
 
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
-        auto handle = heap.emplace(aInfo);
+        auto handle = heap.emplace(aInfo, const_cast<Status&>(status));
 
-        if(!(*handle).addTask(taskId, status)){
+        if(!(*handle).addTask(taskId)){
             heap.erase(handle);
             assert(heap.size() == heapHandles.size());
             continue;
@@ -45,9 +45,9 @@ SmallH::SmallH(int taskId, int v, const Status &status) :
     heapHandles.reserve(pWs.size());
 
     for (const auto& pW : pWs){
-        auto handle = heap.emplace(pW);
+        auto handle = heap.emplace(pW, const_cast<Status&>(status));
 
-        if(!(*handle).addTask(taskId, status)){
+        if(!(*handle).addTask(taskId)){
             heap.erase(handle);
             assert(heap.size() == heapHandles.size());
             continue;
@@ -104,7 +104,7 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
     auto& targetHandle = heapHandles[k];
     assert((*targetHandle).getAgentId() == k);
 
-    if(!(*targetHandle).addTask(otherTaskId, status)){
+    if(!(*targetHandle).addTask(otherTaskId)){
         heap.erase(targetHandle);
         heapHandles.erase(k);
         assert(heap.size() == heapHandles.size());

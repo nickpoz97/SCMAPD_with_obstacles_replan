@@ -20,15 +20,13 @@
 class Assignment : public PathWrapper{
 
 public:
-    explicit Assignment(const AgentInfo &agentInfo);
-    explicit Assignment(const PathWrapper& pW);
+    Assignment(const AgentInfo &agentInfo, Status &status);
+    Assignment(const PathWrapper &pW, Status &status);
 
     [[nodiscard]] TimeStep getMCA() const;
 
-    [[nodiscard]] bool addTask(int taskId, const Status &status);
+    [[nodiscard]] bool addTask(int taskId);
 
-//    friend bool operator>(const Assignment &a, const Assignment &b);
-//    friend bool operator<(const Assignment &a, const Assignment &b);
     friend int operator<=>(const Assignment &a, const Assignment &b);
 
     // this should be called when waypoints and/or constraints are changed
@@ -37,26 +35,25 @@ public:
     bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const Status& status);
 private:
     TimeStep oldTTD = 0;
+    Status& status;
 
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(const Task &task, WaypointsList::iterator waypointStart,
+    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(int taskId, WaypointsList::iterator waypointStart,
                                                                                    WaypointsList::iterator waypointGoal);
     void restorePreviousWaypoints(WaypointsList::iterator waypointStart, WaypointsList::iterator waypointGoal);
 
-    bool checkCapacityConstraint(int capacity) const;
+    bool checkCapacityConstraint() const;
 
-    [[nodiscard]] TimeStep computeApproxTTD(const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-                                            WaypointsList::const_iterator newPickupWpIt) const ;
+    [[nodiscard]] TimeStep computeApproxTTD(WaypointsList::const_iterator newPickupWpIt) const ;
 
-    [[nodiscard]] TimeStep computeApproxSpan(const DistanceMatrix &dm, WaypointsList::const_iterator startIt) const;
-    [[nodiscard]] TimeStep computeIdealTTD(const DistanceMatrix &dm, const std::vector<Task> &tasks) const;
+    [[nodiscard]] TimeStep computeApproxSpan(WaypointsList::const_iterator startIt) const;
+    [[nodiscard]] TimeStep computeIdealTTD() const;
 
-    TimeStep computeIdealCost(const Status &status) const;
+    TimeStep computeIdealCost() const;
 
     TimeStep
-    insertTaskWaypoints(const Task &newTask, const DistanceMatrix &dm, const std::vector<Task> &tasksVector,
-        int agentCapacity);
+    insertTaskWaypoints(int newTaskId);
 
-    void updateWaypointsStats(const std::vector<Task>& tasksVector);
+    void updateWaypointsStats();
 };
 
 #endif //SIMULTANEOUS_CMAPD_ASSIGNMENT_HPP

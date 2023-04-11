@@ -20,8 +20,6 @@ public:
     [[nodiscard]] std::vector<CompressedCoord>
     getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
 
-    [[nodiscard]] const std::vector<Task> &getTasks() const;
-
     [[nodiscard]] const Task & getTask(int i) const;
 
     std::pair<int, int> update(ExtractedPath pathWrapper);
@@ -49,8 +47,8 @@ public:
     [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
     [[nodiscard]] VerbosePath toVerbosePath(int i) const;
 
-    std::string getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const;
-    std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
+    [[nodiscard]] std::string getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const;
+    [[nodiscard]] std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
@@ -58,7 +56,7 @@ public:
 
     [[nodiscard]] bool noMoreTasks(int nextTasksIndex) const;
 
-    bool allTasksSatisfied() const;
+    [[nodiscard]] bool allTasksSatisfied() const;
 private:
     const AmbientMap ambient;
     const std::vector<Task> tasksVector;

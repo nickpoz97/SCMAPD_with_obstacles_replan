@@ -15,7 +15,7 @@ public:
            bool noConflicts, bool online);
 
     [[nodiscard]] const std::vector<AgentInfo>& getAgentsInfos() const;
-    [[nodiscard]] const std::vector<Task>& getTasks() const;
+
     [[nodiscard]] const AmbientMap& getAmbient() const;
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);

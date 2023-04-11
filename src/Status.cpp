@@ -21,10 +21,6 @@ const Task & Status::getTask(int i) const {
     return tasksVector[i];
 }
 
-const std::vector<Task> &Status::getTasks() const {
-    return tasksVector;
-}
-
 std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     auto agentId = extractedPath.agentId;
     auto taskId = extractedPath.newTaskId;
