@@ -14,7 +14,12 @@
 
 class Status{
 public:
-    Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks, bool noConflicts);
+    Status(
+        AmbientMap ambientMap,
+        const std::vector<AgentInfo> &agents,
+        bool noConflicts,
+        std::unordered_map<int, Task> initialTasks
+    );
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
@@ -52,14 +57,18 @@ public:
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
-    [[nodiscard]] std::vector<int> getAvailableTaskIds(TimeStep t, int firstTaskId = 0) const;
+    [[nodiscard]] const std::unordered_map<int, Task>& getAvailableTasks() const;
 
     [[nodiscard]] bool noMoreTasks(int nextTasksIndex) const;
 
     [[nodiscard]] bool allTasksSatisfied() const;
+
+    void updateTasks(std::unordered_map<int, Task> newTasks);
+
+    [[nodiscard]] bool taskIdExists(int taskId) const;
 private:
     const AmbientMap ambient;
-    const std::vector<Task> tasksVector;
+    std::unordered_map<int, Task> unsatisfiedTasks;
     PWsVector pathsWrappers;
     bool noConflicts;
 

@@ -230,12 +230,14 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
 
     assert(newPickupWpIt != waypoints.end());
 
+    const auto& dm = status.getDistanceMatrix();
+
     auto ttd = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
     auto prevWpPos = newPickupWpIt == getWaypoints().cbegin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
     auto prevArrivalTime = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != getWaypoints().end() ; ++wpIt){
-        auto arrivalTime = prevArrivalTime + status.getDistanceMatrix().getDistance(prevWpPos, wpIt->getPosition());
+        auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
         if(wpIt->getDemand() == Demand::DELIVERY){
             // using ideal path
             ttd += arrivalTime - status.getTask(wpIt->getTaskIndex()).idealGoalTime;

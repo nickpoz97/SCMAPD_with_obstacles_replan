@@ -9,16 +9,15 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap &&ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> &&tasks,
-               bool noConflicts) :
+Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, std::unordered_map<int, Task> initialTasks) :
         ambient(std::move(ambientMap)),
-        tasksVector(std::move(tasks)),
+        unsatisfiedTasks{std::move(initialTasks)},
         pathsWrappers{initializePathsWrappers(agents)},
         noConflicts{noConflicts}
         {}
 
 const Task & Status::getTask(int i) const {
-    return tasksVector[i];
+    return unsatisfiedTasks.at(i);
 }
 
 std::pair<int, int> Status::update(ExtractedPath extractedPath) {
@@ -195,10 +194,10 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     // taskId, value
     using TaskInfo = std::pair<int, TimeStep>;
 
-    n = std::min(static_cast<int>(tasksVector.size()), n);
+    n = std::min(static_cast<int>(unsatisfiedTasks.size()), n);
 
     std::vector<TaskInfo> orderedTasks;
-    orderedTasks.reserve(tasksVector.size());
+    orderedTasks.reserve(unsatisfiedTasks.size());
 
     for (const auto& pW : pathsWrappers){
         for (const auto& wp : pW.getWaypoints()){
@@ -210,7 +209,7 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
                     orderedTasks.emplace_back(wp.getTaskIndex(), wp.getArrivalTime());
                     break;
                 case Metric::DELAY:
-                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay(tasksVector));
+                    orderedTasks.emplace_back(wp.getTaskIndex(), wp.getDelay());
                     break;
             }
         }
@@ -223,7 +222,7 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     );
 
     std::unordered_set<int> taskIndicesToRemove{};
-    taskIndicesToRemove.reserve(n);
+
     for(int i = 0 ; i < n ; ++i){
         taskIndicesToRemove.insert(orderedTasks[i].first);
     }
@@ -231,16 +230,16 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
 }
 
 std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
-    n = std::min(static_cast<int>(tasksVector.size()), n);
+    n = std::min(static_cast<int>(unsatisfiedTasks.size()), n);
 
     std::vector<int> shuffled_tasks{};
-    shuffled_tasks.reserve(tasksVector.size());
+    shuffled_tasks.reserve(unsatisfiedTasks.size());
 
     // copy indices
     std::ranges::transform(
-            tasksVector,
+            unsatisfiedTasks,
             std::back_inserter(shuffled_tasks),
-            [](const Task& t){return t.index;}
+            [](const std::pair<int, Task>& item){return item.first;}
     );
 
     auto seed = hash_value(*this);
@@ -284,7 +283,6 @@ std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n
     );
 
     std::unordered_set<int> taskIndicesToRemove{};
-    taskIndicesToRemove.reserve(n);
 
     for(int i = 0 ; i < n ; ++i){
         const auto& pW = pathsWrappers[orderedAgents[i].first];
@@ -392,40 +390,35 @@ bool Status::isDocking(int agentId, TimeStep t) const {
     return t >= dockingTimeStep;
 }
 
-std::vector<int> Status::getAvailableTaskIds(TimeStep t, int firstTaskId) const {
-    std::vector<int> taskIds;
-    assert(firstTaskId < tasksVector.size());
-
-    for(int i = firstTaskId ; i < std::ssize(tasksVector) ; ++i){
-        const auto& task = getTask(i);
-        if(task.releaseTime == t){
-            taskIds.push_back(task.index);
-        }
-        // nothing more to search
-        else if(task.releaseTime > t){
-            break;
-        }
-    }
-
-    return taskIds;
+const std::unordered_map<int, Task>& Status::getAvailableTasks() const {
+    return unsatisfiedTasks;
 }
 
 bool Status::noMoreTasks(int nextTasksIndex) const {
-    return nextTasksIndex == tasksVector.size();
+    return nextTasksIndex == unsatisfiedTasks.size();
 }
 
 bool Status::allTasksSatisfied() const {
 
     // 0 means task not satysfied
     // > 1 means tasks satysfied by more pWs
-    auto rightTaskCount = [this](const Task& task){
+    auto rightTaskCount = [this](const std::pair<int, Task>& taskItem){
         return std::count_if(
             pathsWrappers.cbegin(),
             pathsWrappers.cend(),
-            [&task](const PathWrapper& pW){return pW.getSatisfiedTasksIds().contains(task.index);}
+            [&taskItem](const PathWrapper& pW){return pW.getSatisfiedTasksIds().contains(taskItem.first);}
         ) == 1;
     };
 
 
-    return std::ranges::all_of(tasksVector, rightTaskCount);
+    return std::ranges::all_of(unsatisfiedTasks, rightTaskCount);
+}
+
+void Status::updateTasks(std::unordered_map<int, Task> newTasks) {
+    // todo remove satisfied tasks
+    unsatisfiedTasks.merge(newTasks);
+}
+
+bool Status::taskIdExists(int taskId) const {
+    return unsatisfiedTasks.contains(taskId);
 }

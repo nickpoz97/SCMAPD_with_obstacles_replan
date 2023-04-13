@@ -26,12 +26,4 @@ private:
     static int getNextId();
 };
 
-std::vector<Task> loadTasks(
-    const std::filesystem::path &tasksFilePath,
-    const DistanceMatrix &dm,
-    char horizontalSep=',',
-    bool isNumerator = true,
-    int frequency = 0
-);
-
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP

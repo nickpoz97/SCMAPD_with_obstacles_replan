@@ -11,8 +11,6 @@ SmallH::SmallH(int taskId, int v) :
 SmallH::SmallH(const std::vector<AgentInfo> &agentsInfos, int taskId, int v, const Status &status) :
     SmallH{taskId, v}
 {
-    heapHandles.reserve(agentsInfos.size());
-
     for (const auto& aInfo : agentsInfos){
         auto agentIndex = aInfo.index;
         auto handle = heap.emplace(aInfo, const_cast<Status&>(status));
@@ -42,8 +40,6 @@ SmallH::SmallH(int taskId, int v, const Status &status) :
     const auto& pWs = status.getPathWrappers();
     assert(!pWs.empty());
 
-    heapHandles.reserve(pWs.size());
-
     for (const auto& pW : pWs){
         auto handle = heap.emplace(pW, const_cast<Status&>(status));
 
@@ -69,7 +65,6 @@ SmallH::SmallH(int taskId, int v, const Status &status) :
 void SmallH::updateTopElements(const Status &status) {
     assert(checkOrder());
 
-    // todo check this
     for (int i = 0 ; i < std::min(v, static_cast<int>(heap.size())) ; ++i) {
         auto targetIt = std::next(heap.ordered_begin(), i);
 

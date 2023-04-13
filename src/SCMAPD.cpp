@@ -5,11 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
-SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector, Heuristic heuristic,
+SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler taskHandler, Heuristic heuristic,
                bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
-    status(std::move(ambientMap), agents, std::move(tasksVector), noConflicts),
-    bigH{agents, status, heuristic, status.getAvailableTaskIds(0)},
+    taskHandler{std::move(taskHandler)},
+    status(std::move(ambientMap), agents, noConflicts, taskHandler.getNextBatch()),
+    bigH{agents, status, heuristic, status.getAvailableTasks()},
     agentInfos{std::move(agents)},
     online{online}
     {
@@ -26,6 +27,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 }
 
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
+    status.updateTasks(taskHandler.getNextBatch());
     if(!findSolution()){
         throw std::runtime_error("No solution");
     }

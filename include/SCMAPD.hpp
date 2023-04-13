@@ -8,10 +8,11 @@
 #include "Status.hpp"
 #include "Assignment.hpp"
 #include "BigH.hpp"
+#include "TaskHandler.hpp"
 
 class SCMAPD {
 public:
-    SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, std::vector<Task> tasksVector, Heuristic heuristic,
+    SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler taskHandler, Heuristic heuristic,
            bool noConflicts, bool online);
 
     [[nodiscard]] const std::vector<AgentInfo>& getAgentsInfos() const;
@@ -28,6 +29,8 @@ private:
     using duration = std::chrono::duration<double>;
     time_point start;
     duration execution_time{};
+
+    TaskHandler taskHandler;
 
     Status status;
     BigH bigH;

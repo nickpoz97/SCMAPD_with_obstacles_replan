@@ -59,9 +59,9 @@ int Waypoint::getTaskIndex() const {
     return *taskIndex;
 }
 
-TimeStep Waypoint::getDelay(const std::vector<Task>& tasks) const {
-    assert(arrivalTime.has_value() && taskIndex.has_value());
-    return *arrivalTime- tasks[*taskIndex].idealGoalTime;
+TimeStep Waypoint::getDelay() const {
+    assert(arrivalTime.has_value() && idealGoalTime.has_value());
+    return *arrivalTime- *idealGoalTime;
 }
 
 Waypoint getTaskPickupWaypoint(const Task& task){

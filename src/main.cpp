@@ -5,6 +5,7 @@
 
 #include "SCMAPD.hpp"
 #include "utils.hpp"
+#include "TaskHandler.hpp"
 
 int main(int argc, char* argv[]){
     namespace po = boost::program_options;
@@ -61,12 +62,13 @@ int main(int argc, char* argv[]){
 
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
     auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
-    auto tasks = loadTasks(tasksFile, ambientMap.getDistanceMatrix());
+
+    TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix()};
 
     SCMAPD scmapd{
         std::move(ambientMap),
         std::move(agents),
-        std::move(tasks),
+        std::move(taskHandler),
         heur,
         ideal,
         false

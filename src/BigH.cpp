@@ -46,18 +46,16 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::vector<int>& tasksIds) :
+BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::unordered_map<int, Task>& tasks) :
     v{h == Heuristic::MCA ? 1 : 2},
     heuristic{h},
     heap(getComparator(h)),
     heapHandles{}
     {
-        heapHandles.reserve(tasksIds.size());
-
-        for(int taskId : tasksIds){
+        for(auto& [taskId, task] : tasks){
             // only get tasks released at the beginning
 
-            assert(taskId >= 0 && taskId < status.getTasks().size());
+            assert(status.taskIdExists(taskId));
             heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
         }
 
@@ -134,13 +132,11 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
 }
 
 void BigH::addNewTasks(const Status &status, const std::unordered_set<int> &newTaskIndices) {
-    heapHandles.reserve(heapHandles.size() + newTaskIndices.size());
-
     for(int taskId : newTaskIndices){
         // if tha UTI contains it this mean you re-added a task
         // this exploits the fact we should not have index value overflow
         assert(!heapHandles.contains(taskId));
-        assert(taskId >= 0 && taskId < status.getTasks().size());
+        assert(status.taskIdExists(taskId));
         heapHandles.emplace(taskId, heap.emplace(taskId, v, status));
     }
 
