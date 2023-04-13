@@ -59,6 +59,7 @@ public:
     [[nodiscard]] TimeStep getSpan(int agentId) const;
     [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
     [[nodiscard]] const Path& getPath(int agentId) const;
+    [[nodiscard]] bool taskIsSatisfied(int taskId) const;
 };
 
 struct ExtractedPath{

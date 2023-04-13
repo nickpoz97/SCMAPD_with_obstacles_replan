@@ -5,8 +5,6 @@ bool operator==(const Task &t1, const Task &t2) {
         return t1.index == t2.index;
 }
 
-std::pair<CompressedCoord, CompressedCoord> Task::getCoordinates() const { return {startLoc, goalLoc}; }
-
 Task::operator std::string() const {
     auto [firstDiv, lastDiv] = utils::buildDivider("Task");
 
@@ -34,4 +32,24 @@ int Task::getNextId() {
     auto newId = id;
     ++id;
     return newId;
+}
+
+CompressedCoord Task::getStartLoc() const {
+    return startLoc;
+}
+
+CompressedCoord Task::getGoalLoc() const {
+    return goalLoc;
+}
+
+TimeStep Task::getReleaseTime() const {
+    return releaseTime;
+}
+
+int Task::getIndex() const {
+    return index;
+}
+
+TimeStep Task::getIdealGoalTime() const {
+    return idealGoalTime;
 }

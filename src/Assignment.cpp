@@ -240,7 +240,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
         if(wpIt->getDemand() == Demand::DELIVERY){
             // using ideal path
-            ttd += arrivalTime - status.getTask(wpIt->getTaskIndex()).idealGoalTime;
+            ttd += arrivalTime - status.getTask(wpIt->getTaskIndex()).getIdealGoalTime();
             assert(ttd > 0);
         }
         prevWpPos = wpIt->getPosition();

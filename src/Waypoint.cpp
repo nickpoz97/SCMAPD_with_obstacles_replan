@@ -10,10 +10,10 @@ Waypoint::operator std::string() const {
 }
 
 Waypoint::Waypoint(const Task& task, Demand demand) :
-    position(demand == Demand::DELIVERY ? task.goalLoc : task.startLoc),
+    position(demand == Demand::DELIVERY ? task.getGoalLoc() : task.getStartLoc()),
     demand(demand),
-    taskIndex(task.index),
-    idealGoalTime(demand == Demand::DELIVERY ? std::optional<TimeStep>{task.idealGoalTime} : std::nullopt)
+    taskIndex(task.getIndex()),
+    idealGoalTime(demand == Demand::DELIVERY ? std::optional<TimeStep>{task.getIdealGoalTime()} : std::nullopt)
     {}
 
 TimeStep

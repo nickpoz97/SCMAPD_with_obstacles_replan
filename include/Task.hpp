@@ -5,24 +5,32 @@
 #include "DistanceMatrix.hpp"
 #include "utils.hpp"
 
-struct Task {
+class Task {
+public:
     Task(CompressedCoord startLoc, CompressedCoord goalLoc, const DistanceMatrix& dm, const TimeStep releaseTime = 0);
-
-    const CompressedCoord startLoc;
-    const CompressedCoord goalLoc;
-    const TimeStep releaseTime;
-    const int index;
-
-    const TimeStep idealGoalTime;
 
     friend bool operator==(const Task& t1, const Task& t2);
 
-    [[nodiscard]] std::pair<CompressedCoord, CompressedCoord> getCoordinates() const;
-
     explicit operator std::string() const;
-    explicit operator std::pair<CompressedCoord, CompressedCoord>() const{return getCoordinates();}
+
+    [[nodiscard]] CompressedCoord getStartLoc() const;
+
+    [[nodiscard]] CompressedCoord getGoalLoc() const;
+
+    [[nodiscard]] TimeStep getReleaseTime() const;
+
+    [[nodiscard]] int getIndex() const;
+
+    [[nodiscard]] TimeStep getIdealGoalTime() const;
 
 private:
+    CompressedCoord startLoc;
+    CompressedCoord goalLoc;
+    TimeStep releaseTime;
+    int index;
+
+    TimeStep idealGoalTime;
+
     static int getNextId();
 };
 

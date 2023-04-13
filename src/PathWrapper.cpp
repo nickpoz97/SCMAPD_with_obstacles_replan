@@ -43,6 +43,13 @@ const Path& PWsVector::getPath(int agentId) const {
     return operator[](agentId).getPath();
 }
 
+bool PWsVector::taskIsSatisfied(int taskId) const {
+    return std::ranges::any_of(
+        *this,
+        [taskId](const PathWrapper& pW){return pW.getSatisfiedTasksIds().contains(taskId);}
+    );
+}
+
 TimeStep PathWrapper::getTTD() const {
     return waypoints.crbegin()->getCumulatedDelay();
 }
@@ -103,9 +110,9 @@ TimeStep PathWrapper::getIdealTTD() const {
 
 bool PathWrapper::empty() const {
     assert(!waypoints.empty());
-    assert(!waypoints.size() == 1 || waypoints.cbegin()->getDemand() == Demand::END);
+    assert(!(waypoints.size() == 1) || waypoints.cbegin()->getDemand() == Demand::END);
     assert(
-        !waypoints.size() > 1 ||
+        !(waypoints.size() > 1) ||
             (waypoints.size() == satisfiedTasksIds.size() * 2 + 1 && waypoints.cbegin()->getDemand() == Demand::END)
     );
     return getWaypoints().size() == 1;

@@ -415,7 +415,12 @@ bool Status::allTasksSatisfied() const {
 }
 
 void Status::updateTasks(std::unordered_map<int, Task> newTasks) {
-    // todo remove satisfied tasks
+    std::erase_if(
+        unsatisfiedTasks,
+        [this](const std::pair<int, Task>& item) {
+            return pathsWrappers.taskIsSatisfied(item.first);
+        }
+    );
     unsatisfiedTasks.merge(newTasks);
 }
 

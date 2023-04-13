@@ -59,9 +59,9 @@ std::unordered_map<int, Task> TaskHandler::getNextBatch() {
     std::unordered_map<int, Task> batch;
 
     int i;
-    for(i = firstTasksIndex ; i < std::ssize(allTasks) && allTasks.at(i).releaseTime == t ; ++i){
+    for(i = firstTasksIndex ; i < std::ssize(allTasks) && allTasks.at(i).getReleaseTime() == t ; ++i){
         auto& task = allTasks.at(i);
-        batch.try_emplace(task.index, task);
+        batch.try_emplace(task.getIndex(), task);
     }
 
     ++t;
