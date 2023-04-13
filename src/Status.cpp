@@ -9,12 +9,11 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, std::unordered_map<int, Task> initialTasks) :
-        ambient(std::move(ambientMap)),
-        unsatisfiedTasks{std::move(initialTasks)},
-        pathsWrappers{initializePathsWrappers(agents)},
-        noConflicts{noConflicts}
-        {}
+Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts) :
+    ambient(std::move(ambientMap)),
+    pathsWrappers{initializePathsWrappers(agents)},
+    noConflicts{noConflicts}
+    {}
 
 const Task & Status::getTask(int i) const {
     return unsatisfiedTasks.at(i);
@@ -390,8 +389,10 @@ bool Status::isDocking(int agentId, TimeStep t) const {
     return t >= dockingTimeStep;
 }
 
-const std::unordered_map<int, Task>& Status::getAvailableTasks() const {
-    return unsatisfiedTasks;
+std::unordered_set<int> Status::getAvailableTasksIds() const {
+    std::unordered_set<int> result;
+    std::ranges::transform(unsatisfiedTasks | std::views::keys, std::inserter(result, result.end()), [](int key) { return key; });
+    return result;
 }
 
 bool Status::noMoreTasks(int nextTasksIndex) const {

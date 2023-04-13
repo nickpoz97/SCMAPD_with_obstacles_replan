@@ -11,8 +11,7 @@ using BigHHandles = std::unordered_map<int, BigHHeap::handle_type>;
 
 class BigH {
 public:
-    // todo remove vector ds dependency
-    BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::unordered_map<int, Task>& tasks);
+    BigH(Heuristic h);
 
     ExtractedPath extractTop();
     [[nodiscard]] bool empty() const;
@@ -29,8 +28,8 @@ private:
     int v;
     Heuristic heuristic;
 
-    BigHHeap heap;
-    BigHHandles heapHandles;
+    BigHHeap heap{};
+    BigHHandles heapHandles{};
 
     static SmallHComp getComparator(Heuristic h);
 

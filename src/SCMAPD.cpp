@@ -9,8 +9,8 @@ SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler
                bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
     taskHandler{std::move(taskHandler)},
-    status(std::move(ambientMap), agents, noConflicts, taskHandler.getNextBatch()),
-    bigH{agents, status, heuristic, status.getAvailableTasks()},
+    status(std::move(ambientMap), agents, noConflicts),
+    bigH{heuristic},
     agentInfos{std::move(agents)},
     online{online}
     {
@@ -28,6 +28,8 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     status.updateTasks(taskHandler.getNextBatch());
+    bigH.addNewTasks(status, status.getAvailableTasksIds());
+
     if(!findSolution()){
         throw std::runtime_error("No solution");
     }

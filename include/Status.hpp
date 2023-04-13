@@ -17,8 +17,7 @@ public:
     Status(
         AmbientMap ambientMap,
         const std::vector<AgentInfo> &agents,
-        bool noConflicts,
-        std::unordered_map<int, Task> initialTasks
+        bool noConflicts
     );
 
     // t is the time when agent does the action
@@ -57,7 +56,7 @@ public:
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
-    [[nodiscard]] const std::unordered_map<int, Task>& getAvailableTasks() const;
+    [[nodiscard]] std::unordered_set<int> getAvailableTasksIds() const;
 
     [[nodiscard]] bool noMoreTasks(int nextTasksIndex) const;
 
@@ -68,7 +67,7 @@ public:
     [[nodiscard]] bool taskIdExists(int taskId) const;
 private:
     const AmbientMap ambient;
-    std::unordered_map<int, Task> unsatisfiedTasks;
+    std::unordered_map<int, Task> unsatisfiedTasks{};
     PWsVector pathsWrappers;
     bool noConflicts;
 

@@ -46,22 +46,11 @@ SmallHComp BigH::getComparator(Heuristic h) {
     }
 }
 
-BigH::BigH(const std::vector<AgentInfo> &agentInfos, const Status &status, Heuristic h, const std::unordered_map<int, Task>& tasks) :
+BigH::BigH(Heuristic h) :
     v{h == Heuristic::MCA ? 1 : 2},
     heuristic{h},
-    heap(getComparator(h)),
-    heapHandles{}
-    {
-        for(auto& [taskId, task] : tasks){
-            // only get tasks released at the beginning
-
-            assert(status.taskIdExists(taskId));
-            heapHandles.emplace(taskId, heap.emplace(agentInfos, taskId, v, status));
-        }
-
-        assert(checkIntegrity());
-        assert(checkOrder());
-    }
+    heap(getComparator(h))
+    {}
 
 ExtractedPath BigH::extractTop() {
     assert(!heap.empty());
