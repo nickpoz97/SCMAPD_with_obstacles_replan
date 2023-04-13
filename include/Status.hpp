@@ -65,9 +65,14 @@ public:
     void updateTasks(std::unordered_map<int, Task> newTasks);
 
     [[nodiscard]] bool taskIdExists(int taskId) const;
+
+    void removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds);
+
 private:
     const AmbientMap ambient;
-    std::unordered_map<int, Task> unsatisfiedTasks{};
+    std::unordered_map<int, Task> notAssignedTasks{};
+    std::unordered_map<int, Task> assignedTasks{};
+
     PWsVector pathsWrappers;
     bool noConflicts;
 

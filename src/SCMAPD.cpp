@@ -150,7 +150,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
-        bigH.addNewTasks(status, std::move(chosenTasks));
+        bigH.addNewTasks(status, chosenTasks);
 
         // maintain only better solutions
         if (findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
@@ -173,6 +173,7 @@ bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
         }
         pW = static_cast<PathWrapper>(a);
     }
+    status.removeSatisfiedTasks(chosenTasks);
     return true;
 }
 

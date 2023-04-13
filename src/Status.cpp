@@ -16,12 +16,19 @@ Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool
     {}
 
 const Task & Status::getTask(int i) const {
-    return unsatisfiedTasks.at(i);
+    assert(notAssignedTasks.contains(i) || assignedTasks.contains(i));
+    const auto result = notAssignedTasks.find(i);
+    return result != notAssignedTasks.cend() ? result->second : assignedTasks.find(i)->second;
 }
 
 std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     auto agentId = extractedPath.agentId;
     auto taskId = extractedPath.newTaskId;
+
+    assert(!assignedTasks.contains(taskId));
+    assignedTasks.emplace(taskId, notAssignedTasks.at(taskId));
+    // task has just been assigned
+    notAssignedTasks.erase(taskId);
 
     longestPathSize = std::max(static_cast<int>(extractedPath.wrapper.getPath().size()), longestPathSize);
     pathsWrappers[agentId] = std::move(extractedPath.wrapper);
@@ -193,10 +200,10 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     // taskId, value
     using TaskInfo = std::pair<int, TimeStep>;
 
-    n = std::min(static_cast<int>(unsatisfiedTasks.size()), n);
+    n = std::min(static_cast<int>(assignedTasks.size()), n);
 
     std::vector<TaskInfo> orderedTasks;
-    orderedTasks.reserve(unsatisfiedTasks.size());
+    orderedTasks.reserve(assignedTasks.size());
 
     for (const auto& pW : pathsWrappers){
         for (const auto& wp : pW.getWaypoints()){
@@ -229,14 +236,14 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
 }
 
 std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
-    n = std::min(static_cast<int>(unsatisfiedTasks.size()), n);
+    n = std::min(static_cast<int>(assignedTasks.size()), n);
 
     std::vector<int> shuffled_tasks{};
-    shuffled_tasks.reserve(unsatisfiedTasks.size());
+    shuffled_tasks.reserve(assignedTasks.size());
 
     // copy indices
     std::ranges::transform(
-            unsatisfiedTasks,
+            assignedTasks,
             std::back_inserter(shuffled_tasks),
             [](const std::pair<int, Task>& item){return item.first;}
     );
@@ -391,18 +398,18 @@ bool Status::isDocking(int agentId, TimeStep t) const {
 
 std::unordered_set<int> Status::getAvailableTasksIds() const {
     std::unordered_set<int> result;
-    std::ranges::transform(unsatisfiedTasks | std::views::keys, std::inserter(result, result.end()), [](int key) { return key; });
+    std::ranges::transform(notAssignedTasks | std::views::keys, std::inserter(result, result.end()), [](int key) { return key; });
     return result;
 }
 
 bool Status::noMoreTasks(int nextTasksIndex) const {
-    return nextTasksIndex == unsatisfiedTasks.size();
+    return nextTasksIndex == notAssignedTasks.size();
 }
 
 bool Status::allTasksSatisfied() const {
 
     // 0 means task not satysfied
-    // > 1 means tasks satysfied by more pWs
+    // > 1 means tasks satysfied by more pWs (impossible)
     auto rightTaskCount = [this](const std::pair<int, Task>& taskItem){
         return std::count_if(
             pathsWrappers.cbegin(),
@@ -412,19 +419,23 @@ bool Status::allTasksSatisfied() const {
     };
 
 
-    return std::ranges::all_of(unsatisfiedTasks, rightTaskCount);
+    return std::ranges::all_of(notAssignedTasks, rightTaskCount);
 }
 
 void Status::updateTasks(std::unordered_map<int, Task> newTasks) {
-    std::erase_if(
-        unsatisfiedTasks,
-        [this](const std::pair<int, Task>& item) {
-            return pathsWrappers.taskIsSatisfied(item.first);
-        }
-    );
-    unsatisfiedTasks.merge(newTasks);
+    notAssignedTasks.merge(newTasks);
 }
 
 bool Status::taskIdExists(int taskId) const {
-    return unsatisfiedTasks.contains(taskId);
+    return notAssignedTasks.contains(taskId) || assignedTasks.contains(taskId);
+}
+
+void Status::removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds) {
+    for(int taskId : removedTasksIds){
+        assert(assignedTasks.contains(taskId) && !notAssignedTasks.contains(taskId));
+        Task removedTask = assignedTasks.find(taskId)->second;
+        assert(removedTask.getIndex() == taskId);
+        assignedTasks.erase(taskId);
+        notAssignedTasks.emplace(taskId, removedTask);
+    }
 }
