@@ -64,6 +64,11 @@ TimeStep Waypoint::getDelay() const {
     return *arrivalTime- *idealGoalTime;
 }
 
+void Waypoint::setPosition(CompressedCoord newPos) {
+    assert(demand == Demand::END);
+    position = newPos;
+}
+
 Waypoint getTaskPickupWaypoint(const Task& task){
     return {task, Demand::PICKUP};
 }

@@ -9,16 +9,15 @@ SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler
                bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
     taskHandler{std::move(taskHandler)},
-    status(std::move(ambientMap), agents, noConflicts),
+    status(std::move(ambientMap), agents, noConflicts, online),
     bigH{heuristic},
-    agentInfos{std::move(agents)},
-    online{online}
+    agentInfos{std::move(agents)}
     {
         assert(!status.checkAllConflicts());
     }
 
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
-    if(online){
+    if(status.isOnline()){
         solveOnline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
         return;
     }

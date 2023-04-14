@@ -35,6 +35,8 @@ struct Waypoint{
 
     [[nodiscard]] int getTaskIndex() const;
 
+    void setPosition(CompressedCoord newPos);
+
 private:
     CompressedCoord position;
     Demand demand;

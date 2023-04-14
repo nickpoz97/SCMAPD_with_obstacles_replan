@@ -36,8 +36,14 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
     if(waypoints.empty()){
         throw std::runtime_error("No waypoints");
     }
+    
+    if(waypoints.size() == 1){
+        assert(waypoints.cbegin()->getDemand() == Demand::END && waypoints.cbegin()->getPosition() == agentLoc);
+        return Path{agentLoc};
+    }
 
-    assert(waypoints.crbegin()->getDemand() == Demand::END && waypoints.crbegin()->getPosition() == agentLoc);
+    assert(waypoints.crbegin()->getDemand() == Demand::END &&
+        (waypoints.crbegin()->getPosition() == agentLoc || waypoints.crbegin()->getPosition() == std::next(waypoints.crbegin())->getPosition()));
 
     int i = 0;
     // <order, location>
@@ -48,6 +54,11 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         std::back_inserter(goals),
         [&i](const Waypoint& wp) -> std::pair<int, CompressedCoord> {return {i++, wp.getPosition()};}
     );
+
+    // no home return
+    if(*goals.crbegin() == *(goals.crbegin() + 1)){
+        goals.erase(std::prev(goals.end()));
+    }
 
     Frontier frontier;
     const auto &dm = status.getDistanceMatrix();

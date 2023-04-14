@@ -9,10 +9,11 @@
 
 #include "Status.hpp"
 
-Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts) :
+Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, bool online) :
     ambient(std::move(ambientMap)),
     pathsWrappers{initializePathsWrappers(agents)},
-    noConflicts{noConflicts}
+    noConflicts{noConflicts},
+    online{online}
     {}
 
 const Task & Status::getTask(int i) const {
@@ -458,4 +459,8 @@ std::unordered_set<int> Status::getAvailableAgentIds(TimeStep t) const {
     );
 
     return result;
+}
+
+bool Status::isOnline() const {
+    return online;
 }

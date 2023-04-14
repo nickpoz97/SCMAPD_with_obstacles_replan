@@ -211,6 +211,11 @@ Assignment::insertTaskWaypoints(int newTaskId) {
     waypoints.insert(bestPickupIt, getTaskPickupWaypoint(newTask));
     waypoints.insert(bestDeliveryIt, getTaskDeliveryWaypoint(newTask));
 
+    if(status.isOnline()){
+        const auto endPos = std::next(waypoints.crbegin())->getPosition();
+        waypoints.rbegin()->setPosition(endPos);
+    }
+
     return computeIdealTTD();
 }
 

@@ -14,11 +14,7 @@
 
 class Status{
 public:
-    Status(
-        AmbientMap ambientMap,
-        const std::vector<AgentInfo> &agents,
-        bool noConflicts
-    );
+    Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, bool online);
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
@@ -70,6 +66,7 @@ public:
 
     std::unordered_set<int> getAvailableAgentIds(TimeStep t) const;
 
+    [[nodiscard]] bool isOnline() const;
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};
@@ -79,6 +76,7 @@ private:
     bool noConflicts;
 
     TimeStep longestPathSize = 0;
+    bool online;
 
     [[nodiscard]] bool
     checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

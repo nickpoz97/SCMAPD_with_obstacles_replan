@@ -36,7 +36,6 @@ private:
     BigH bigH;
 
     const std::vector<AgentInfo> agentInfos;
-    bool online;
 
     [[nodiscard]] bool findSolution();
 
