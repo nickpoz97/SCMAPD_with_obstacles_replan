@@ -167,7 +167,7 @@ bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
         auto& pW = status.getPathWrapper(agentId);
 
         Assignment a{pW, status};
-        if(!a.removeTasksAndWaypoints(chosenTasks, status)){
+        if(!a.removeTasksAndWaypoints(chosenTasks)){
             // some may have been updated
             return false;
         }

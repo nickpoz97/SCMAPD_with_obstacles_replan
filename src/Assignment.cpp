@@ -32,7 +32,7 @@ Assignment::addTask(int taskId) {
 
     auto tmpIdealTTD = insertTaskWaypoints(taskId);
 
-    if(!internalUpdate(status)){
+    if(!internalUpdate()){
         return false;
     }
 
@@ -71,7 +71,7 @@ Assignment::addTask(int taskId) {
 }
 
 bool
-Assignment::internalUpdate(const Status &status) {
+Assignment::internalUpdate() {
     auto resultPath{PathFinder::multiAStar(getWaypoints(), getInitialPos(), status, getAgentId())};
     if(!resultPath){
         return false;
@@ -135,16 +135,15 @@ TimeStep Assignment::computeApproxSpan(WaypointsList::const_iterator startIt) co
 }
 
 bool
-Assignment::removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const Status& status) {
+Assignment::removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices) {
     waypoints.remove_if([&](const Waypoint& wp){
         return wp.getDemand() != Demand::END && rmvTasksIndices.contains(wp.getTaskIndex());}
     );
     std::erase_if(satisfiedTasksIds,[&](int taskId){return rmvTasksIndices.contains(taskId);});
 
-    if(!internalUpdate(status)){
+    if(!internalUpdate()){
         return false;
     }
-    const auto& dm = status.getDistanceMatrix();
 
     setIdealTtd(computeIdealTTD());
     oldTTD = getIdealTTD();
@@ -187,8 +186,11 @@ Assignment::insertTaskWaypoints(int newTaskId) {
 
     // search for best position for task start and goal
     for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
+        auto newStartIt = waypoints.insert(wpPickupIt, getTaskPickupWaypoint(newTask));
+
         for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){
-            auto [newStartIt, newGoalIt] = insertNewWaypoints(newTaskId, wpPickupIt, wpDeliveryIt);
+            auto newGoalIt = waypoints.insert(wpDeliveryIt, getTaskDeliveryWaypoint(newTask));
+
             if(checkCapacityConstraint()){
                 auto newApproxTtd = computeApproxTTD(newStartIt);
                 std::optional<TimeStep> approxSpan{};
@@ -202,28 +204,14 @@ Assignment::insertTaskWaypoints(int newTaskId) {
                 }
             }
             assert(waypoints.crbegin()->getDemand() == Demand::END);
-            restorePreviousWaypoints(newStartIt, newGoalIt);
+            waypoints.erase(newGoalIt);
         }
+        waypoints.erase(newStartIt);
     }
-    insertNewWaypoints(newTaskId, bestPickupIt, bestDeliveryIt);
+    waypoints.insert(bestPickupIt, getTaskPickupWaypoint(newTask));
+    waypoints.insert(bestDeliveryIt, getTaskDeliveryWaypoint(newTask));
 
     return computeIdealTTD();
-}
-
-void Assignment::restorePreviousWaypoints(WaypointsList::iterator waypointStart,
-                                           WaypointsList::iterator waypointGoal) {
-    waypoints.erase(waypointStart);
-    waypoints.erase(waypointGoal);
-}
-
-std::pair<WaypointsList::iterator, WaypointsList::iterator> Assignment::insertNewWaypoints(int taskId, WaypointsList::iterator waypointStart,
-                                                                                            WaypointsList::iterator waypointGoal) {
-    const auto& task = status.getTask(taskId);
-
-    return {
-            waypoints.insert(waypointStart, getTaskPickupWaypoint(task)),
-            waypoints.insert(waypointGoal, getTaskDeliveryWaypoint(task))
-    };
 }
 
 TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpIt) const{

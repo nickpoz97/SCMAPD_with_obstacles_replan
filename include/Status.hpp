@@ -68,6 +68,8 @@ public:
 
     void removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds);
 
+    std::unordered_set<int> getAvailableAgentIds(TimeStep t) const;
+
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};

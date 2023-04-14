@@ -30,16 +30,12 @@ public:
     friend int operator<=>(const Assignment &a, const Assignment &b);
 
     // this should be called when waypoints and/or constraints are changed
-    [[nodiscard]] bool internalUpdate(const Status &status);
+    [[nodiscard]] bool internalUpdate();
 
-    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices, const Status& status);
+    bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices);
 private:
     TimeStep oldTTD = 0;
     Status& status;
-
-    std::pair<WaypointsList::iterator, WaypointsList::iterator> insertNewWaypoints(int taskId, WaypointsList::iterator waypointStart,
-                                                                                   WaypointsList::iterator waypointGoal);
-    void restorePreviousWaypoints(WaypointsList::iterator waypointStart, WaypointsList::iterator waypointGoal);
 
     bool checkCapacityConstraint() const;
 

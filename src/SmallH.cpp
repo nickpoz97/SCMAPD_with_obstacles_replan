@@ -76,7 +76,7 @@ void SmallH::updateTopElements(const Status &status) {
             auto& handle = heapHandles[agentId];
             assert((*handle).getAgentId() == agentId);
 
-            if(!(*handle).internalUpdate(status)){
+            if(!(*handle).internalUpdate()){
                 heap.erase(handle);
                 heapHandles.erase(agentId);
                 assert(heap.size() == heapHandles.size());
