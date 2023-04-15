@@ -22,7 +22,6 @@ public:
 
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
 
-    int getNHandledTasks() const;
     void clear();
 private:
     int v;

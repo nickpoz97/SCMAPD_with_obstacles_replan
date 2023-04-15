@@ -59,13 +59,17 @@ std::unordered_map<int, Task> TaskHandler::getNextBatch() {
     std::unordered_map<int, Task> batch;
 
     int i;
-    for(i = firstTasksIndex ; i < std::ssize(allTasks) && allTasks.at(i).getReleaseTime() == t ; ++i){
+    for(i = firstTasksBatchIndex ; i < std::ssize(allTasks) && allTasks.at(i).getReleaseTime() == t ; ++i){
         auto& task = allTasks.at(i);
         batch.emplace(task.getIndex(), task);
     }
 
     ++t;
-    firstTasksIndex += i;
+    firstTasksBatchIndex += i;
 
     return batch;
+}
+
+bool TaskHandler::noMoreTasks() const {
+    return firstTasksBatchIndex >= allTasks.size();
 }

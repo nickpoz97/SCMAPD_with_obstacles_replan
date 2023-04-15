@@ -142,7 +142,3 @@ void BigH::clear() {
     heap.clear();
     heapHandles.clear();
 }
-
-int BigH::getNHandledTasks() const {
-    return static_cast<int>(heap.size());
-}

@@ -403,10 +403,6 @@ std::unordered_set<int> Status::getAvailableTasksIds() const {
     return result;
 }
 
-bool Status::noMoreTasks(int nextTasksIndex) const {
-    return nextTasksIndex == notAssignedTasks.size();
-}
-
 bool Status::allTasksSatisfied() const {
 
     // 0 means task not satysfied

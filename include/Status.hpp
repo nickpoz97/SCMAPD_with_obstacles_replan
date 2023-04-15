@@ -54,8 +54,6 @@ public:
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
     [[nodiscard]] std::unordered_set<int> getAvailableTasksIds() const;
 
-    [[nodiscard]] bool noMoreTasks(int nextTasksIndex) const;
-
     [[nodiscard]] bool allTasksSatisfied() const;
 
     void updateTasks(std::unordered_map<int, Task> newTasks);
