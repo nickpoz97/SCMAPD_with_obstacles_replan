@@ -27,7 +27,9 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     status.updateTasks(taskHandler.getNextBatch());
-    bigH.addNewTasks(status, status.getAvailableTasksIds());
+
+    const auto& availableAgents = getAvailableAgentIds(0);
+    bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents);
 
     if(!findSolution()){
         throw std::runtime_error("No solution");
@@ -44,7 +46,7 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
     };
 
     while(getOptimizationTime() < cutOffTime){
-        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr);
+        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
 
         // no random elements
         if(!success && mtd == Method::WORST_TASKS){
@@ -56,9 +58,11 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
-    while(!taskHandler.noMoreTasks()){
+    for(int t = 0; !taskHandler.noMoreTasks(); ++t){
+        const auto& availableAgents = getAvailableAgentIds(t);
+
         status.updateTasks(taskHandler.getNextBatch());
-        bigH.addNewTasks(status, status.getAvailableTasksIds());
+        bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents);
         if(!findSolution()){
             throw std::runtime_error("No solution");
         }
@@ -125,7 +129,8 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr) {
+bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
+                      const std::vector<int> &availableAgentIds) {
     if(n <= 0){
         return false;
     }
@@ -148,7 +153,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
-        bigH.addNewTasks(status, chosenTasks);
+        bigH.addNewTasks(status, chosenTasks, availableAgentIds);
 
         // maintain only better solutions
         if (findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
@@ -195,14 +200,22 @@ const AmbientMap& SCMAPD::getAmbient() const{
     return status.getAmbient();
 }
 
-std::vector<AgentInfo> SCMAPD::getAvailableAgents(TimeStep t) const {
-    std::vector<AgentInfo> availableAgents;
+std::vector<int> SCMAPD::getAvailableAgentIds(TimeStep t) const {
+    auto filteringPredicate = [t](const PathWrapper& pW){
+        // agent is ready
+        return pW.isAvailable(t);
+    };
 
-    for(const auto& agentInfo : agentInfos){
-        if(status.isDocking(agentInfo.index, t)) {
-            availableAgents.push_back(agentInfo);
-        }
-    }
+    auto agentIdExtractor = [](const PathWrapper& pW){
+        return pW.getAgentId();
+    };
 
-    return availableAgents;
+    std::vector<int> result;
+
+    std::ranges::copy(
+        status.getPathWrappers() | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
+        std::back_inserter(result)
+    );
+
+    return result;
 }

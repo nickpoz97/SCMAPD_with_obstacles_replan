@@ -39,7 +39,8 @@ private:
 
     [[nodiscard]] bool findSolution();
 
-    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr);
+    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
+                  const std::vector<int> &availableAgentIds);
 
     [[nodiscard]] bool removeTasks(const std::unordered_set<int> &chosenTasks);
 
@@ -48,7 +49,7 @@ private:
     void solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
     void solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
-    [[nodiscard]] std::vector<AgentInfo> getAvailableAgents(TimeStep t) const;
+    std::vector<int> getAvailableAgentIds(TimeStep t) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

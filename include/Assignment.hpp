@@ -20,7 +20,6 @@
 class Assignment : public PathWrapper{
 
 public:
-    Assignment(const AgentInfo &agentInfo, Status &status);
     Assignment(const PathWrapper &pW, Status &status);
 
     [[nodiscard]] TimeStep getMCA() const;

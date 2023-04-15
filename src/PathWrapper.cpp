@@ -134,3 +134,7 @@ void PathWrapper::setIdealTtd(TimeStep idealTtd) {
     this->idealTTD = idealTtd;
 }
 
+bool PathWrapper::isAvailable(TimeStep t) const {
+    return t >= std::ssize(path) - 1;
+}
+

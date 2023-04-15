@@ -5,12 +5,6 @@
 #include "Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
 
-Assignment::Assignment(const AgentInfo &agentInfo, Status &status) :
-    PathWrapper{agentInfo},
-    status{status},
-    oldTTD{0}
-{}
-
 Assignment::Assignment(const PathWrapper &pW, Status &status) :
     PathWrapper{pW},
     status{status},

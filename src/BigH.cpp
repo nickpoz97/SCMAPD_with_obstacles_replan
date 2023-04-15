@@ -120,13 +120,13 @@ std::vector<std::vector<std::pair<TimeStep, Assignment>>> BigH::getOrderedVector
     return vec;
 }
 
-void BigH::addNewTasks(const Status &status, const std::unordered_set<int> &newTaskIndices) {
+void BigH::addNewTasks(const Status &status, const std::unordered_set<int> &newTaskIndices, const std::vector<int> &availableAgentIds) {
     for(int taskId : newTaskIndices){
         // if tha UTI contains it this mean you re-added a task
         // this exploits the fact we should not have index value overflow
         assert(!heapHandles.contains(taskId));
         assert(status.taskIdExists(taskId));
-        heapHandles.emplace(taskId, heap.emplace(taskId, v, status));
+        heapHandles.emplace(taskId, heap.emplace(taskId, v, status, availableAgentIds));
     }
 
     assert(checkIntegrity());

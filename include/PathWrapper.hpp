@@ -35,7 +35,7 @@ public:
 
     [[nodiscard]] bool empty() const;
 
-
+    [[nodiscard]] bool isAvailable(TimeStep t) const;
 private:
     int index;
     int capacity;

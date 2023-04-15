@@ -437,26 +437,6 @@ void Status::removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds
     }
 }
 
-std::unordered_set<int> Status::getAvailableAgentIds(TimeStep t) const {
-    auto filteringPredicate = [t](const PathWrapper& pW){
-        // agent is ready
-        return t >= pW.getPath().size();
-    };
-
-    auto agentIdExtractor = [](const PathWrapper& pW){
-        return pW.getAgentId();
-    };
-
-    std::unordered_set<int> result;
-
-    std::ranges::copy(
-        pathsWrappers | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
-        std::inserter(result, result.end())
-    );
-
-    return result;
-}
-
 bool Status::isOnline() const {
     return online;
 }
