@@ -162,13 +162,20 @@ Assignment::insertTaskWaypoints(int newTaskId) {
     assert(waypoints.crend()->getDemand() == Demand::END);
 
     const Task& newTask = status.getTask(newTaskId);
+    auto pickupWaypoint = getTaskPickupWaypoint(newTask);
+    auto deliveryWaypoint = getTaskDeliveryWaypoint(newTask);
 
     // only end waypoint
     if(waypoints.size() == 1){
         assert(waypoints.cbegin()->getDemand() == Demand::END);
-        waypoints.push_front(getTaskDeliveryWaypoint(newTask));
-        waypoints.push_front(getTaskPickupWaypoint(newTask));
+        waypoints.push_front(deliveryWaypoint);
+        waypoints.push_front(pickupWaypoint);
         assert(waypoints.crbegin()->getDemand() == Demand::END);
+
+        if(status.isOnline()){
+            const auto endPos = std::next(waypoints.crbegin())->getPosition();
+            waypoints.rbegin()->setPosition(endPos);
+        }
         return computeIdealTTD();
     }
 
@@ -180,10 +187,10 @@ Assignment::insertTaskWaypoints(int newTaskId) {
 
     // search for best position for task start and goal
     for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
-        auto newStartIt = waypoints.insert(wpPickupIt, getTaskPickupWaypoint(newTask));
+        auto newStartIt = waypoints.insert(wpPickupIt, pickupWaypoint);
 
         for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){
-            auto newGoalIt = waypoints.insert(wpDeliveryIt, getTaskDeliveryWaypoint(newTask));
+            auto newGoalIt = waypoints.insert(wpDeliveryIt, deliveryWaypoint);
 
             if(checkCapacityConstraint()){
                 auto newApproxTtd = computeApproxTTD(newStartIt);
@@ -202,8 +209,8 @@ Assignment::insertTaskWaypoints(int newTaskId) {
         }
         waypoints.erase(newStartIt);
     }
-    waypoints.insert(bestPickupIt, getTaskPickupWaypoint(newTask));
-    waypoints.insert(bestDeliveryIt, getTaskDeliveryWaypoint(newTask));
+    waypoints.insert(bestPickupIt, pickupWaypoint);
+    waypoints.insert(bestDeliveryIt, deliveryWaypoint);
 
     if(status.isOnline()){
         const auto endPos = std::next(waypoints.crbegin())->getPosition();

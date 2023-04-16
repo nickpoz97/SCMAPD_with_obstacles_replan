@@ -56,7 +56,7 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
     );
 
     // no home return
-    if(*goals.crbegin() == *(goals.crbegin() + 1)){
+    if(goals.crbegin()->second == (goals.crbegin() + 1)->second){
         goals.erase(std::prev(goals.end()));
     }
 

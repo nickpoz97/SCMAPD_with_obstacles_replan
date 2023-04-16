@@ -84,7 +84,8 @@ const Path &PathWrapper::getPath() const {
 
 CompressedCoord PathWrapper::getInitialPos() const {
     assert(!path.empty());
-    return path[0];
+    // last element is different when there is no home return
+    return *path.crbegin();
 }
 
 int PathWrapper::randomTaskId(int magicNumber) const {
