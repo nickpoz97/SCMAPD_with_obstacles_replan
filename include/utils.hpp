@@ -58,6 +58,13 @@ namespace utils{
         if(mtdString == "ARRIVAL_TIME") return Metric::ARRIVAL_TIME;
         throw std::runtime_error("Invalid Metric option");
     }
+
+    // frequencyValue, isNumerator
+    inline std::pair<int, bool> getFrequency(const float freq){
+        return freq == 0 ? std::pair{0, true} : (
+            freq >= 1.0 ? std::pair{static_cast<int>(freq), true} : std::pair{static_cast<int>(1 / freq), false}
+        );
+    }
 }
 
 #endif //SIMULTANEOUS_CMAPD_UTILS_HPP

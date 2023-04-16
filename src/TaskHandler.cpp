@@ -6,15 +6,17 @@
 #include "TaskHandler.hpp"
 
 TaskHandler::TaskHandler(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm) :
-    allTasks{loadTasks(tasksFilePath, dm)}
+    allTasks{loadTasks(tasksFilePath, dm, false, 0)}
 {}
 
 TaskHandler::TaskHandler(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, bool isNumerator,
                          int frequency) :
-    allTasks(loadTasks(tasksFilePath, dm, ',', isNumerator, frequency))
+    allTasks(loadTasks(tasksFilePath, dm, isNumerator, frequency))
 {}
 
-std::vector<Task> TaskHandler::loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, char horizontalSep, bool isNumerator, int frequency){
+std::vector<Task>
+TaskHandler::loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, bool isMoreThanOne,
+                       int frequency) {
     std::ifstream fs (tasksFilePath, std::ios::in);
 
     if(!fs.is_open()){
@@ -32,10 +34,12 @@ std::vector<Task> TaskHandler::loadTasks(const std::filesystem::path &tasksFileP
 
     for (int i = 0 ; i < nTasks ; ++i){
         std::getline(fs, line);
-        TimeStep releaseTime = (frequency == 0) ? 0 : (isNumerator ? i / frequency : i * frequency);
+        TimeStep releaseTime = (frequency == 0) ? 0 : (isMoreThanOne ? i / frequency : i * frequency);
 
         std::stringstream taskString{line};
         std::string value;
+
+        constexpr char horizontalSep = ',';
 
         std::getline(taskString, value, horizontalSep);
         int yBegin = std::stoi(value);

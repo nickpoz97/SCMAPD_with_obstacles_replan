@@ -23,20 +23,16 @@ public:
     );
 
     std::unordered_map<int, Task> getNextBatch();
-    bool noMoreTasks() const;
+    [[nodiscard]] bool noMoreTasks() const;
 
 private:
     const std::vector<Task> allTasks;
     TimeStep t = 0;
     int firstTasksBatchIndex = 0;
 
-    static std::vector<Task> loadTasks(
-        const std::filesystem::path &tasksFilePath,
-        const DistanceMatrix &dm,
-        char horizontalSep=',',
-        bool isNumerator = true,
-        int frequency = 0
-    );
+    static std::vector<Task>
+    loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm, bool isMoreThanOne,
+              int frequency);
 };
 
 

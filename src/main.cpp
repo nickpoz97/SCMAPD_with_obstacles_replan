@@ -38,6 +38,7 @@ int main(int argc, char* argv[]){
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
         ("ideal", po::bool_switch(&ideal)->default_value(false), "ideal mode")
+        ("frequency", po::value<float>()->default_value(0.0), "frequency")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -59,11 +60,12 @@ int main(int argc, char* argv[]){
     auto nt{vm["nt"].as<int>()};
     auto mtd{utils::getMethod(vm["mtd"].as<string>())};
     auto metric{utils::getMetric(vm["metric"].as<string>())};
+    auto [freqValue, freqNotFractional] = utils::getFrequency(vm["frequency"].as<float>());
 
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
     auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
 
-    TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix()};
+    TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix(), freqNotFractional, freqValue};
 
     SCMAPD scmapd{
         std::move(ambientMap),
@@ -71,7 +73,7 @@ int main(int argc, char* argv[]){
         std::move(taskHandler),
         heur,
         ideal,
-        false
+        freqValue != 0
     };
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
