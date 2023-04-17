@@ -63,6 +63,10 @@ public:
     void removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds);
 
     [[nodiscard]] bool isOnline() const;
+
+    void incrementTimeStep();
+    [[nodiscard]] TimeStep getTimeStep() const;
+
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};
@@ -73,6 +77,7 @@ private:
 
     TimeStep longestPathSize = 0;
     bool online;
+    TimeStep actualTimeStep = 0;
 
     [[nodiscard]] bool
     checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

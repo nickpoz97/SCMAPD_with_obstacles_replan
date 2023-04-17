@@ -228,7 +228,9 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
 
     auto ttd = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
     auto prevWpPos = newPickupWpIt == getWaypoints().cbegin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
-    auto prevArrivalTime = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getArrivalTime();
+
+    auto prevArrivalTime = newPickupWpIt == getWaypoints().cbegin() ?
+        status.getTimeStep() : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != getWaypoints().end() ; ++wpIt){
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
@@ -241,7 +243,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
         prevArrivalTime = arrivalTime;
     }
 
-    assert(!(waypoints.size() == 3) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt->getPosition()));
+    assert(!(waypoints.size() == 3 && !status.isOnline()) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt->getPosition()));
     return ttd;
 }
 

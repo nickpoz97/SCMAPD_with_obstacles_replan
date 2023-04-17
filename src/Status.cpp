@@ -440,3 +440,11 @@ void Status::removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds
 bool Status::isOnline() const {
     return online;
 }
+
+void Status::incrementTimeStep() {
+    ++actualTimeStep;
+}
+
+TimeStep Status::getTimeStep() const {
+    return actualTimeStep;
+}

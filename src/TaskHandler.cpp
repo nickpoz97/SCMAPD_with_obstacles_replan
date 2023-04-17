@@ -69,7 +69,7 @@ std::unordered_map<int, Task> TaskHandler::getNextBatch() {
     }
 
     ++t;
-    firstTasksBatchIndex += i;
+    firstTasksBatchIndex = i;
 
     return batch;
 }

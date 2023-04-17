@@ -58,14 +58,16 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
-    for(int t = 0; !taskHandler.noMoreTasks(); ++t){
-        const auto& availableAgents = getAvailableAgentIds(t);
+    while(!taskHandler.noMoreTasks()){
+        const auto& availableAgents = getAvailableAgentIds(status.getTimeStep());
 
         status.updateTasks(taskHandler.getNextBatch());
+
         bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents);
         if(!findSolution()){
             throw std::runtime_error("No solution");
         }
+        status.incrementTimeStep();
     }
 }
 
