@@ -65,12 +65,10 @@ int main(int argc, char* argv[]){
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
     auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
 
-    TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix(), freqNotFractional, freqValue};
-
     SCMAPD scmapd{
         std::move(ambientMap),
-        std::move(agents),
-        std::move(taskHandler),
+        agents,
+        TaskHandler{tasksFile, ambientMap.getDistanceMatrix(), freqNotFractional, freqValue},
         heur,
         ideal,
         freqValue != 0

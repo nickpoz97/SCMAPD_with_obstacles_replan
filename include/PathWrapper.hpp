@@ -22,6 +22,7 @@ public:
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
+    void reset();
 
     int randomTaskId(int magicNumber) const;
 

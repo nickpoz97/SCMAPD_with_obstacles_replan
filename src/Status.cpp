@@ -30,8 +30,6 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     assignedTasks.emplace(taskId, notAssignedTasks.at(taskId));
     // task has just been assigned
     notAssignedTasks.erase(taskId);
-
-    longestPathSize = std::max(static_cast<int>(extractedPath.wrapper.getPath().size()), longestPathSize);
     pathsWrappers[agentId] = std::move(extractedPath.wrapper);
 
     return {agentId, taskId};
@@ -141,10 +139,6 @@ bool Status::checkPathConflicts(const Path &pA, const Path &pB) {
         }
     }
     return false;
-}
-
-TimeStep Status::getLongestPathSize() const {
-    return longestPathSize;
 }
 
 std::vector<PathWrapper> Status::initializePathsWrappers(const std::vector<AgentInfo> &agents) {
@@ -416,7 +410,7 @@ bool Status::allTasksSatisfied() const {
     };
 
 
-    return std::ranges::all_of(notAssignedTasks, rightTaskCount);
+    return std::ranges::all_of(assignedTasks, rightTaskCount);
 }
 
 void Status::updateTasks(std::unordered_map<int, Task> newTasks) {

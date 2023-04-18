@@ -5,13 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
-SCMAPD::SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler taskHandler, Heuristic heuristic,
+SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
                bool noConflicts, bool online) :
     start{std::chrono::steady_clock::now()},
     taskHandler{std::move(taskHandler)},
     status(std::move(ambientMap), agents, noConflicts, online),
-    bigH{heuristic},
-    agentInfos{std::move(agents)}
+    bigH{heuristic}
     {
         assert(!status.checkAllConflicts());
     }
@@ -55,6 +54,18 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
+
+    const auto& pWs = status.getPathWrappers();
+    ttt += pWs.getTTT();
+    ttd += pWs.getTTD();
+    makespan += pWs.getMaxSpanCost();
+    conflicts = status.checkAllConflicts();
+    hash = hash_value(status);
+
+    // just debug
+    for(int i = 0 ; i < pWs.size() ; ++i){
+        status.getPathWrapper(i).reset();
+    }
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
@@ -92,6 +103,7 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
     using namespace nlohmann;
     json j;
 
+    // warning this branch is currently not useful
     if (printAgentsInfo){
         j["agents"] = json::array();
 
@@ -111,11 +123,11 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
 
     j["stats"] = {
             {"time", fmt::format("{0:.2f}", execution_time.count())},
-            {"makespan", pathWrappers.getMaxSpanCost()},
-            {"ttt", pathWrappers.getTTT()},
-            {"ttd", pathWrappers.getTTD()},
-            {"status_hash", hash_value(status)},
-            {"conflicts", status.checkAllConflicts()},
+            {"makespan", makespan},
+            {"ttt", ttt},
+            {"ttd", ttd},
+            {"status_hash", hash},
+            {"conflicts", conflicts},
     };
 
     fmt::print("{}", j.dump(1));
@@ -192,14 +204,6 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
         default:
             return newResult.getTTT() <= oldResult.getTTT();
     }
-}
-
-const std::vector<AgentInfo>& SCMAPD::getAgentsInfos() const{
-    return agentInfos;
-}
-
-const AmbientMap& SCMAPD::getAmbient() const{
-    return status.getAmbient();
 }
 
 std::vector<int> SCMAPD::getAvailableAgentIds(TimeStep t) const {

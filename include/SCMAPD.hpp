@@ -12,12 +12,8 @@
 
 class SCMAPD {
 public:
-    SCMAPD(AmbientMap ambientMap, std::vector<AgentInfo> agents, TaskHandler taskHandler, Heuristic heuristic,
+    SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
            bool noConflicts, bool online);
-
-    [[nodiscard]] const std::vector<AgentInfo>& getAgentsInfos() const;
-
-    [[nodiscard]] const AmbientMap& getAmbient() const;
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
@@ -35,7 +31,11 @@ private:
     Status status;
     BigH bigH;
 
-    const std::vector<AgentInfo> agentInfos;
+    TimeStep ttd = 0;
+    TimeStep ttt = 0;
+    TimeStep makespan = 0;
+    size_t hash = hash_value(status);
+    bool conflicts = false;
 
     [[nodiscard]] bool findSolution();
 

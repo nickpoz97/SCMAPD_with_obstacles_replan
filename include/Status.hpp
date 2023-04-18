@@ -29,8 +29,6 @@ public:
 
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
-    [[nodiscard]] TimeStep getLongestPathSize() const;
-
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
     [[nodiscard]] int getNAgents() const;
@@ -75,7 +73,6 @@ private:
     PWsVector pathsWrappers;
     bool noConflicts;
 
-    TimeStep longestPathSize = 0;
     bool online;
     TimeStep actualTimeStep = 0;
 
