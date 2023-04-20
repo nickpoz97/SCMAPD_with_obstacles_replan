@@ -27,7 +27,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     status.updateTasks(taskHandler.getNextBatch());
 
-    const auto& availableAgents = getAvailableAgentIds(0);
+    const auto& availableAgents = status.getAvailableAgentIds();
     bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents);
 
     if(!findSolution()){
@@ -61,16 +61,11 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
     makespan += pWs.getMaxSpanCost();
     conflicts = status.checkAllConflicts();
     hash = hash_value(status);
-
-    // just debug
-    for(int i = 0 ; i < pWs.size() ; ++i){
-        status.getPathWrapper(i).reset();
-    }
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
     while(!taskHandler.noMoreTasks()){
-        const auto& availableAgents = getAvailableAgentIds(status.getTimeStep());
+        const auto& availableAgents = status.getAvailableAgentIds();
 
         status.updateTasks(taskHandler.getNextBatch());
 
@@ -204,24 +199,4 @@ bool SCMAPD::isBetter(const PWsVector &newResult, const PWsVector &oldResult, Ob
         default:
             return newResult.getTTT() <= oldResult.getTTT();
     }
-}
-
-std::vector<int> SCMAPD::getAvailableAgentIds(TimeStep t) const {
-    auto filteringPredicate = [t](const PathWrapper& pW){
-        // agent is ready
-        return pW.isAvailable(t);
-    };
-
-    auto agentIdExtractor = [](const PathWrapper& pW){
-        return pW.getAgentId();
-    };
-
-    std::vector<int> result;
-
-    std::ranges::copy(
-        status.getPathWrappers() | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
-        std::back_inserter(result)
-    );
-
-    return result;
 }

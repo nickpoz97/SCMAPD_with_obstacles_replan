@@ -139,14 +139,11 @@ bool PathWrapper::isAvailable(TimeStep t) const {
     return t >= std::ssize(path) - 1;
 }
 
-void PathWrapper::reset() {
+void PathWrapper::extend(TimeStep actualTimeStep){
     assert(!path.empty());
-    auto newInitialPos = *path.crbegin();
-    path.clear();
-    idealTTD = 0;
-    waypoints.clear();
 
-    // new start
-    path.push_back(newInitialPos);
+    for(int t = std::ssize(path); t < actualTimeStep ; ++t){
+        path.push_back(*path.crbegin());
+    }
 }
 

@@ -65,6 +65,7 @@ public:
     void incrementTimeStep();
     [[nodiscard]] TimeStep getTimeStep() const;
 
+    std::vector<int> getAvailableAgentIds();
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};

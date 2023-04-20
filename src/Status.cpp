@@ -437,8 +437,33 @@ bool Status::isOnline() const {
 
 void Status::incrementTimeStep() {
     ++actualTimeStep;
+
+    std::ranges::for_each(
+        pathsWrappers,
+        [this](PathWrapper& pW){pW.extend(actualTimeStep);}
+    );
 }
 
 TimeStep Status::getTimeStep() const {
     return actualTimeStep;
+}
+
+std::vector<int> Status::getAvailableAgentIds() {
+    auto filteringPredicate = [this](const PathWrapper& pW){
+        // agent is ready
+        return pW.isAvailable(actualTimeStep);
+    };
+
+    auto agentIdExtractor = [](const PathWrapper& pW){
+        return pW.getAgentId();
+    };
+
+    std::vector<int> result;
+
+    std::ranges::copy(
+            getPathWrappers() | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
+            std::back_inserter(result)
+    );
+
+    return result;
 }

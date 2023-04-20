@@ -22,7 +22,7 @@ public:
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
     CompressedCoord getInitialPos() const;
-    void reset();
+    void extend(TimeStep actualTimeStep);
 
     int randomTaskId(int magicNumber) const;
 

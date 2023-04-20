@@ -48,8 +48,6 @@ private:
 
     void solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
     void solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
-
-    std::vector<int> getAvailableAgentIds(TimeStep t) const;
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP
