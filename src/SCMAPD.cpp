@@ -185,7 +185,6 @@ bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
         }
         pW = static_cast<PathWrapper>(a);
     }
-    status.removeSatisfiedTasks(chosenTasks);
     return true;
 }
 

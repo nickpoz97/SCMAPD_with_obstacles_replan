@@ -9,7 +9,9 @@ Assignment::Assignment(const PathWrapper &pW, Status &status) :
     PathWrapper{pW},
     status{status},
     oldTTD{PathWrapper::getTTD()}
-{}
+{
+    assert(status.getTimeStep() >= std::ssize(getPath()) - 1);
+}
 
 TimeStep Assignment::getMCA() const {
     return getTTD() - oldTTD;
@@ -185,8 +187,15 @@ Assignment::insertTaskWaypoints(int newTaskId) {
     TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
     TimeStep bestApproxSpan = std::numeric_limits<TimeStep>::max();
 
+    auto firstWp = std::ranges::find_if(
+        waypoints,
+        [this](const Waypoint& wp){
+            return wp.getDemand() == Demand::END || !status.taskIsAlreadyAssigned(wp.getTaskIndex());
+        }
+    );
+
     // search for best position for task start and goal
-    for(auto wpPickupIt = waypoints.begin(); wpPickupIt != waypoints.end() ; ++wpPickupIt){
+    for(auto wpPickupIt = firstWp ; wpPickupIt != waypoints.end() ; ++wpPickupIt){
         auto newStartIt = waypoints.insert(wpPickupIt, pickupWaypoint);
 
         for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){

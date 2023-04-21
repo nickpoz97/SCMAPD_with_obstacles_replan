@@ -27,9 +27,6 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     auto taskId = extractedPath.newTaskId;
 
     assert(!assignedTasks.contains(taskId));
-    assignedTasks.emplace(taskId, notAssignedTasks.at(taskId));
-    // task has just been assigned
-    notAssignedTasks.erase(taskId);
     pathsWrappers[agentId] = std::move(extractedPath.wrapper);
 
     return {agentId, taskId};
@@ -195,10 +192,12 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     // taskId, value
     using TaskInfo = std::pair<int, TimeStep>;
 
-    n = std::min(static_cast<int>(assignedTasks.size()), n);
+    std::unordered_set<int> newCoveredTasks = getCoveredTasksIds();
+
+    n = std::min(static_cast<int>(newCoveredTasks.size()), n);
 
     std::vector<TaskInfo> orderedTasks;
-    orderedTasks.reserve(assignedTasks.size());
+    orderedTasks.reserve(newCoveredTasks.size());
 
     for (const auto& pW : pathsWrappers){
         for (const auto& wp : pW.getWaypoints()){
@@ -231,14 +230,14 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
 }
 
 std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
-    n = std::min(static_cast<int>(assignedTasks.size()), n);
+    n = std::min(static_cast<int>(notAssignedTasks.size()), n);
 
     std::vector<int> shuffled_tasks{};
-    shuffled_tasks.reserve(assignedTasks.size());
+    shuffled_tasks.reserve(notAssignedTasks.size());
 
     // copy indices
     std::ranges::transform(
-            assignedTasks,
+            notAssignedTasks,
             std::back_inserter(shuffled_tasks),
             [](const std::pair<int, Task>& item){return item.first;}
     );
@@ -409,7 +408,6 @@ bool Status::allTasksSatisfied() const {
         ) == 1;
     };
 
-
     return std::ranges::all_of(assignedTasks, rightTaskCount);
 }
 
@@ -421,22 +419,18 @@ bool Status::taskIdExists(int taskId) const {
     return notAssignedTasks.contains(taskId) || assignedTasks.contains(taskId);
 }
 
-void Status::removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds) {
-    for(int taskId : removedTasksIds){
-        assert(assignedTasks.contains(taskId) && !notAssignedTasks.contains(taskId));
-        Task removedTask = assignedTasks.find(taskId)->second;
-        assert(removedTask.getIndex() == taskId);
-        assignedTasks.erase(taskId);
-        notAssignedTasks.emplace(taskId, removedTask);
-    }
-}
-
 bool Status::isOnline() const {
     return online;
 }
 
 void Status::incrementTimeStep() {
     ++actualTimeStep;
+
+    for(int taskId : getCoveredTasksIds()){
+        assert(!assignedTasks.contains(taskId) && notAssignedTasks.contains(taskId));
+        assignedTasks.emplace(taskId, notAssignedTasks.find(taskId)->second);
+        notAssignedTasks.erase(taskId);
+    }
 
     std::ranges::for_each(
         pathsWrappers,
@@ -466,4 +460,19 @@ std::vector<int> Status::getAvailableAgentIds() {
     );
 
     return result;
+}
+
+bool Status::taskIsAlreadyAssigned(int taskId) const {
+    return assignedTasks.contains(taskId);
+}
+
+std::unordered_set<int> Status::getCoveredTasksIds() const {
+    std::vector<int> result;
+
+    std::ranges::copy(
+        notAssignedTasks |
+        std::views::keys |
+        std::views::filter([this](int taskId){return pathsWrappers.taskIsSatisfied(taskId);}),
+        std::back_inserter(result)
+    );
 }

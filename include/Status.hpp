@@ -58,14 +58,14 @@ public:
 
     [[nodiscard]] bool taskIdExists(int taskId) const;
 
-    void removeSatisfiedTasks(const std::unordered_set<int> &removedTasksIds);
-
     [[nodiscard]] bool isOnline() const;
 
     void incrementTimeStep();
     [[nodiscard]] TimeStep getTimeStep() const;
 
     std::vector<int> getAvailableAgentIds();
+
+    bool taskIsAlreadyAssigned(int taskId) const;
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};
@@ -84,6 +84,8 @@ private:
 
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
     static bool checkPathConflicts(const Path &pA, const Path &pB);
+
+    std::unordered_set<int> getCoveredTasksIds() const;
 };
 
 inline std::size_t hash_value(const Status& s){
