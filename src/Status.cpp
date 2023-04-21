@@ -256,12 +256,13 @@ std::vector<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Metri
     // agentId, value
     using AgentInfo = std::pair<int, TimeStep>;
 
-    n = std::min(static_cast<int>(pathsWrappers.size()), n);
+    int nAvailableAgents = std::ssize(getAvailableAgentIds());
+    n = std::min(nAvailableAgents, n);
 
     std::vector<AgentInfo> orderedAgents;
     orderedAgents.reserve(orderedAgents.size());
 
-    for (int i = 0 ; i < pathsWrappers.size() ; ++i){
+    for (int i = 0 ; i < nAvailableAgents ; ++i){
         const auto& pW = pathsWrappers[i];
 
         switch (mt) {
@@ -441,22 +442,28 @@ TimeStep Status::getTimeStep() const {
     return actualTimeStep;
 }
 
-std::vector<int> Status::getAvailableAgentIds() {
+std::vector<int> Status::getAvailableAgentIds() const{
+    static TimeStep lastTimeStepCall = -1;
+    static std::vector<int> result;
+
     auto filteringPredicate = [this](const PathWrapper& pW){
         // agent is ready
         return pW.isAvailable(actualTimeStep);
     };
 
-    auto agentIdExtractor = [](const PathWrapper& pW){
-        return pW.getAgentId();
-    };
+    // when there is an update
+    if(lastTimeStepCall != actualTimeStep){
+        lastTimeStepCall = actualTimeStep;
 
-    std::vector<int> result;
+        auto agentIdExtractor = [](const PathWrapper& pW){
+            return pW.getAgentId();
+        };
 
-    std::ranges::copy(
+        std::ranges::copy(
             getPathWrappers() | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
             std::back_inserter(result)
-    );
+        );
+    }
 
     return result;
 }

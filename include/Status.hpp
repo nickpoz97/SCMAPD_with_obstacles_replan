@@ -35,6 +35,8 @@ public:
 
     [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const;
     [[nodiscard]] std::vector<int> chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const;
+
+    // todo warning this might not working in online mode
     [[nodiscard]] std::vector<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
@@ -63,7 +65,7 @@ public:
     void incrementTimeStep();
     [[nodiscard]] TimeStep getTimeStep() const;
 
-    std::vector<int> getAvailableAgentIds();
+    std::vector<int> getAvailableAgentIds() const;
 
     bool taskIsAlreadyAssigned(int taskId) const;
 
