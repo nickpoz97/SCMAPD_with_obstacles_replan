@@ -147,18 +147,19 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
     auto PWsBackup{status.getPathWrappers()};
 
     auto chooseNTasks = [n, mtr, mtd, iterIndex, this](){
-        switch (mtd) {
-            case Method::WORST_TASKS:
-                return status.chooseNWorstTasks(n, mtr);
-            case Method::WORST_AGENTS:
-                return status.chooseTasksFromNWorstAgents(iterIndex, n, mtr);
-            // RANDOM TASKS
-            default:
-                return status.chooseNRandomTasks(iterIndex, n);
+        if(mtd == Method::WORST_AGENTS){
+            return status.chooseTasksFromNWorstAgents(iterIndex, n, mtr);
         }
+
+        const auto coveredTaskIds = status.getCoveredTasksIds();
+        if(mtd == Method::WORST_TASKS){
+            return status.chooseNWorstTasks(n, mtr, coveredTaskIds);
+        }
+        // RANDOM_TASKS
+        return status.chooseNRandomTasks(iterIndex, n, coveredTaskIds);
     };
 
-    std::unordered_set<int> chosenTasks{chooseNTasks()};
+    std::vector<int> chosenTasks{chooseNTasks()};
 
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
@@ -174,12 +175,12 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
     return false;
 }
 
-bool SCMAPD::removeTasks(const std::unordered_set<int> &chosenTasks) {
+bool SCMAPD::removeTasks(const std::vector<int> &chosenTasks) {
     for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
         auto& pW = status.getPathWrapper(agentId);
 
         Assignment a{pW, status};
-        if(!a.removeTasksAndWaypoints(chosenTasks)){
+        if(!a.removeTasksAndWaypoints({chosenTasks.cbegin(), chosenTasks.cend()})){
             // some may have been updated
             return false;
         }

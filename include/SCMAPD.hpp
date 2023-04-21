@@ -42,7 +42,7 @@ private:
     bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
                   const std::vector<int> &availableAgentIds);
 
-    [[nodiscard]] bool removeTasks(const std::unordered_set<int> &chosenTasks);
+    [[nodiscard]] bool removeTasks(const std::vector<int> &chosenTasks);
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 

@@ -33,9 +33,9 @@ public:
 
     [[nodiscard]] int getNAgents() const;
 
-    [[nodiscard]] std::unordered_set<int> chooseNRandomTasks(int iterIndex, int n) const;
-    [[nodiscard]] std::unordered_set<int> chooseNWorstTasks(int n, Metric mt) const;
-    [[nodiscard]] std::unordered_set<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
+    [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const;
+    [[nodiscard]] std::vector<int> chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const;
+    [[nodiscard]] std::vector<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);
@@ -50,7 +50,7 @@ public:
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
-    [[nodiscard]] std::unordered_set<int> getAvailableTasksIds() const;
+    [[nodiscard]] std::vector<int> getAvailableTasksIds() const;
 
     [[nodiscard]] bool allTasksSatisfied() const;
 
@@ -66,6 +66,9 @@ public:
     std::vector<int> getAvailableAgentIds();
 
     bool taskIsAlreadyAssigned(int taskId) const;
+
+    std::vector<int> getCoveredTasksIds() const;
+
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};
@@ -85,7 +88,6 @@ private:
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
     static bool checkPathConflicts(const Path &pA, const Path &pB);
 
-    std::unordered_set<int> getCoveredTasksIds() const;
 };
 
 inline std::size_t hash_value(const Status& s){

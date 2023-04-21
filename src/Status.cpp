@@ -188,16 +188,14 @@ VerbosePath Status::toVerbosePath(int i) const {
     return vP;
 }
 
-std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
+std::vector<int> Status::chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const {
     // taskId, value
     using TaskInfo = std::pair<int, TimeStep>;
 
-    std::unordered_set<int> newCoveredTasks = getCoveredTasksIds();
-
-    n = std::min(static_cast<int>(newCoveredTasks.size()), n);
+    n = std::min(static_cast<int>(coveredTasks.size()), n);
 
     std::vector<TaskInfo> orderedTasks;
-    orderedTasks.reserve(newCoveredTasks.size());
+    orderedTasks.reserve(coveredTasks.size());
 
     for (const auto& pW : pathsWrappers){
         for (const auto& wp : pW.getWaypoints()){
@@ -216,30 +214,31 @@ std::unordered_set<int> Status::chooseNWorstTasks(int n, Metric mt) const {
     }
 
     std::sort(
-            orderedTasks.begin(),
-            orderedTasks.end(),
-            [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
+        orderedTasks.begin(),
+        orderedTasks.end(),
+        [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
     );
 
-    std::unordered_set<int> taskIndicesToRemove{};
+    std::vector<int> taskIndicesToRemove{};
+    taskIndicesToRemove.reserve(n);
 
     for(int i = 0 ; i < n ; ++i){
-        taskIndicesToRemove.insert(orderedTasks[i].first);
+        taskIndicesToRemove.push_back(orderedTasks[i].first);
     }
     return taskIndicesToRemove;
 }
 
-std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
-    n = std::min(static_cast<int>(notAssignedTasks.size()), n);
+std::vector<int> Status::chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const{
+    n = std::min(static_cast<int>(coveredTasks.size()), n);
 
     std::vector<int> shuffled_tasks{};
-    shuffled_tasks.reserve(notAssignedTasks.size());
+    shuffled_tasks.reserve(coveredTasks.size());
 
     // copy indices
     std::ranges::transform(
-            notAssignedTasks,
-            std::back_inserter(shuffled_tasks),
-            [](const std::pair<int, Task>& item){return item.first;}
+        coveredTasks,
+        std::back_inserter(shuffled_tasks),
+        [](int taskId){return taskId;}
     );
 
     auto seed = hash_value(*this);
@@ -247,14 +246,14 @@ std::unordered_set<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
 
     // shuffle them using status hash as seed
     std::shuffle(
-            shuffled_tasks.begin(),
-            shuffled_tasks.end(),
-            std::default_random_engine(seed)
+        shuffled_tasks.begin(),
+        shuffled_tasks.end(),
+        std::default_random_engine(seed)
     );
-    return {shuffled_tasks.cbegin(), shuffled_tasks.cbegin() + n};
+    return {shuffled_tasks.begin(), shuffled_tasks.begin() + n};
 }
 
-std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const {
+std::vector<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const {
     // agentId, value
     using AgentInfo = std::pair<int, TimeStep>;
 
@@ -282,12 +281,12 @@ std::unordered_set<int> Status::chooseTasksFromNWorstAgents(int iterIndex, int n
         [](const AgentInfo & ta, const AgentInfo& tb){return ta.second > tb.second;}
     );
 
-    std::unordered_set<int> taskIndicesToRemove{};
+    std::vector<int> taskIndicesToRemove{};
 
     for(int i = 0 ; i < n ; ++i){
         const auto& pW = pathsWrappers[orderedAgents[i].first];
         if(!pW.getSatisfiedTasksIds().empty()) {
-            taskIndicesToRemove.insert(pW.randomTaskId(iterIndex));
+            taskIndicesToRemove.push_back(pW.randomTaskId(iterIndex));
         }
     }
     return taskIndicesToRemove;
@@ -390,8 +389,8 @@ bool Status::isDocking(int agentId, TimeStep t) const {
     return t >= dockingTimeStep;
 }
 
-std::unordered_set<int> Status::getAvailableTasksIds() const {
-    std::unordered_set<int> result;
+std::vector<int> Status::getAvailableTasksIds() const {
+    std::vector<int> result;
     std::ranges::transform(notAssignedTasks | std::views::keys, std::inserter(result, result.end()), [](int key) { return key; });
     return result;
 }
@@ -466,7 +465,7 @@ bool Status::taskIsAlreadyAssigned(int taskId) const {
     return assignedTasks.contains(taskId);
 }
 
-std::unordered_set<int> Status::getCoveredTasksIds() const {
+std::vector<int> Status::getCoveredTasksIds() const {
     std::vector<int> result;
 
     std::ranges::copy(
@@ -475,4 +474,6 @@ std::unordered_set<int> Status::getCoveredTasksIds() const {
         std::views::filter([this](int taskId){return pathsWrappers.taskIsSatisfied(taskId);}),
         std::back_inserter(result)
     );
+
+    return result;
 }
