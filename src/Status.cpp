@@ -213,9 +213,8 @@ std::vector<int> Status::chooseNWorstTasks(int n, Metric mt, const std::vector<i
         }
     }
 
-    std::sort(
-        orderedTasks.begin(),
-        orderedTasks.end(),
+    std::ranges::sort(
+        orderedTasks,
         [](const TaskInfo& ta, const TaskInfo& tb){return ta.second > tb.second;}
     );
 
