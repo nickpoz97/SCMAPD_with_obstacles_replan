@@ -22,6 +22,15 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     }
     solveOffline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
     assert(status.allTasksSatisfied());
+
+    execution_time = std::chrono::steady_clock::now() - start;
+
+    const auto& pWs = status.getPathWrappers();
+    ttt += pWs.getTTT();
+    ttd += pWs.getTTD();
+    makespan += pWs.getMaxSpanCost();
+    conflicts = status.checkAllConflicts();
+    hash = hash_value(status);
 }
 
 void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
@@ -52,15 +61,6 @@ void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective
             break;
         }
     }
-
-    execution_time = std::chrono::steady_clock::now() - start;
-
-    const auto& pWs = status.getPathWrappers();
-    ttt += pWs.getTTT();
-    ttd += pWs.getTTD();
-    makespan += pWs.getMaxSpanCost();
-    conflicts = status.checkAllConflicts();
-    hash = hash_value(status);
 }
 
 void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){

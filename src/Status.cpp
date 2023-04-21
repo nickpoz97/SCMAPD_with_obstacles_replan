@@ -424,6 +424,7 @@ bool Status::isOnline() const {
 void Status::incrementTimeStep() {
     ++actualTimeStep;
 
+    // update not assigned and assigned tasks
     for(int taskId : getCoveredTasksIds()){
         assert(!assignedTasks.contains(taskId) && notAssignedTasks.contains(taskId));
         assignedTasks.emplace(taskId, notAssignedTasks.find(taskId)->second);

@@ -10,7 +10,7 @@ Assignment::Assignment(const PathWrapper &pW, Status &status) :
     status{status},
     oldTTD{PathWrapper::getTTD()}
 {
-    assert(status.getTimeStep() >= std::ssize(getPath()) - 1);
+    assert((std::ssize(getPath()) - 1) >= status.getTimeStep());
 }
 
 TimeStep Assignment::getMCA() const {
