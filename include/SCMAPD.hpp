@@ -46,8 +46,7 @@ private:
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 
-    void solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
-    void solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
+    void setStats();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

@@ -15,16 +15,7 @@ SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, Task
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
-    if(status.isOnline()){
-        solveOnline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
-        return;
-    }
-    solveOffline(cutOffTime,nOptimizationTasks,obj,mtd,mtr);
-    assert(status.allTasksSatisfied());
-
-    execution_time = std::chrono::steady_clock::now() - start;
-
+void SCMAPD::setStats() {
     const auto& pWs = status.getPathWrappers();
     ttt += pWs.getTTT();
     ttd += pWs.getTTD();
@@ -33,37 +24,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     hash = hash_value(status);
 }
 
-void SCMAPD::solveOffline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
-    status.updateTasks(taskHandler.getNextBatch());
-
-    const auto& availableAgents = status.getAvailableAgentIds();
-    bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents);
-
-    if(!findSolution()){
-        throw std::runtime_error("No solution");
-    }
-    assert(bigH.empty());
-
-    int nIterations = 0;
-
-    auto optimizationBegin = std::chrono::steady_clock::now();
-    auto getOptimizationTime = [&optimizationBegin]() {
-        return std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::steady_clock::now() - optimizationBegin
-        ).count();
-    };
-
-    while(getOptimizationTime() < cutOffTime){
-        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
-
-        // no random elements
-        if(!success && mtd == Method::WORST_TASKS){
-            break;
-        }
-    }
-}
-
-void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr){
+void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     while(!taskHandler.noMoreTasks()){
         const auto& availableAgents = status.getAvailableAgentIds();
 
@@ -73,8 +34,30 @@ void SCMAPD::solveOnline(TimeStep cutOffTime, int nOptimizationTasks, Objective 
         if(!findSolution()){
             throw std::runtime_error("No solution");
         }
+        int nIterations = 0;
+
+        auto optimizationBegin = std::chrono::steady_clock::now();
+        auto getOptimizationTime = [&optimizationBegin]() {
+            return std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::steady_clock::now() - optimizationBegin
+            ).count();
+        };
+
+        while(getOptimizationTime() < cutOffTime){
+            bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
+
+            // no random elements
+            if(!success && mtd == Method::WORST_TASKS){
+                break;
+            }
+        }
+
+        setStats();
         status.incrementTimeStep();
     }
+
+    execution_time = std::chrono::steady_clock::now() - start;
+    assert(status.allTasksSatisfied());
 }
 
 bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices removal
