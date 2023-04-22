@@ -139,11 +139,20 @@ bool PathWrapper::isAvailable(TimeStep t) const {
     return t >= std::ssize(path) - 1;
 }
 
-void PathWrapper::extend(TimeStep actualTimeStep){
+void PathWrapper::extendAndReset(TimeStep actualTimeStep){
     assert(!path.empty());
+    assert(!waypoints.empty() && waypoints.crend()->getDemand() == Demand::END);
 
+    auto startPos = *path.crbegin();
     for(int t = std::ssize(path); t < actualTimeStep ; ++t){
-        path.push_back(*path.crbegin());
+        path.push_back(startPos);
     }
+
+    waypoints.clear();
+    waypoints.emplace_back(startPos);
+
+    assert(waypoints.size() == 1 && waypoints.cbegin()->getDemand() == Demand::END);
+
+    idealTTD = 0;
 }
 

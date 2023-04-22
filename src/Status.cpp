@@ -434,7 +434,7 @@ void Status::incrementTimeStep() {
 
     std::ranges::for_each(
         pathsWrappers,
-        [this](PathWrapper& pW){pW.extend(actualTimeStep);}
+        [this](PathWrapper& pW){pW.extendAndReset(actualTimeStep);}
     );
 }
 
