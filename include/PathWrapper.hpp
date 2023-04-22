@@ -21,7 +21,6 @@ public:
     const Path& getPath() const;
     const std::unordered_set<int>& getSatisfiedTasksIds() const;
 
-    CompressedCoord getInitialPos() const;
     void extendAndReset(TimeStep actualTimeStep);
 
     int randomTaskId(int magicNumber) const;

@@ -453,6 +453,7 @@ std::vector<int> Status::getAvailableAgentIds() const{
 
     // when there is an update
     if(lastTimeStepCall != actualTimeStep){
+        result.clear();
         lastTimeStepCall = actualTimeStep;
 
         auto agentIdExtractor = [](const PathWrapper& pW){

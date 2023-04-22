@@ -13,8 +13,12 @@ SmallHComp BigH::getComparator(Heuristic h) {
                     return sMCA - fMCA;
                 };
 
-                auto aVal = getVal(a);
-                auto bVal = getVal(b);
+                int aVal = 0;
+                int bVal = 0;
+                if(!a.hasOnlyOneAssignment() && !b.hasOnlyOneAssignment()){
+                    aVal = getVal(a);
+                    bVal = getVal(b);
+                }
                 assert(aVal >= 0 && bVal >= 0);
 
                 return aVal < bVal || (aVal == bVal && a.getTopAssignment() > b.getTopAssignment());
@@ -32,8 +36,12 @@ SmallHComp BigH::getComparator(Heuristic h) {
                     return static_cast<float>(sMCA) / static_cast<float>(fMCA);
                 };
 
-                auto aVal = getVal(a);
-                auto bVal = getVal(b);
+                float aVal = 0;
+                float bVal = 0;
+                if(!a.hasOnlyOneAssignment() && !b.hasOnlyOneAssignment()){
+                    aVal = getVal(a);
+                    bVal = getVal(b);
+                }
 
                 return aVal < bVal || (aVal == bVal && a.getTopAssignment() > b.getTopAssignment());
             };

@@ -129,3 +129,7 @@ const Assignment &SmallH::getSecondTopAssignment() const {
     assert(heap.size() >= 2);
     return *std::next(heap.ordered_begin(), 2);
 }
+
+bool SmallH::hasOnlyOneAssignment() const {
+    return heap.size() == 1;
+}

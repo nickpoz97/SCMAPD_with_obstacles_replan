@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
 
-    scmapd.printResult(false);
+    scmapd.printResult(true);
 
     //scmapd.printCheckMessage();
 

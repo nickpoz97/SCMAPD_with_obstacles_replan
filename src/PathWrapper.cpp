@@ -82,12 +82,6 @@ const Path &PathWrapper::getPath() const {
     return path;
 }
 
-CompressedCoord PathWrapper::getInitialPos() const {
-    assert(!path.empty());
-    // last element is different when there is no home return
-    return *path.crbegin();
-}
-
 int PathWrapper::randomTaskId(int magicNumber) const {
     assert(!satisfiedTasksIds.empty());
     std::vector<int> shuffled_tasks{satisfiedTasksIds.cbegin(), satisfiedTasksIds.cend()};
@@ -148,13 +142,13 @@ void PathWrapper::extendAndReset(TimeStep actualTimeStep){
     assert(!path.empty());
     assert(!waypoints.empty() && waypoints.crend()->getDemand() == Demand::END);
 
-    auto startPos = *path.crbegin();
-    for(int t = std::ssize(path); t < actualTimeStep ; ++t){
-        path.push_back(startPos);
+    auto lastPos = *path.crbegin();
+    for(int t = std::ssize(path); t <= actualTimeStep ; ++t){
+        path.push_back(lastPos);
     }
 
     waypoints.clear();
-    waypoints.emplace_back(startPos);
+    waypoints.emplace_back(lastPos);
 
     assert(waypoints.size() == 1 && waypoints.cbegin()->getDemand() == Demand::END);
 

@@ -29,6 +29,8 @@ public:
     [[nodiscard]] int getTopAgentId() const;
 
     [[nodiscard]] ExtractedPath getTopWrappedPath() const;
+
+    [[nodiscard]] bool hasOnlyOneAssignment() const;
 private:
     int taskId;
     int v;

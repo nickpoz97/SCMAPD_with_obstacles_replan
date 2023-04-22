@@ -32,6 +32,8 @@ public:
     [[nodiscard]] bool internalUpdate();
 
     bool removeTasksAndWaypoints(const std::unordered_set<int> &rmvTasksIndices);
+
+    CompressedCoord getInitialPos() const;
 private:
     TimeStep oldTTD = 0;
     Status& status;

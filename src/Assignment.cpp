@@ -260,7 +260,7 @@ void Assignment::updateWaypointsStats() {
     TimeStep cumulatedDelay = 0;
     auto wpIt = waypoints.begin();
 
-    for(int t = 0 ; t < std::ssize(getPath()) ; ++t){
+    for(int t = status.getTimeStep() ; t < std::ssize(getPath()) ; ++t){
         assert(wpIt != waypoints.end());
         assert(!getPath().empty());
         // handling not possible docking
@@ -273,4 +273,10 @@ void Assignment::updateWaypointsStats() {
             ++wpIt;
         }
     }
+}
+
+CompressedCoord Assignment::getInitialPos() const {
+    assert(!getPath().empty() && getPath().size() >= status.getTimeStep());
+
+    return getPath()[status.getTimeStep()];
 }
