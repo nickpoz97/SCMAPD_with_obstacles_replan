@@ -73,7 +73,7 @@ Assignment::internalUpdate() {
         return false;
     }
 
-    setPath(std::move(*resultPath));
+    updatePath(*resultPath, status.getTimeStep());
     updateWaypointsStats();
 
     oldTTD = status.getPathWrappers().getTasksDelay(getAgentId());

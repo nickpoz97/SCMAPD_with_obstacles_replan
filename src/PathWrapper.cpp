@@ -127,8 +127,13 @@ int PathWrapper::getAgentId() const {
     return capacity;
 }
 
-void PathWrapper::setPath(Path path) {
-    PathWrapper::path = std::move(path);
+void PathWrapper::updatePath(const Path &newPath, TimeStep connectionTimeStep) {
+    // remove old path
+    path.erase(path.begin() + connectionTimeStep, path.end());
+
+    // copy the new one
+    path.reserve(path.size() + newPath.size());
+    path.insert(path.begin() + connectionTimeStep, newPath.cbegin(), newPath.cend());
 }
 
 void PathWrapper::setIdealTtd(TimeStep idealTtd) {
