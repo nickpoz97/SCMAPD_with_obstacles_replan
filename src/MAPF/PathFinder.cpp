@@ -75,6 +75,7 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         if (exploredSet.contains(topNode)) {
             continue;
         }
+
         exploredSet.insert(topNode);
 
         // entire path found

@@ -36,6 +36,8 @@ public:
     [[nodiscard]] bool empty() const;
 
     [[nodiscard]] bool isAvailable(TimeStep t) const;
+
+    [[nodiscard]] std::pair<TimeStep, CompressedCoord> getDockTimeAndPosition() const;
 private:
     int index;
     int capacity;
@@ -60,6 +62,8 @@ public:
     [[nodiscard]] TimeStep getTasksDelay(int agentId) const;
     [[nodiscard]] const Path& getPath(int agentId) const;
     [[nodiscard]] bool taskIsSatisfied(int taskId) const;
+
+    [[nodiscard]] bool isAlreadyDocked(int agentId, CompressedCoord pos, TimeStep t) const;
 };
 
 struct ExtractedPath{

@@ -53,7 +53,7 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
 
 bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2,
                                   TimeStep t1) const{
-    assert(agentId >= 0 && agentId < getNAgents());
+    assert(agentId >= 0 && agentId < status.getPathWrappers().size());
 
     auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
         const auto& p = pW.getPath();
@@ -157,16 +157,8 @@ bool Status::hasIllegalPositions(const Path& path) const{
     return std::ranges::any_of(path, [&](CompressedCoord cc){return !ambient.isValid(dm.from1Dto2D(cc));});
 }
 
-int Status::getNAgents() const {
-    return static_cast<int>(pathsWrappers.size());
-}
-
 const PWsVector & Status::getPathWrappers() const {
     return pathsWrappers;
-}
-
-PathWrapper &Status::getPathWrapper(int agentId) {
-    return pathsWrappers[agentId];
 }
 
 void Status::setPathWrappers(PWsVector &&other) {
@@ -350,10 +342,6 @@ std::string Status::getTargetSnapshot(CompressedCoord start, CompressedCoord end
     }
 
     return gridString;
-}
-
-const AmbientMap& Status::getAmbient() const{
-    return ambient;
 }
 
 bool Status::dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const {

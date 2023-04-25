@@ -26,7 +26,7 @@ void SCMAPD::setStats() {
 
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     while(!taskHandler.noMoreTasks()) {
-        const auto &availableAgents = status.getAvailableAgentIds();
+        const auto availableAgents = status.getAvailableAgentIds();
 
         status.updateTasks(taskHandler.getNextBatch());
 
@@ -76,9 +76,9 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
 }
 
 void SCMAPD::printResult(bool printAgentsInfo) const{
-    auto nAgents = status.getNAgents();
-
     const auto& pathWrappers = status.getPathWrappers();
+
+    auto nAgents = pathWrappers.size();
 
     using namespace nlohmann;
     json j;
@@ -161,16 +161,17 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 }
 
 bool SCMAPD::removeTasks(const std::vector<int> &chosenTasks) {
-    for(int agentId = 0 ; agentId < status.getNAgents() ; ++agentId){
-        auto& pW = status.getPathWrapper(agentId);
+    PWsVector pWsCopy{status.getPathWrappers()};
 
+    for(auto& pW : pWsCopy){
         Assignment a{pW, status};
         if(!a.removeTasksAndWaypoints({chosenTasks.cbegin(), chosenTasks.cend()})){
-            // some may have been updated
             return false;
         }
         pW = static_cast<PathWrapper>(a);
     }
+
+    status.setPathWrappers(std::move(pWsCopy));
     return true;
 }
 

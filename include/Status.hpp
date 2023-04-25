@@ -31,8 +31,6 @@ public:
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
-    [[nodiscard]] int getNAgents() const;
-
     [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const;
     [[nodiscard]] std::vector<int> chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const;
 
@@ -42,16 +40,12 @@ public:
     [[nodiscard]] const PWsVector & getPathWrappers() const;
     void setPathWrappers(PWsVector&& other);
 
-    [[nodiscard]] const AmbientMap& getAmbient() const;
-
-    [[nodiscard]] PathWrapper& getPathWrapper(int agentId);
     [[nodiscard]] VerbosePath toVerbosePath(int i) const;
 
     [[nodiscard]] std::string getAgentsSnapshot(int agentId, TimeStep t, CompressedCoord actual) const;
     [[nodiscard]] std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
-    [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
     [[nodiscard]] std::vector<int> getAvailableTasksIds() const;
 
     [[nodiscard]] bool allTasksSatisfied() const;
@@ -89,6 +83,8 @@ private:
 
     [[nodiscard]] bool checkPathConflicts(int i, int j) const;
     static bool checkPathConflicts(const Path &pA, const Path &pB);
+
+    [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
 
 };
 

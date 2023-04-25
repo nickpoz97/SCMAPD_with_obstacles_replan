@@ -64,11 +64,12 @@ int main(int argc, char* argv[]){
 
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
     auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
+    TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix(), freqNotFractional, freqValue};
 
     SCMAPD scmapd{
         std::move(ambientMap),
         agents,
-        TaskHandler{tasksFile, ambientMap.getDistanceMatrix(), freqNotFractional, freqValue},
+        std::move(taskHandler),
         heur,
         ideal,
         freqValue != 0
@@ -76,7 +77,7 @@ int main(int argc, char* argv[]){
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
 
-    scmapd.printResult(true);
+    scmapd.printResult(false);
 
     //scmapd.printCheckMessage();
 

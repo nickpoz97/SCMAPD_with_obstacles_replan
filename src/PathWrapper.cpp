@@ -50,6 +50,16 @@ bool PWsVector::taskIsSatisfied(int taskId) const {
     );
 }
 
+bool PWsVector::isAlreadyDocked(int agentId, CompressedCoord pos, TimeStep t) const {
+    return std::ranges::any_of(
+        *this,
+        [&](const PathWrapper& pW){
+            auto [otherT, otherPos] = pW.getDockTimeAndPosition();
+            return agentId != pW.getAgentId() && pos == otherPos && otherT <= t;
+        }
+    );
+}
+
 TimeStep PathWrapper::getTTD() const {
     return waypoints.crbegin()->getCumulatedDelay();
 }
@@ -153,5 +163,10 @@ void PathWrapper::extendAndReset(TimeStep actualTimeStep){
     assert(waypoints.size() == 1 && waypoints.cbegin()->getDemand() == Demand::END);
 
     idealTTD = 0;
+}
+
+std::pair<TimeStep, CompressedCoord> PathWrapper::getDockTimeAndPosition() const {
+    assert(!path.empty());
+    return std::make_pair(std::ssize(path) - 1, *path.crbegin());
 }
 
