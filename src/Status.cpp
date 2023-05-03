@@ -53,7 +53,7 @@ Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool inclu
 
 bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2,
                                   TimeStep t1) const{
-    assert(agentId >= 0 && agentId < status.getPathWrappers().size());
+    assert(agentId >= 0 && agentId < getPathWrappers().size());
 
     auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
         const auto& p = pW.getPath();
