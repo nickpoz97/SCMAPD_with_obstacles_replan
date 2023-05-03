@@ -473,3 +473,7 @@ std::vector<int> Status::getCoveredTasksIds() const {
 
     return result;
 }
+
+bool Status::someTasksAreUnassigned() const {
+    return !notAssignedTasks.empty();
+}

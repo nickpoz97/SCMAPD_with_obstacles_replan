@@ -78,6 +78,11 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
 
         exploredSet.insert(topNode);
 
+        // impossible to reach a location which is already occupied
+        if(status.getPathWrappers().isAlreadyDocked(agentId, topNode->getTargetPosition(), topNode->getFScore())){
+            return std::nullopt;
+        }
+
         // entire path found
         if (topNode->getTargetIndex() == lastGoalIndex &&
             topNode->getLocation() == topNode->getTargetPosition() &&

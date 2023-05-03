@@ -65,6 +65,7 @@ public:
 
     std::vector<int> getCoveredTasksIds() const;
 
+    [[nodiscard]] bool someTasksAreUnassigned() const;
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> notAssignedTasks{};
