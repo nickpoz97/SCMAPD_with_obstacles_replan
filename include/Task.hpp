@@ -22,7 +22,6 @@ public:
     [[nodiscard]] int getIndex() const;
 
     [[nodiscard]] TimeStep getIdealGoalTime() const;
-
 private:
     CompressedCoord startLoc;
     CompressedCoord goalLoc;
@@ -33,5 +32,8 @@ private:
 
     static int getNextId();
 };
+
+std::vector<Task>
+loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm);
 
 #endif //SIMULTANEOUS_CMAPD_TASK_HPP

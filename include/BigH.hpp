@@ -18,8 +18,7 @@ public:
 
     [[nodiscard]] bool update(int k, int taskId, const Status &status);
 
-    [[nodiscard]] bool addNewTasks(const Status &status, const std::vector<int> &newTaskIndices,
-                     const std::vector<int> &availableAgentIds);
+    [[nodiscard]] bool addNewTasks(const Status &status, const std::vector<int> &newTaskIndices);
 
     std::vector<std::vector<std::pair<TimeStep, Assignment>>> getOrderedVector() const;
 

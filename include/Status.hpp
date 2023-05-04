@@ -14,11 +14,11 @@
 
 class Status{
 public:
-    Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, bool online);
+    Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts);
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
-    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
+    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
 
     [[nodiscard]] const Task & getTask(int i) const;
 
@@ -34,7 +34,6 @@ public:
     [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const;
     [[nodiscard]] std::vector<int> chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const;
 
-    // todo warning this might not working in online mode
     [[nodiscard]] std::vector<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
@@ -46,36 +45,19 @@ public:
     [[nodiscard]] std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
-    [[nodiscard]] std::vector<int> getAvailableTasksIds() const;
 
-    [[nodiscard]] bool allTasksSatisfied() const;
-
-    void updateTasks(std::unordered_map<int, Task> newTasks);
+    void setTasks(const std::vector<Task>& newTasks);
 
     [[nodiscard]] bool taskIdExists(int taskId) const;
 
-    [[nodiscard]] bool isOnline() const;
+    std::vector<int> getTasksIds() const;
 
-    void incrementTimeStep();
-    [[nodiscard]] TimeStep getTimeStep() const;
-
-    std::vector<int> getAvailableAgentIds() const;
-
-    bool taskIsAlreadyAssigned(int taskId) const;
-
-    std::vector<int> getCoveredTasksIds() const;
-
-    [[nodiscard]] bool someTasksAreUnassigned() const;
 private:
     const AmbientMap ambient;
-    std::unordered_map<int, Task> notAssignedTasks{};
-    std::unordered_map<int, Task> assignedTasks{};
+    std::unordered_map<int, Task> tasks{};
 
     PWsVector pathsWrappers;
     bool noConflicts;
-
-    bool online;
-    TimeStep actualTimeStep = 0;
 
     [[nodiscard]] bool
     checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

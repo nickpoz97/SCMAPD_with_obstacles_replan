@@ -73,7 +73,7 @@ Assignment::internalUpdate() {
         return false;
     }
 
-    updatePath(*resultPath, status.getTimeStep());
+    setPath(std::move(*resultPath));
     updateWaypointsStats();
 
     oldTTD = status.getPathWrappers().getTasksDelay(getAgentId());
@@ -173,11 +173,6 @@ Assignment::insertTaskWaypoints(int newTaskId) {
         waypoints.push_front(deliveryWaypoint);
         waypoints.push_front(pickupWaypoint);
         assert(waypoints.crbegin()->getDemand() == Demand::END);
-
-        if(status.isOnline()){
-            const auto endPos = std::next(waypoints.crbegin())->getPosition();
-            waypoints.rbegin()->setPosition(endPos);
-        }
         return computeIdealTTD();
     }
 
@@ -187,15 +182,8 @@ Assignment::insertTaskWaypoints(int newTaskId) {
     TimeStep bestApproxTTD = std::numeric_limits<TimeStep>::max();
     TimeStep bestApproxSpan = std::numeric_limits<TimeStep>::max();
 
-    auto firstWp = std::ranges::find_if(
-        waypoints,
-        [this](const Waypoint& wp){
-            return wp.getDemand() == Demand::END || !status.taskIsAlreadyAssigned(wp.getTaskIndex());
-        }
-    );
-
     // search for best position for task start and goal
-    for(auto wpPickupIt = firstWp ; wpPickupIt != waypoints.end() ; ++wpPickupIt){
+    for(auto wpPickupIt = waypoints.begin() ; wpPickupIt != waypoints.end() ; ++wpPickupIt){
         auto newStartIt = waypoints.insert(wpPickupIt, pickupWaypoint);
 
         for (auto wpDeliveryIt = wpPickupIt; wpDeliveryIt != waypoints.cend(); ++wpDeliveryIt){
@@ -221,11 +209,6 @@ Assignment::insertTaskWaypoints(int newTaskId) {
     waypoints.insert(bestPickupIt, pickupWaypoint);
     waypoints.insert(bestDeliveryIt, deliveryWaypoint);
 
-    if(status.isOnline()){
-        const auto endPos = std::next(waypoints.crbegin())->getPosition();
-        waypoints.rbegin()->setPosition(endPos);
-    }
-
     return computeIdealTTD();
 }
 
@@ -239,7 +222,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
     auto prevWpPos = newPickupWpIt == getWaypoints().cbegin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
 
     auto prevArrivalTime = newPickupWpIt == getWaypoints().cbegin() ?
-        status.getTimeStep() : std::prev(newPickupWpIt)->getArrivalTime();
+        0 : std::prev(newPickupWpIt)->getArrivalTime();
 
     for(auto wpIt = newPickupWpIt ; wpIt != getWaypoints().end() ; ++wpIt){
         auto arrivalTime = prevArrivalTime + dm.getDistance(prevWpPos, wpIt->getPosition());
@@ -260,7 +243,7 @@ void Assignment::updateWaypointsStats() {
     TimeStep cumulatedDelay = 0;
     auto wpIt = waypoints.begin();
 
-    for(int t = status.getTimeStep() ; t < std::ssize(getPath()) ; ++t){
+    for(int t = 0 ; t < std::ssize(getPath()) ; ++t){
         assert(wpIt != waypoints.end());
         assert(!getPath().empty());
         // handling not possible docking
@@ -276,7 +259,7 @@ void Assignment::updateWaypointsStats() {
 }
 
 CompressedCoord Assignment::getInitialPos() const {
-    assert(!getPath().empty() && getPath().size() >= status.getTimeStep());
+    assert(!getPath().empty());
 
-    return getPath()[status.getTimeStep()];
+    return *getPath().cbegin();
 }

@@ -5,59 +5,38 @@
 
 #include <nlohmann/json.hpp>
 
-SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
-               bool noConflicts, bool online) :
+SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> tasks,
+               Heuristic heuristic, bool noConflicts) :
     start{std::chrono::steady_clock::now()},
-    taskHandler{std::move(taskHandler)},
-    status(std::move(ambientMap), agents, noConflicts, online),
-    bigH{heuristic}
+    status(std::move(ambientMap), agents, noConflicts),
+    bigH{heuristic},
+    tasks{std::move(tasks)}
     {
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::setStats() {
-    const auto& pWs = status.getPathWrappers();
-    ttt += pWs.getTTT();
-    ttd += pWs.getTTD();
-    makespan += pWs.getMaxSpanCost();
-    conflicts = status.checkAllConflicts();
-    hash = hash_value(status);
-}
-
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
-    while(!taskHandler.noMoreTasks()) {
-        const auto availableAgents = status.getAvailableAgentIds();
+    status.setTasks(tasks);
 
-        status.updateTasks(taskHandler.getNextBatch());
-
-        if (!availableAgents.empty()) {
-            if (!bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents) || !findSolution()) {
-                continue;
-            }
-            int nIterations = 0;
-
-            auto optimizationBegin = std::chrono::steady_clock::now();
-            auto getOptimizationTime = [&optimizationBegin]() {
-                return std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::steady_clock::now() - optimizationBegin
-                ).count();
-            };
-
-            while (getOptimizationTime() < cutOffTime) {
-                bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
-
-                // no random elements
-                if (!success && mtd == Method::WORST_TASKS) {
-                    break;
-                }
-            }
-
-            setStats();
-        }
-        status.incrementTimeStep();
+    if (!bigH.addNewTasks(status, status.getTasksIds()) || !findSolution()) {
+        throw std::runtime_error("There is no solution!");
     }
-    if(status.someTasksAreUnassigned()){
-        throw std::runtime_error("No solution");
+    int nIterations = 0;
+
+    auto optimizationBegin = std::chrono::steady_clock::now();
+    auto getOptimizationTime = [&optimizationBegin]() {
+        return std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - optimizationBegin
+        ).count();
+    };
+
+    while (cutOffTime && getOptimizationTime() < cutOffTime) {
+        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr);
+
+        // no random elements
+        if (!success && mtd == Method::WORST_TASKS) {
+            break;
+        }
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
@@ -78,9 +57,9 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
 }
 
 void SCMAPD::printResult(bool printAgentsInfo) const{
-    const auto& pathWrappers = status.getPathWrappers();
+    const auto& pWs = status.getPathWrappers();
 
-    auto nAgents = pathWrappers.size();
+    auto nAgents = pWs.size();
 
     using namespace nlohmann;
     json j;
@@ -90,13 +69,13 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
         j["agents"] = json::array();
 
         for(int i = 0 ; i < nAgents ; ++i){
-            const auto& pW = pathWrappers[i];
+            const auto& pW = pWs[i];
 
             j["agents"].push_back({
-//                {"index", i},
-//                {"ttt", pW.getLastDeliveryTimeStep()},
-//                {"ttd", pW.getTTD()},
-//                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
+                {"index", i},
+                {"ttt", pW.getLastDeliveryTimeStep()},
+                {"ttd", pW.getTTD()},
+                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
                 {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
                 {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
             });
@@ -105,11 +84,11 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
 
     j["stats"] = {
             {"time", fmt::format("{0:.2f}", execution_time.count())},
-            {"makespan", makespan},
-            {"ttt", ttt},
-            {"ttd", ttd},
-            {"status_hash", hash},
-            {"conflicts", conflicts},
+            {"makespan", pWs.getMaxSpanCost()},
+            {"ttt", pWs.getTTT()},
+            {"ttd", pWs.getTTD()},
+            {"status_hash", hash_value(status)},
+            {"conflicts", status.checkAllConflicts()},
     };
 
     fmt::print("{}", j.dump(1));
@@ -125,8 +104,7 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
-                      const std::vector<int> &availableAgentIds) {
+bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr) {
     if(n <= 0){
         return false;
     }
@@ -138,7 +116,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
             return status.chooseTasksFromNWorstAgents(iterIndex, n, mtr);
         }
 
-        const auto coveredTaskIds = status.getCoveredTasksIds();
+        const auto coveredTaskIds = status.getTasksIds();
         if(mtd == Method::WORST_TASKS){
             return status.chooseNWorstTasks(n, mtr, coveredTaskIds);
         }
@@ -151,7 +129,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
         // maintain only better solutions
-        if (bigH.addNewTasks(status, chosenTasks, availableAgentIds) && findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
+        if (bigH.addNewTasks(status, chosenTasks) && findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
             assert(bigH.empty());
             return true;
         }

@@ -8,12 +8,11 @@
 #include "Status.hpp"
 #include "Assignment.hpp"
 #include "BigH.hpp"
-#include "TaskHandler.hpp"
 
 class SCMAPD {
 public:
-    SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
-           bool noConflicts, bool online);
+    SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, std::vector<Task> tasks,
+           Heuristic heuristic, bool noConflicts);
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
@@ -26,27 +25,19 @@ private:
     time_point start;
     duration execution_time{};
 
-    TaskHandler taskHandler;
+    const std::vector<Task> tasks;
 
     Status status;
     BigH bigH;
 
-    TimeStep ttd = 0;
-    TimeStep ttt = 0;
-    TimeStep makespan = 0;
-    size_t hash = hash_value(status);
-    bool conflicts = false;
-
     [[nodiscard]] bool findSolution();
 
-    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
-                  const std::vector<int> &availableAgentIds);
+    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr);
 
     [[nodiscard]] bool removeTasks(const std::vector<int> &chosenTasks);
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 
-    void setStats();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

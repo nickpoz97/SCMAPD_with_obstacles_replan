@@ -53,3 +53,47 @@ int Task::getIndex() const {
 TimeStep Task::getIdealGoalTime() const {
     return idealGoalTime;
 }
+
+std::vector<Task>
+loadTasks(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm) {
+    std::ifstream fs (tasksFilePath, std::ios::in);
+
+    if(!fs.is_open()){
+        throw std::runtime_error("Tasks file does not exist");
+    }
+
+    std::string line;
+
+    // nTasks line
+    std::getline(fs, line);
+    size_t nTasks = std::stoi(line);
+
+    std::vector<Task> tasks;
+    tasks.reserve(nTasks);
+
+    for (int i = 0 ; i < nTasks ; ++i){
+        std::getline(fs, line);
+        static constexpr TimeStep releaseTime = 0;
+
+        std::stringstream taskString{line};
+        std::string value;
+
+        static constexpr char horizontalSep = ',';
+
+        std::getline(taskString, value, horizontalSep);
+        int yBegin = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int xBegin = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int yEnd = std::stoi(value);
+
+        std::getline(taskString, value, horizontalSep);
+        int xEnd = std::stoi(value);
+
+        tasks.emplace_back(dm.from2Dto1D({yBegin, xBegin}), dm.from2Dto1D(yEnd, xEnd), dm, releaseTime);
+    }
+
+    return tasks;
+}

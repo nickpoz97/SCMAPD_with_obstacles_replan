@@ -48,7 +48,7 @@ protected:
     WaypointsList waypoints;
     std::unordered_set<int> satisfiedTasksIds;
 
-    void updatePath(const Path &newPath, TimeStep connectionTimeStep);
+    void setPath(Path newPath);
 
     void setIdealTtd(TimeStep idealTtd);
 };
