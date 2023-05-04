@@ -6,10 +6,10 @@
 #include <nlohmann/json.hpp>
 
 SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
-               bool noConflicts, bool online) :
+               bool noConflicts) :
     start{std::chrono::steady_clock::now()},
     taskHandler{std::move(taskHandler)},
-    status(std::move(ambientMap), agents, noConflicts, online),
+    status(std::move(ambientMap), agents, noConflicts, false),
     bigH{heuristic}
     {
         assert(!status.checkAllConflicts());
@@ -25,39 +25,29 @@ void SCMAPD::setStats() {
 }
 
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
-    while(!taskHandler.noMoreTasks()) {
-        const auto availableAgents = status.getAvailableAgentIds();
+    const auto availableAgents = status.getAvailableAgentIds();
 
-        status.updateTasks(taskHandler.getNextBatch());
+    status.updateTasks(taskHandler.getNextBatch());
 
-        if (!availableAgents.empty()) {
-            if (!bigH.addNewTasks(status, status.getAvailableTasksIds(), availableAgents) || !findSolution()) {
-                continue;
-            }
-            int nIterations = 0;
-
-            auto optimizationBegin = std::chrono::steady_clock::now();
-            auto getOptimizationTime = [&optimizationBegin]() {
-                return std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::steady_clock::now() - optimizationBegin
-                ).count();
-            };
-
-            while (getOptimizationTime() < cutOffTime) {
-                bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
-
-                // no random elements
-                if (!success && mtd == Method::WORST_TASKS) {
-                    break;
-                }
-            }
-
-            setStats();
-        }
-        status.incrementTimeStep();
+    if (!bigH.addNewTasks(status, status.getTaskIds(), availableAgents) || !findSolution()) {
+        throw std::runtime_error("No solution");;
     }
-    if(status.someTasksAreUnassigned()){
-        throw std::runtime_error("No solution");
+    int nIterations = 0;
+
+    auto optimizationBegin = std::chrono::steady_clock::now();
+    auto getOptimizationTime = [&optimizationBegin]() {
+        return std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - optimizationBegin
+        ).count();
+    };
+
+    while (getOptimizationTime() < cutOffTime) {
+        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
+
+        // no random elements
+        if (!success && mtd == Method::WORST_TASKS) {
+            break;
+        }
     }
 
     execution_time = std::chrono::steady_clock::now() - start;
@@ -93,10 +83,10 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
             const auto& pW = pathWrappers[i];
 
             j["agents"].push_back({
-//                {"index", i},
-//                {"ttt", pW.getLastDeliveryTimeStep()},
-//                {"ttd", pW.getTTD()},
-//                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
+                {"index", i},
+                {"ttt", pW.getLastDeliveryTimeStep()},
+                {"ttd", pW.getTTD()},
+                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
                 {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
                 {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
             });
@@ -105,11 +95,11 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
 
     j["stats"] = {
             {"time", fmt::format("{0:.2f}", execution_time.count())},
-            {"makespan", makespan},
-            {"ttt", ttt},
-            {"ttd", ttd},
-            {"status_hash", hash},
-            {"conflicts", conflicts},
+            {"makespan", pathWrappers.getMaxSpanCost()},
+            {"ttt", pathWrappers.getTTT()},
+            {"ttd", pathWrappers.getTTD()},
+            {"status_hash", hash_value(status)},
+            {"conflicts", status.checkAllConflicts()},
     };
 
     fmt::print("{}", j.dump(1));
@@ -138,7 +128,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
             return status.chooseTasksFromNWorstAgents(iterIndex, n, mtr);
         }
 
-        const auto coveredTaskIds = status.getCoveredTasksIds();
+        const auto coveredTaskIds = status.getTaskIds();
         if(mtd == Method::WORST_TASKS){
             return status.chooseNWorstTasks(n, mtr, coveredTaskIds);
         }

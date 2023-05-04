@@ -12,14 +12,12 @@
 Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, bool online) :
     ambient(std::move(ambientMap)),
     pathsWrappers{initializePathsWrappers(agents)},
-    noConflicts{noConflicts},
-    online{online}
+    noConflicts{noConflicts}
     {}
 
 const Task & Status::getTask(int i) const {
     assert(notAssignedTasks.contains(i) || assignedTasks.contains(i));
-    const auto result = notAssignedTasks.find(i);
-    return result != notAssignedTasks.cend() ? result->second : assignedTasks.find(i)->second;
+    return tasks.find(i)->second;
 }
 
 std::pair<int, int> Status::update(ExtractedPath extractedPath) {
@@ -377,12 +375,6 @@ bool Status::isDocking(int agentId, TimeStep t) const {
     return t >= dockingTimeStep;
 }
 
-std::vector<int> Status::getAvailableTasksIds() const {
-    std::vector<int> result;
-    std::ranges::transform(notAssignedTasks | std::views::keys, std::inserter(result, result.end()), [](int key) { return key; });
-    return result;
-}
-
 bool Status::allTasksSatisfied() const {
 
     // 0 means task not satysfied
@@ -395,85 +387,24 @@ bool Status::allTasksSatisfied() const {
         ) == 1;
     };
 
-    return std::ranges::all_of(assignedTasks, rightTaskCount);
+    return std::ranges::all_of(tasks, rightTaskCount);
 }
 
 void Status::updateTasks(std::unordered_map<int, Task> newTasks) {
-    notAssignedTasks.merge(newTasks);
+    tasks.merge(newTasks);
 }
 
 bool Status::taskIdExists(int taskId) const {
-    return notAssignedTasks.contains(taskId) || assignedTasks.contains(taskId);
-}
-
-bool Status::isOnline() const {
-    return online;
-}
-
-void Status::incrementTimeStep() {
-    ++actualTimeStep;
-
-    // update not assigned and assigned tasks
-    for(int taskId : getCoveredTasksIds()){
-        assert(!assignedTasks.contains(taskId) && notAssignedTasks.contains(taskId));
-        assignedTasks.emplace(taskId, notAssignedTasks.find(taskId)->second);
-        notAssignedTasks.erase(taskId);
-    }
-
-    std::ranges::for_each(
-        pathsWrappers,
-        [this](PathWrapper& pW){pW.extendAndReset(actualTimeStep);}
-    );
-}
-
-TimeStep Status::getTimeStep() const {
-    return actualTimeStep;
+    return tasks.contains(taskId);
 }
 
 std::vector<int> Status::getAvailableAgentIds() const{
-    static TimeStep lastTimeStepCall = -1;
-    static std::vector<int> result;
+    auto ids = std::views::transform(pathsWrappers, [](const PathWrapper& pW){return pW.getAgentId();});
 
-    auto filteringPredicate = [this](const PathWrapper& pW){
-        // agent is ready
-        return pW.isAvailable(actualTimeStep);
-    };
-
-    // when there is an update
-    if(lastTimeStepCall != actualTimeStep){
-        result.clear();
-        lastTimeStepCall = actualTimeStep;
-
-        auto agentIdExtractor = [](const PathWrapper& pW){
-            return pW.getAgentId();
-        };
-
-        std::ranges::copy(
-            getPathWrappers() | std::views::filter(filteringPredicate) | std::views::transform(agentIdExtractor),
-            std::back_inserter(result)
-        );
-    }
-
-    return result;
+    return {ids.begin(), ids.end()};
 }
 
-bool Status::taskIsAlreadyAssigned(int taskId) const {
-    return assignedTasks.contains(taskId);
-}
-
-std::vector<int> Status::getCoveredTasksIds() const {
-    std::vector<int> result;
-
-    std::ranges::copy(
-        notAssignedTasks |
-        std::views::keys |
-        std::views::filter([this](int taskId){return pathsWrappers.taskIsSatisfied(taskId);}),
-        std::back_inserter(result)
-    );
-
-    return result;
-}
-
-bool Status::someTasksAreUnassigned() const {
-    return !notAssignedTasks.empty();
+std::vector<int> Status::getTaskIds() const{
+    auto keys = tasks | std::views::keys;
+    return {keys.begin(), keys.end()};
 }

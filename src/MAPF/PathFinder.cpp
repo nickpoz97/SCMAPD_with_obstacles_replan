@@ -64,7 +64,7 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
     const auto &dm = status.getDistanceMatrix();
     int lastGoalIndex = std::ssize(goals) - 1;
 
-    frontier.emplace(new Node{agentLoc, status.getTimeStep(), dm, *goals.cbegin()});
+    frontier.emplace(new Node{agentLoc, 0, dm, *goals.cbegin()});
     ExploredSet exploredSet{};
 
     while (!frontier.empty()) {
@@ -77,11 +77,6 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         }
 
         exploredSet.insert(topNode);
-
-        // impossible to reach a location which is already occupied
-        if(status.getPathWrappers().isAlreadyDocked(agentId, topNode->getTargetPosition(), topNode->getFScore())){
-            return std::nullopt;
-        }
 
         // entire path found
         if (topNode->getTargetIndex() == lastGoalIndex &&

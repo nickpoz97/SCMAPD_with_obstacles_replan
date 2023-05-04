@@ -46,7 +46,6 @@ public:
     [[nodiscard]] std::string getTargetSnapshot(CompressedCoord start, CompressedCoord end, CompressedCoord actual) const;
 
     [[nodiscard]] bool dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) const;
-    [[nodiscard]] std::vector<int> getAvailableTasksIds() const;
 
     [[nodiscard]] bool allTasksSatisfied() const;
 
@@ -54,28 +53,15 @@ public:
 
     [[nodiscard]] bool taskIdExists(int taskId) const;
 
-    [[nodiscard]] bool isOnline() const;
-
-    void incrementTimeStep();
-    [[nodiscard]] TimeStep getTimeStep() const;
+    std::vector<int> getTaskIds() const;
 
     std::vector<int> getAvailableAgentIds() const;
-
-    bool taskIsAlreadyAssigned(int taskId) const;
-
-    std::vector<int> getCoveredTasksIds() const;
-
-    [[nodiscard]] bool someTasksAreUnassigned() const;
 private:
     const AmbientMap ambient;
-    std::unordered_map<int, Task> notAssignedTasks{};
-    std::unordered_map<int, Task> assignedTasks{};
+    std::unordered_map<int, Task> tasks{};
 
     PWsVector pathsWrappers;
     bool noConflicts;
-
-    bool online;
-    TimeStep actualTimeStep = 0;
 
     [[nodiscard]] bool
     checkDynamicObstacle(int agentId, CompressedCoord coord1, CompressedCoord coord2, TimeStep t1) const;

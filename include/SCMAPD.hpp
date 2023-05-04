@@ -13,7 +13,7 @@
 class SCMAPD {
 public:
     SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
-           bool noConflicts, bool online);
+           bool noConflicts);
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
