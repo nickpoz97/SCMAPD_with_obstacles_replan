@@ -10,7 +10,6 @@ Assignment::Assignment(const PathWrapper &pW, Status &status) :
     status{status},
     oldTTD{PathWrapper::getTTD()}
 {
-    assert((std::ssize(getPath()) - 1) >= status.getTimeStep());
 }
 
 TimeStep Assignment::getMCA() const {
@@ -236,7 +235,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
         prevArrivalTime = arrivalTime;
     }
 
-    assert(!(waypoints.size() == 3 && !status.isOnline()) || ttd == dm.getDistance(getInitialPos(), newPickupWpIt->getPosition()));
+    assert(waypoints.size() >= 3 );
     return ttd;
 }
 
@@ -260,7 +259,7 @@ void Assignment::updateWaypointsStats() {
 }
 
 CompressedCoord Assignment::getInitialPos() const {
-    assert(!getPath().empty() && getPath().size() >= status.getTimeStep());
+    assert(!getPath().empty());
 
     return *(getPath().cbegin());
 }

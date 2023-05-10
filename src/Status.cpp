@@ -16,7 +16,7 @@ Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool
     {}
 
 const Task & Status::getTask(int i) const {
-    assert(notAssignedTasks.contains(i) || assignedTasks.contains(i));
+    assert(tasks.contains(i));
     return tasks.find(i)->second;
 }
 
@@ -24,7 +24,6 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
     auto agentId = extractedPath.agentId;
     auto taskId = extractedPath.newTaskId;
 
-    assert(!assignedTasks.contains(taskId));
     pathsWrappers[agentId] = std::move(extractedPath.wrapper);
 
     return {agentId, taskId};

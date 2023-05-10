@@ -10,18 +10,13 @@ SmallH::SmallH(int taskId, int v, const Status &status, const std::vector<int> &
     const auto& pWs = status.getPathWrappers();
 
     for (int agentId : availableAgentIds){
-        const auto& pW = pWs[agentId];
-        assert(!pWs.empty());
+        Assignment partialAssignment{pWs[agentId], const_cast<Status&>(status)};
 
-        auto handle = heap.emplace(pW, const_cast<Status&>(status));
-
-        if(!(*handle).addTask(taskId)){
-            heap.erase(handle);
-            assert(heap.size() == heapHandles.size());
+        if(!partialAssignment.addTask(taskId)){
             continue;
         }
-        heap.update(handle);
-        heapHandles.emplace(pW.getAgentId(), handle);
+
+        heapHandles.emplace(partialAssignment.getAgentId(), heap.push(partialAssignment));
     }
 
     assert(heap.size() == heapHandles.size());
@@ -61,7 +56,7 @@ void SmallH::updateTopElements(const Status &status) {
     assert(checkOrder());
 }
 
-void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
+void SmallH::addTaskToAgent(int k, int otherTaskId) {
     assert(checkOrder());
 
     if(!heapHandles.contains(k)){
@@ -75,6 +70,7 @@ void SmallH::addTaskToAgent(int k, int otherTaskId, const Status &status) {
         heap.erase(targetHandle);
         heapHandles.erase(k);
         assert(heap.size() == heapHandles.size());
+        assert(checkOrder());
         return;
     }
     heap.update(targetHandle);

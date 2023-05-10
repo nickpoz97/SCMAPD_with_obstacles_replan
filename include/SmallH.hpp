@@ -15,7 +15,7 @@ public:
     SmallH(int taskId, int v, const Status &status, const std::vector<int> &availableAgentIds);
 
     void updateTopElements(const Status &status);
-    void addTaskToAgent(int k, int otherTaskId, const Status &status);
+    void addTaskToAgent(int k, int otherTaskId);
 
     [[nodiscard]] const Assignment& getTopAssignment() const;
     [[nodiscard]] const Assignment& getSecondTopAssignment() const;

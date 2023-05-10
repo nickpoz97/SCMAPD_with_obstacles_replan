@@ -84,19 +84,18 @@ bool BigH::update(int k, int taskId, const Status &status) {
         assert((*sHHandle).getTaskId() == otherTaskId);
 
         // atomic
-        (*sHHandle).addTaskToAgent(k, taskId, status);
+        (*sHHandle).addTaskToAgent(k, taskId);
         heap.update(sHHandle);
         (*sHHandle).updateTopElements(status);
         heap.update(sHHandle);
 
         assert(checkIntegrity());
         if((*sHHandle).empty()){
+            clear();
             // impossible to find path
             return false;
         }
-        heap.update(sHHandle);
 
-        assert(checkIntegrity());
         assert((*sHHandle).getTaskId() == otherTaskId);
         assert(!status.checkPathWithStatus((*sHHandle).getTopPath(), (*sHHandle).getTopAgentId()));
         assert(checkOrder());
