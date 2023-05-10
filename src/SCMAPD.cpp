@@ -29,7 +29,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
 
     status.updateTasks(taskHandler.getNextBatch());
 
-    if (!bigH.addNewTasks(status, status.getTaskIds(), availableAgents) || !findSolution()) {
+    if (!bigH.addNewTasks(status, status.getTaskIds()) || !findSolution()) {
         throw std::runtime_error("No solution");;
     }
     int nIterations = 0;
@@ -141,7 +141,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
     // check if it is able to remove tasks
     if(removeTasks(chosenTasks)){
         // maintain only better solutions
-        if (bigH.addNewTasks(status, chosenTasks, availableAgentIds) && findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
+        if (bigH.addNewTasks(status, chosenTasks) && findSolution() && isBetter(status.getPathWrappers(), PWsBackup, obj)){
             assert(bigH.empty());
             return true;
         }

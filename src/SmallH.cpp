@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "SmallH.hpp"
 
-SmallH::SmallH(int taskId, int v, const Status &status, const std::vector<int> &availableAgentIds) :
+SmallH::SmallH(int taskId, int v, const Status &status) :
     taskId{taskId},
     v{v},
     heap{},
@@ -9,8 +9,8 @@ SmallH::SmallH(int taskId, int v, const Status &status, const std::vector<int> &
 {
     const auto& pWs = status.getPathWrappers();
 
-    for (int agentId : availableAgentIds){
-        Assignment partialAssignment{pWs[agentId], const_cast<Status&>(status)};
+    for (const auto& pW : status.getPathWrappers()){
+        Assignment partialAssignment{pW, const_cast<Status&>(status)};
 
         if(!partialAssignment.addTask(taskId)){
             continue;
