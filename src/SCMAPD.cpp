@@ -15,15 +15,6 @@ SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, Task
         assert(!status.checkAllConflicts());
     }
 
-void SCMAPD::setStats() {
-    const auto& pWs = status.getPathWrappers();
-    ttt += pWs.getTTT();
-    ttd += pWs.getTTD();
-    makespan += pWs.getMaxSpanCost();
-    conflicts = status.checkAllConflicts();
-    hash = hash_value(status);
-}
-
 void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr) {
     const auto availableAgents = status.getAvailableAgentIds();
 
@@ -87,7 +78,7 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
                 {"ttt", pW.getLastDeliveryTimeStep()},
                 {"ttd", pW.getTTD()},
                 {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
-                {"path", static_cast<json>(status.toVerbosePath(i)).dump()},
+                {"path", status.toVerbosePath(i)},
                 {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
             });
         }
@@ -102,7 +93,7 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
             {"conflicts", status.checkAllConflicts()},
     };
 
-    fmt::print("{}", j.dump(1));
+    fmt::print("{}", j.dump());
 }
 
 void SCMAPD::printCheckMessage() const{

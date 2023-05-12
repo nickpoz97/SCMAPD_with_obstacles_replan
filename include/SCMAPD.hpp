@@ -31,12 +31,6 @@ private:
     Status status;
     BigH bigH;
 
-    TimeStep ttd = 0;
-    TimeStep ttt = 0;
-    TimeStep makespan = 0;
-    size_t hash = hash_value(status);
-    bool conflicts = false;
-
     [[nodiscard]] bool findSolution();
 
     bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
@@ -46,7 +40,6 @@ private:
 
     static bool isBetter(const PWsVector &newResult, const PWsVector &oldResult, Objective obj);
 
-    void setStats();
 };
 
 #endif //SIMULTANEOUS_CMAPD_SCMAPD_HPP

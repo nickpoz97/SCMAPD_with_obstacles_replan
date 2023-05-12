@@ -19,6 +19,7 @@ int main(int argc, char* argv[]){
     auto defaultDMPath = exeDir / "data" / "distance_matrix.npy";
 
     bool ideal;
+    bool agents_info;
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -38,6 +39,7 @@ int main(int argc, char* argv[]){
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
         ("ideal", po::bool_switch(&ideal)->default_value(false), "ideal mode")
+        ("agents_info", po::bool_switch(&agents_info)->default_value(false), "ideal mode")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -74,7 +76,7 @@ int main(int argc, char* argv[]){
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
 
-    scmapd.printResult(false);
+    scmapd.printResult(agents_info);
 
     //scmapd.printCheckMessage();
 

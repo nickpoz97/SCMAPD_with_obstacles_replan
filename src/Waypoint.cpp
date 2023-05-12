@@ -99,7 +99,7 @@ nlohmann::json getWpsJson(const WaypointsList &wpList, const DistanceMatrix &dm)
             continue;
         }
         j.push_back({
-            {"coords", static_cast<json>(dm.from1Dto2D(wp.getPosition())).dump()},
+            {"coords", static_cast<json>(dm.from1Dto2D(wp.getPosition()))},
             {"demand", wp.getDemand()},
             {"arrival_time", wp.getArrivalTime()},
             {"task_id", wp.getTaskIndex()}
