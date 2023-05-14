@@ -33,8 +33,7 @@ private:
 
     [[nodiscard]] bool findSolution();
 
-    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
-                  const std::vector<int> &availableAgentIds);
+    bool optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr);
 
     [[nodiscard]] bool removeTasks(const std::vector<int> &chosenTasks);
 

@@ -216,15 +216,15 @@ std::vector<int> Status::chooseNWorstTasks(int n, Metric mt, const std::vector<i
     return taskIndicesToRemove;
 }
 
-std::vector<int> Status::chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const{
-    n = std::min(static_cast<int>(coveredTasks.size()), n);
+std::vector<int> Status::chooseNRandomTasks(int iterIndex, int n) const{
+    n = std::min(static_cast<int>(tasks.size()), n);
 
     std::vector<int> shuffled_tasks{};
-    shuffled_tasks.reserve(coveredTasks.size());
+    shuffled_tasks.reserve(n);
 
     // copy indices
     std::ranges::transform(
-        coveredTasks,
+        tasks | std::views::keys,
         std::back_inserter(shuffled_tasks),
         [](int taskId){return taskId;}
     );
@@ -233,9 +233,8 @@ std::vector<int> Status::chooseNRandomTasks(int iterIndex, int n, const std::vec
     boost::hash_combine(seed, iterIndex);
 
     // shuffle them using status hash as seed
-    std::shuffle(
-        shuffled_tasks.begin(),
-        shuffled_tasks.end(),
+    std::ranges::shuffle(
+        shuffled_tasks,
         std::default_random_engine(seed)
     );
     return {shuffled_tasks.begin(), shuffled_tasks.begin() + n};
@@ -406,4 +405,8 @@ std::vector<int> Status::getAvailableAgentIds() const{
 std::vector<int> Status::getTaskIds() const{
     auto keys = tasks | std::views::keys;
     return {keys.begin(), keys.end()};
+}
+
+PWsVector &Status::getPathWrappers() {
+    return pathsWrappers;
 }

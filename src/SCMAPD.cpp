@@ -35,7 +35,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     };
 
     while (getOptimizationTime() < cutOffTime) {
-        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr, availableAgents);
+        bool success = optimize(nIterations++, nOptimizationTasks, obj, mtd, mtr);
 
         // no random elements
         if (!success && mtd == Method::WORST_TASKS) {
@@ -114,8 +114,7 @@ void SCMAPD::printCheckMessage() const{
     fmt::print(message, "False");
 }
 
-bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr,
-                      const std::vector<int> &availableAgentIds) {
+bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mtr) {
     if(n <= 0){
         return false;
     }
@@ -132,7 +131,7 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
             return status.chooseNWorstTasks(n, mtr, coveredTaskIds);
         }
         // RANDOM_TASKS
-        return status.chooseNRandomTasks(iterIndex, n, coveredTaskIds);
+        return status.chooseNRandomTasks(iterIndex, n);
     };
 
     std::vector<int> chosenTasks{chooseNTasks()};
@@ -150,17 +149,13 @@ bool SCMAPD::optimize(int iterIndex, int n, Objective obj, Method mtd, Metric mt
 }
 
 bool SCMAPD::removeTasks(const std::vector<int> &chosenTasks) {
-    PWsVector pWsCopy{status.getPathWrappers()};
-
-    for(auto& pW : pWsCopy){
+    for(auto& pW : status.getPathWrappers()){
         Assignment a{pW, status};
         if(!a.removeTasksAndWaypoints({chosenTasks.cbegin(), chosenTasks.cend()})){
             return false;
         }
         pW = static_cast<PathWrapper>(a);
     }
-
-    status.setPathWrappers(std::move(pWsCopy));
     return true;
 }
 

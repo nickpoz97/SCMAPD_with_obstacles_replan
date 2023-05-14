@@ -31,13 +31,15 @@ public:
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
-    [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n, const std::vector<int> &coveredTasks) const;
+    [[nodiscard]] std::vector<int> chooseNRandomTasks(int iterIndex, int n) const;
     [[nodiscard]] std::vector<int> chooseNWorstTasks(int n, Metric mt, const std::vector<int> &coveredTasks) const;
 
     // todo warning this might not working in online mode
     [[nodiscard]] std::vector<int> chooseTasksFromNWorstAgents(int iterIndex, int n, Metric mt) const;
 
     [[nodiscard]] const PWsVector & getPathWrappers() const;
+    [[nodiscard]] PWsVector & getPathWrappers();
+
     void setPathWrappers(PWsVector&& other);
 
     [[nodiscard]] VerbosePath toVerbosePath(int i) const;
