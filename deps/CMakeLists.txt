@@ -15,7 +15,7 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
-        GIT_TAG 9.1.0
+        GIT_TAG 10.0.0
         EXCLUDE_FROM_ALL TRUE)
 
 add_subdirectory(cnpy)

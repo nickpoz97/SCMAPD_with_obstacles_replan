@@ -17,7 +17,7 @@ public:
 
     void solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, Method mtd, Metric mtr);
 
-    void printResult(bool printAgentsInfo) const;
+    void printResult(bool printAgentsInfo, const std::optional<std::filesystem::path> &outPath) const;
 
     void printCheckMessage() const;
 private:

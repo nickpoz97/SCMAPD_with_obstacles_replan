@@ -19,7 +19,7 @@ int main(int argc, char* argv[]){
     auto defaultDMPath = exeDir / "data" / "distance_matrix.npy";
 
     bool ideal;
-    bool agents_info;
+    bool agentsInfo;
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -39,7 +39,8 @@ int main(int argc, char* argv[]){
         ("nt", po::value<int>()->required(), "number of tasks to optimize at each iteration")
         ("mtd", po::value<string>()->required(), "optimization method")
         ("ideal", po::bool_switch(&ideal)->default_value(false), "ideal mode")
-        ("agents_info", po::bool_switch(&agents_info)->default_value(false), "ideal mode")
+        ("agents_info", po::bool_switch(&agentsInfo)->default_value(false), "print agent info")
+        ("out_path", po::value<string>()->default_value(""), "out file path (default empty means stdout)")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -62,6 +63,8 @@ int main(int argc, char* argv[]){
     auto mtd{utils::getMethod(vm["mtd"].as<string>())};
     auto metric{utils::getMetric(vm["metric"].as<string>())};
 
+    auto outPathString{vm["out_path"].as<string>()};
+
     AmbientMap ambientMap(gridFile, distanceMatrixFile);
     auto agents = loadAgents(robotsFile, ambientMap.getDistanceMatrix());
     TaskHandler taskHandler{tasksFile, ambientMap.getDistanceMatrix()};
@@ -76,7 +79,10 @@ int main(int argc, char* argv[]){
 
     scmapd.solve(cutoffTime, nt, objective, mtd, metric);
 
-    scmapd.printResult(agents_info);
+    scmapd.printResult(
+        agentsInfo,
+        outPathString.empty() ? std::nullopt : std::optional<std::filesystem::path>{outPathString}
+    );
 
     //scmapd.printCheckMessage();
 

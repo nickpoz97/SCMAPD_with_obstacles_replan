@@ -1,9 +1,11 @@
 #include <functional>
+#include <fmt/ostream.h>
+
 #include "SCMAPD.hpp"
-#include "fmt/color.h"
 #include "MAPF/PathFinder.hpp"
 
 #include <nlohmann/json.hpp>
+#include <fstream>
 
 SCMAPD::SCMAPD(AmbientMap ambientMap, const std::vector<AgentInfo>& agents, TaskHandler taskHandler, Heuristic heuristic,
                bool noConflicts) :
@@ -58,7 +60,7 @@ bool SCMAPD::findSolution() {// extractBigHTop takes care of tasks indices remov
     return true;
 }
 
-void SCMAPD::printResult(bool printAgentsInfo) const{
+void SCMAPD::printResult(bool printAgentsInfo, const std::optional<std::filesystem::path> &outPath) const{
     const auto& pathWrappers = status.getPathWrappers();
 
     auto nAgents = pathWrappers.size();
@@ -93,7 +95,13 @@ void SCMAPD::printResult(bool printAgentsInfo) const{
             {"conflicts", status.checkAllConflicts()},
     };
 
-    fmt::print("{}", j.dump());
+    std::ofstream file;
+    if(outPath){
+        file.open(*outPath);
+    }
+
+    std::ostream& out = outPath ? file : std::cout;
+    fmt::print(out, "{}", j.dump());
 }
 
 void SCMAPD::printCheckMessage() const{
