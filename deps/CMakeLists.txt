@@ -4,7 +4,7 @@ project(dependencies)
 # --- Dependencies manager ---
 # Download dependencies here
 set(CPM_SOURCE_CACHE
-        "${PROJECT_SOURCE_DIR}/cpm_sources"
+        "${CMAKE_BINARY_DIR}/cpm_sources"
         CACHE PATH "Directory to download CPM dependencies"
         FORCE)
 
