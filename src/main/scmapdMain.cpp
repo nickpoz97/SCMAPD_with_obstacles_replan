@@ -7,10 +7,11 @@
 #include "utils.hpp"
 #include "TaskHandler.hpp"
 
+namespace po = boost::program_options;
+namespace fs = std::filesystem;
+using std::string;
+
 int main(int argc, char* argv[]){
-    namespace po = boost::program_options;
-    namespace fs = std::filesystem;
-    using std::string;
 
     fs::path exeCommand = fs::path(argv[0]);
     fs::path exeDir = (exeCommand.is_absolute() ? exeCommand : fs::current_path() / exeCommand).remove_filename();

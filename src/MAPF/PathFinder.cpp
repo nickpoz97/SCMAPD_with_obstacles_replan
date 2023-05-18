@@ -55,11 +55,6 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         [&i](const Waypoint& wp) -> std::pair<int, CompressedCoord> {return {i++, wp.getPosition()};}
     );
 
-    // no home return
-    if(goals.crbegin()->second == (goals.crbegin() + 1)->second){
-        goals.erase(std::prev(goals.end()));
-    }
-
     Frontier frontier;
     const auto &dm = status.getDistanceMatrix();
     int lastGoalIndex = std::ssize(goals) - 1;

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <filesystem>
 #include "nlohmann/json.hpp"
+#include "Simulation/RunningAgent.hpp"
+#include "AmbientMap.hpp"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -15,10 +17,13 @@ int main(int argc, char* argv[]){
     po::options_description desc("Allowed options");
 
     desc.add_options()
-            ("help", "produce help message")
+        ("help", "produce help message")
 
-            // params for the input instance && experiment settings
-            ("j", po::value<std::string>()->required(), "input json");
+        // params for the input instance && experiment settings
+        ("m", po::value<std::string>()->required(), "input file for map")
+        ("dm", po::value<std::string>()->required(), "distance matrix file")
+        ("j", po::value<std::string>()->required(), "input json");
+
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
@@ -34,7 +39,8 @@ int main(int argc, char* argv[]){
     json j;
     jFile >> j;
 
-    std::cout << j["stats"].dump() << '\n';
+    AmbientMap ambient{vm["m"].as<std::string>(), vm["dm"].as<std::string>()};
+    const auto runningAgents = loadPlansFromJson(j, ambient.getDistanceMatrix());
 
     return 0;
 }
