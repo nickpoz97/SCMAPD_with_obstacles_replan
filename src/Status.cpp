@@ -30,14 +30,11 @@ std::pair<int, int> Status::update(ExtractedPath extractedPath) {
 }
 
 std::vector<CompressedCoord>
-Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const {
+Status::getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const {
     std::vector<CompressedCoord> neighbors;
     neighbors.reserve(AmbientMap::nDirections);
 
     for(int i = 0 ; i < AmbientMap::nDirections ; ++i){
-        if(!includeHoldAction && i == AmbientMap::getHoldDirectionIndex()){
-            continue;
-        }
         auto result = ambient.movement(c, i);
         if(result.has_value() &&
             (noConflicts || !checkDynamicObstacle(agentId, c, *result, t))){
@@ -52,11 +49,11 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
                                   TimeStep t1) const{
     assert(agentId >= 0 && agentId < getPathWrappers().size());
 
-    auto predicate = [t1, coord1, coord2](const PathWrapper& pW){
+    auto predicate = [t1, coord1, coord2, agentId](const PathWrapper& pW){
         const auto& p = pW.getPath();
 
         // if path is empty there are no conflicts
-        if(p.empty()){
+        if(p.empty() || agentId == pW.getAgentId()){
             return false;
         }
         auto t2 = std::min(t1 + 1, static_cast<int>(p.size()-1));
@@ -68,8 +65,7 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
         return nodeConflict || edgeConflict;
     };
 
-    return std::ranges::any_of(pathsWrappers.begin(), pathsWrappers.begin() + agentId, predicate) ||
-        std::ranges::any_of(pathsWrappers.begin() + agentId + 1, pathsWrappers.end(), predicate);
+    return std::ranges::any_of(pathsWrappers, predicate);
 }
 
 const DistanceMatrix& Status::getDistanceMatrix() const{
@@ -345,25 +341,19 @@ bool Status::dockingConflict(TimeStep sinceT, CompressedCoord pos, int agentId) 
         return false;
     }
 
-    auto predicate = [sinceT, pos](const PathWrapper& pW){
-        const auto& path = pW.getPath();
+    auto predicate = [sinceT, pos, agentId](const PathWrapper& otherPW){
+        const auto& otherPath = otherPW.getPath();
 
         // I am ahead of other path
-        if(sinceT >= path.size()){
+        if(sinceT >= otherPath.size() || agentId == otherPW.getAgentId()){
             return false;
         }
 
-        return std::any_of(path.cbegin() + sinceT, path.cend(), [pos](CompressedCoord cc){return cc == pos;});
+        return std::ranges::any_of(otherPath.cbegin() + sinceT, otherPath.cend(), [pos](CompressedCoord cc){return cc == pos;});
     };
 
-    return std::any_of(
-        pathsWrappers.cbegin(),
-        pathsWrappers.cbegin() + agentId,
-        predicate
-    ) ||
-    std::any_of(
-        pathsWrappers.cbegin() + agentId + 1,
-        pathsWrappers.cend(),
+    return std::ranges::any_of(
+        pathsWrappers,
         predicate
     );
 }

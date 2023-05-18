@@ -86,7 +86,7 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
             return Path{pathList.cbegin(), pathList.cend()};
         }
 
-        auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore(), true);
+        auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore());
 
         auto nextT = topNode->getGScore() + 1;
         for (auto loc: neighbors) {

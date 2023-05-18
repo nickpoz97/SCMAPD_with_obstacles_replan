@@ -18,7 +18,7 @@ public:
 
     // t is the time when agent does the action
     [[nodiscard]] std::vector<CompressedCoord>
-    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t, bool includeHoldAction) const;
+    getValidNeighbors(int agentId, CompressedCoord c, TimeStep t) const;
 
     [[nodiscard]] const Task & getTask(int i) const;
 
