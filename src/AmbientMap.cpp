@@ -5,7 +5,7 @@
 #include "DistanceMatrix.hpp"
 
 
-std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::path &gridPath) {
+std::vector<CellType> AmbientMap::loadGrid(const std::filesystem::path &gridPath) {
     std::fstream fs(gridPath.c_str(), std::ios::in);
 
     if(!fs.is_open()){
@@ -13,21 +13,12 @@ std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::p
     }
 
     std::string line;
-    int nRows = 0;
-    while(std::getline(fs, line)){ ++nRows; }
-
-    fs.clear();
-    fs.seekg(0);
 
     using namespace boost::algorithm;
 
-    std::vector<std::vector<CellType>> grid{};
-    grid.reserve(nRows);
+    std::vector<CellType> grid{};
 
     while(std::getline(fs, line)){
-        std::vector<CellType> row;
-        row.reserve(line.size());
-
         trim(line);
 
         auto charConverter = [](char c){
@@ -36,15 +27,14 @@ std::vector<std::vector<CellType>> AmbientMap::loadGrid(const std::filesystem::p
             }
             return CellType::FLOOR;
         };
-        std::transform(line.cbegin(), line.cend(), std::back_inserter(row), charConverter);
-
-        grid.push_back(row);
+        std::transform(line.cbegin(), line.cend(), std::back_inserter(grid), charConverter);
     }
 
     if(grid.empty()){
         throw std::runtime_error("Grid file is empty");
     }
 
+    grid.shrink_to_fit();
     return grid;
 }
 
@@ -52,11 +42,11 @@ bool AmbientMap::isValid(const Coord &coord) const {
     bool isInsideGrid = coord.row < getNRows() && coord.col < getNCols() &&
         coord.row >= 0 && coord.col >= 0;
 
-    return isInsideGrid && operator[](coord) != CellType::OBSTACLE;
+    return isInsideGrid && operator[](distanceMatrix.from2Dto1D(coord)) != CellType::OBSTACLE;
 }
 
-CellType AmbientMap::operator[](const Coord &coord) const {
-    return grid[coord.row][coord.col];
+CellType AmbientMap::operator[](CompressedCoord cc) const {
+    return grid[cc];
 }
 
 int AmbientMap::getNRows() const {
@@ -77,17 +67,13 @@ std::optional<CompressedCoord> AmbientMap::movement(CompressedCoord coord, int d
 AmbientMap::AmbientMap(const std::filesystem::path &gridPath, const std::filesystem::path &distanceMatrixPath) :
     distanceMatrix{distanceMatrixPath},
     grid{loadGrid(gridPath)}
-{
-    if(distanceMatrix.nRows != grid.size() || (!grid.empty() && distanceMatrix.nCols != grid[0].size())){
-        throw std::runtime_error("Grid file and distance matrix file do not refer to same ambient");
-    }
-}
+{}
 
 const DistanceMatrix& AmbientMap::getDistanceMatrix() const{
     return distanceMatrix;
 }
 
-const std::vector<std::vector<CellType>>& AmbientMap::getGrid() const {
+const std::vector<CellType>& AmbientMap::getGrid() const {
     return grid;
 }
 
@@ -95,10 +81,19 @@ std::vector<std::string> AmbientMap::getRowsStrings() const {
     std::vector<std::string> rowStrings;
     rowStrings.reserve(getNRows());
 
-    for (const auto& row : grid){
+    for (int iRow = 0 ; iRow < getNRows() ; ++iRow){
         std::string rowString;
         rowString.reserve(getNCols());
-        std::ranges::transform(row, std::back_inserter(rowString), [](CellType cell){return static_cast<char>(cell);});
+
+        auto from = grid.cbegin() + iRow * getNCols();
+        auto to = from + getNCols();
+
+        std::ranges::transform(
+            from,
+            to,
+            std::back_inserter(rowString),
+            [](CellType cell){return static_cast<char>(cell);}
+        );
         rowStrings.push_back(std::move(rowString));
     }
 
