@@ -5,7 +5,7 @@
 #include "DistanceMatrix.hpp"
 
 
-std::vector<CellType> AmbientMap::loadGrid(const std::filesystem::path &gridPath) {
+std::vector<bool> AmbientMap::loadGrid(const std::filesystem::path &gridPath) {
     std::fstream fs(gridPath.c_str(), std::ios::in);
 
     if(!fs.is_open()){
@@ -16,18 +16,16 @@ std::vector<CellType> AmbientMap::loadGrid(const std::filesystem::path &gridPath
 
     using namespace boost::algorithm;
 
-    std::vector<CellType> grid{};
+    std::vector<bool> grid{};
 
     while(std::getline(fs, line)){
         trim(line);
 
-        auto charConverter = [](char c){
-            if(c != static_cast<char>(CellType::ENDPOINT)){
-                return static_cast<CellType>(c);
-            }
-            return CellType::FLOOR;
-        };
-        std::transform(line.cbegin(), line.cend(), std::back_inserter(grid), charConverter);
+        std::ranges::transform(
+            line,
+            std::back_inserter(grid),
+            [](char c){return c == static_cast<char>(CellType::OBSTACLE);}
+        );
     }
 
     if(grid.empty()){
@@ -42,10 +40,10 @@ bool AmbientMap::isValid(const Coord &coord) const {
     bool isInsideGrid = coord.row < getNRows() && coord.col < getNCols() &&
         coord.row >= 0 && coord.col >= 0;
 
-    return isInsideGrid && operator[](distanceMatrix.from2Dto1D(coord)) != CellType::OBSTACLE;
+    return isInsideGrid && !operator[](distanceMatrix.from2Dto1D(coord));
 }
 
-CellType AmbientMap::operator[](CompressedCoord cc) const {
+bool AmbientMap::operator[](CompressedCoord cc) const {
     return grid[cc];
 }
 
@@ -73,7 +71,7 @@ const DistanceMatrix& AmbientMap::getDistanceMatrix() const{
     return distanceMatrix;
 }
 
-const std::vector<CellType>& AmbientMap::getGrid() const {
+const std::vector<bool>& AmbientMap::getGrid() const {
     return grid;
 }
 
@@ -92,7 +90,10 @@ std::vector<std::string> AmbientMap::getRowsStrings() const {
             from,
             to,
             std::back_inserter(rowString),
-            [](CellType cell){return static_cast<char>(cell);}
+            [](bool cell){
+                auto isObstacle = cell ? CellType::OBSTACLE : CellType::FLOOR;
+                return static_cast<char>(isObstacle);
+            }
         );
         rowStrings.push_back(std::move(rowString));
     }

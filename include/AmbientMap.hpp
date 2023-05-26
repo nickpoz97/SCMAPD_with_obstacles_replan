@@ -29,19 +29,19 @@ public:
     AmbientMap(const std::filesystem::path &gridPath, const std::filesystem::path &distanceMatrixPath);
 
     [[nodiscard]] bool isValid(const Coord &coord) const;
-    CellType operator[](CompressedCoord cc) const;
+    bool operator[](CompressedCoord cc) const;
 
     [[nodiscard]] int getNRows() const;
     [[nodiscard]] int getNCols() const;
     [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
 
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
-    [[nodiscard]] const std::vector<CellType>& getGrid() const;
+    [[nodiscard]] const std::vector<bool>& getGrid() const;
     [[nodiscard]] std::vector<std::string> getRowsStrings() const;
 private:
     const DistanceMatrix distanceMatrix;
-    std::vector<CellType> grid;
-    static std::vector<CellType> loadGrid(const std::filesystem::path &gridPath);
+    std::vector<bool> grid;
+    static std::vector<bool> loadGrid(const std::filesystem::path &gridPath);
 };
 
 constexpr int AmbientMap::getHoldDirectionIndex() {
