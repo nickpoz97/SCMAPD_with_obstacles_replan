@@ -40,7 +40,7 @@ void ConstraintTable::insert2CT(size_t loc, int t_min, int t_max)
     }
 }
 
-void ConstraintTable::insert2CT(const Path& path)
+void ConstraintTable::insert2CT(const PBSPath& path)
 {
     int prev_location = path.front().location;
     int prev_timestep = 0;
@@ -71,7 +71,7 @@ void ConstraintTable::insertLandmark(size_t loc, int t)
 }
 
 // build the conflict avoidance table
-void ConstraintTable::insert2CAT(int agent, const vector<Path*>& paths)
+void ConstraintTable::insert2CAT(int agent, const vector<PBSPath*>& paths)
 {
     for (size_t ag = 0; ag < paths.size(); ag++)
     {
@@ -80,7 +80,7 @@ void ConstraintTable::insert2CAT(int agent, const vector<Path*>& paths)
         insert2CAT(*paths[ag]);
     }
 }
-void ConstraintTable::insert2CAT(const Path& path)
+void ConstraintTable::insert2CAT(const PBSPath& path)
 {
     if (cat.empty())
     {

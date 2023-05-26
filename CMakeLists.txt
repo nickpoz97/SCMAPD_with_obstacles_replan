@@ -14,7 +14,7 @@ set(OBS_EXE obstacle_avoidance)
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/src/main/.*\\.cpp$")
 
-set(INCLUDE_DIRS include deps/cnpy/include)
+set(INCLUDE_DIRS include deps/cnpy/include deps/PBS/inc)
 
 add_subdirectory(deps)
 

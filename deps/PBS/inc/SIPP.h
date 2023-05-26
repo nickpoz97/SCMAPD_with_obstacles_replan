@@ -61,7 +61,7 @@ public:
 class SIPP: public SingleAgentSolver
 {
 public:
-    Path findOptimalPath(const set<int>& higher_agents, const vector<Path*>& paths, int agent);
+    PBSPath findOptimalPath(const set<int>& higher_agents, const vector<PBSPath*>& paths, int agent);
 
     string getName() const { return "SIPP"; }
 
@@ -79,9 +79,9 @@ private:
     typedef boost::unordered_map<SIPPNode*, list<SIPPNode*>, SIPPNode::NodeHasher, SIPPNode::eqnode> hashtable_t;
     hashtable_t allNodes_table;
     list<SIPPNode*> useless_nodes;
-    // Path findNoCollisionPath(const ConstraintTable& constraint_table);
+    // PBSPath findNoCollisionPath(const ConstraintTable& constraint_table);
 
-    Path findOptimalPath(const set<int>& higher_agents, const vector<Path*>& paths, int agent, int start_location, int goal_location);
+    PBSPath findOptimalPath(const set<int>& higher_agents, const vector<PBSPath*>& paths, int agent, int start_location, int goal_location);
 
     void updatePath(const LLNode* goal, std::vector<PathEntry> &path);
 

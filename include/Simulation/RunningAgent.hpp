@@ -19,15 +19,17 @@ public:
     [[nodiscard]] CompressedCoord getActualPosition() const;
     void stepAndUpdate();
 
-    bool unexpectedObstacle(const std::unordered_set<CompressedCoord>& obstacles) const;
-
-    const Path &getPlannedPath() const;
+    [[nodiscard]] const Path &getPlannedPath() const;
 
     void setPlannedPath(Path newPlannedPath);
 
-    int getAgentId() const;
+    [[nodiscard]] int getAgentId() const;
 
-    const CheckPoints &getPlannedCheckpoints() const;
+    [[nodiscard]] const CheckPoints &getPlannedCheckpoints() const;
+
+    [[nodiscard]] bool hasFinished() const;
+
+    std::optional<CompressedCoord> getNextPosition() const;
 
 private:
     int agentId;

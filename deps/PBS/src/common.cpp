@@ -1,6 +1,6 @@
 #include "common.h"
 
-std::ostream& operator<<(std::ostream& os, const Path& path)
+std::ostream& operator<<(std::ostream& os, const PBSPath& path)
 {
 	for (const auto& state : path)
 	{
@@ -10,7 +10,7 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 }
 
 
-bool isSamePath(const Path& p1, const Path& p2)
+bool isSamePath(const PBSPath& p1, const PBSPath& p2)
 {
 	if (p1.size() != p2.size())
 		return false;

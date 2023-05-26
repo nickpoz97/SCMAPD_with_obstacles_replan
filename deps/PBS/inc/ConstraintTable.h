@@ -35,11 +35,11 @@ public:
         landmarks.clear();
         cat.clear();
     }
-    void insert2CT(const Path& path); // insert a path to the constraint table
+    void insert2CT(const PBSPath& path); // insert a path to the constraint table
     void insert2CT(size_t loc, int t_min, int t_max); // insert a vertex constraint to the constraint table
     void insert2CT(size_t from, size_t to, int t_min, int t_max); // insert an edge constraint to the constraint table
-    void insert2CAT(int agent, const vector<Path*>& paths); // build the conflict avoidance table using a set of paths
-    void insert2CAT(const Path& path); // insert a path to the collision avoidance table
+    void insert2CAT(int agent, const vector<PBSPath*>& paths); // build the conflict avoidance table using a set of paths
+    void insert2CAT(const PBSPath& path); // insert a path to the collision avoidance table
     //int getCATMaxTimestep() const {return cat_max_timestep;}
 
 protected:

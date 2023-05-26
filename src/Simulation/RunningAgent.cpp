@@ -59,11 +59,6 @@ void RunningAgent::stepAndUpdate(){
     }
 }
 
-bool RunningAgent::unexpectedObstacle(const std::unordered_set<CompressedCoord>& obstacles) const{
-    auto nextPos = !plannedPath.empty() ? plannedPath[1] : plannedPath[0];
-    return obstacles.contains(nextPos);
-}
-
 const Path &RunningAgent::getPlannedPath() const {
     return plannedPath;
 }
@@ -78,4 +73,14 @@ int RunningAgent::getAgentId() const {
 
 const CheckPoints &RunningAgent::getPlannedCheckpoints() const {
     return plannedCheckpoints;
+}
+
+bool RunningAgent::hasFinished() const {
+    assert(!plannedPath.empty());
+    return plannedPath.size() == 1;
+}
+
+std::optional<CompressedCoord> RunningAgent::getNextPosition() const {
+    assert(plannedPath.size() >= 1);
+    return plannedPath.size() >= 2 ? std::optional{plannedPath[1]} : std::nullopt;
 }
