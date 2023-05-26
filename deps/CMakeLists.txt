@@ -20,3 +20,4 @@ CPMAddPackage(
 
 add_subdirectory(cnpy)
 add_subdirectory(json)
+add_subdirectory(PBS)

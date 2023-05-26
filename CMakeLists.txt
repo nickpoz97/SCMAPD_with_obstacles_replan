@@ -24,7 +24,7 @@ add_executable(${OBS_EXE} ${SOURCES} src/main/obsAvoid.cpp)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 target_include_directories(${SCMAPD_EXE} PUBLIC ${INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-target_link_libraries(${SCMAPD_EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options)
+target_link_libraries(${SCMAPD_EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options pbs)
 
 target_include_directories(${OBS_EXE} PUBLIC ${INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(${OBS_EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options)
