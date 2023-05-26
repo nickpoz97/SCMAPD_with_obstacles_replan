@@ -13,7 +13,7 @@ std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const Dista
     // iterate over all agents
     for(const auto& agentsStats : agentsJson){
         // load path
-        PlannedPath plannedPath{};
+        Path plannedPath{};
 
         std::ranges::transform(
             agentsStats["path"],
@@ -22,7 +22,7 @@ std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const Dista
         );
 
         // load checkpoints
-        PlannedCheckpoints plannedCheckpoints;
+        CheckPoints plannedCheckpoints;
 
         std::ranges::transform(
             agentsStats["waypoints"],
@@ -39,5 +39,43 @@ std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const Dista
     return runningAgents;
 }
 
-RunningAgent::RunningAgent(int agentId, PlannedPath plannedPath, PlannedCheckpoints plannedCheckpoints)
+RunningAgent::RunningAgent(int agentId, Path plannedPath, CheckPoints plannedCheckpoints)
         : agentId(agentId), plannedPath(std::move(plannedPath)), plannedCheckpoints(std::move(plannedCheckpoints)) {}
+
+CompressedCoord RunningAgent::getActualPosition() const {
+    assert(!plannedPath.empty());
+    return plannedPath.front();
+}
+
+void RunningAgent::stepAndUpdate(){
+    // do a step
+    if(!plannedPath.empty()) {
+        plannedPath.erase(plannedPath.begin());
+
+        assert(!plannedCheckpoints.empty());
+        if(plannedPath.front() == *plannedCheckpoints.cbegin()){
+            plannedCheckpoints.pop_front();
+        }
+    }
+}
+
+bool RunningAgent::unexpectedObstacle(const std::unordered_set<CompressedCoord>& obstacles) const{
+    auto nextPos = !plannedPath.empty() ? plannedPath[1] : plannedPath[0];
+    return obstacles.contains(nextPos);
+}
+
+const Path &RunningAgent::getPlannedPath() const {
+    return plannedPath;
+}
+
+void RunningAgent::setPlannedPath(Path newPlannedPath) {
+    RunningAgent::plannedPath = std::move(newPlannedPath);
+}
+
+int RunningAgent::getAgentId() const {
+    return agentId;
+}
+
+const CheckPoints &RunningAgent::getPlannedCheckpoints() const {
+    return plannedCheckpoints;
+}
