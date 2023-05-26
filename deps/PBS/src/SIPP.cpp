@@ -20,7 +20,7 @@ void SIPP::updatePath(const LLNode* goal, vector<PathEntry> &path)
     path[0].location = curr->location;
 }
 
-Path SIPP::findOptimalPath(const set<int>& higher_agents, const vector<Path*>& paths, int agent, int start_location, int goal_location)
+PBSPath SIPP::findOptimalPath(const set<int>& higher_agents, const vector<PBSPath*>& paths, int agent, int start_location, int goal_location)
 {
     reset();
 
@@ -43,7 +43,7 @@ Path SIPP::findOptimalPath(const set<int>& higher_agents, const vector<Path*>& p
     // build reservation table
     ReservationTable reservation_table(constraint_table, goal_location);
 
-    Path path;
+    PBSPath path;
     num_expanded = 0;
     num_generated = 0;
     Interval interval = reservation_table.get_first_safe_interval(start_location);
@@ -123,8 +123,8 @@ Path SIPP::findOptimalPath(const set<int>& higher_agents, const vector<Path*>& p
     return path;
 }
 
-Path SIPP::findOptimalPath(const set<int>& higher_agents, const vector<Path*>& paths, int agent) {
-    Path total_path;
+PBSPath SIPP::findOptimalPath(const set<int>& higher_agents, const vector<PBSPath*>& paths, int agent) {
+    PBSPath total_path;
 
     if (locs.size() == 1) {
         int start_location = locs[0];
@@ -137,16 +137,16 @@ Path SIPP::findOptimalPath(const set<int>& higher_agents, const vector<Path*>& p
     int start_location = locs[0];
     int goal_location = locs[1];
 
-    Path p = findOptimalPath(higher_agents, paths, agent, start_location, goal_location);
+    PBSPath p = findOptimalPath(higher_agents, paths, agent, start_location, goal_location);
     for (int j = 0; j < p.size() ; j++) {
         total_path.push_back(p[j]);
     }
     
     for (int i = 2; i < locs.size(); i++) {
-        vector<Path*> forward_paths;
+        vector<PBSPath*> forward_paths;
         for (auto& pts: paths) {
             if (pts->size() >= total_path.size()) {
-                Path *newPath = new Path(pts->begin() + total_path.size() - 1, pts->end());
+                PBSPath *newPath = new PBSPath(pts->begin() + total_path.size() - 1, pts->end());
                 forward_paths.push_back(newPath);
             } else {
                 forward_paths.push_back(nullptr); 

@@ -9,7 +9,7 @@ class PBSNode
 {
 public:
 	Constraint constraint; // new constraint
-    list< pair< int, Path> > paths; // new paths
+    list< pair< int, PBSPath> > paths; // new paths
     int cost = 0; // sum of costs
 
 	size_t depth = 0; // depath of this CT node

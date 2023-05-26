@@ -49,10 +49,10 @@ struct PathEntry
 	explicit PathEntry(int loc = -1): location(loc) { }
 };
 
-typedef vector<PathEntry> Path;
-std::ostream& operator<<(std::ostream& os, const Path& path);
+typedef vector<PathEntry> PBSPath;
+std::ostream& operator<<(std::ostream& os, const PBSPath& path);
 
-bool isSamePath(const Path& p1, const Path& p2);
+bool isSamePath(const PBSPath& p1, const PBSPath& p2);
 
 // Only for three-tuples of std::hash-able types for simplicity.
 // You can of course template this struct to allow other hash functions

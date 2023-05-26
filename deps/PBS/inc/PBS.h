@@ -49,6 +49,8 @@ public:
 	void clear(); // used for rapid random  restart
 
     void printPaths() const;
+
+    [[nodiscard]] std::vector<std::vector<int>> getPaths() const;
 private:
 	conflict_selection conflict_seletion_rule;
 
@@ -71,7 +73,7 @@ private:
 	int num_of_agents;
 
 
-	vector<Path*> paths;
+	vector<PBSPath*> paths;
 	vector < SingleAgentSolver* > search_engines;  // used to find (single) agents' paths and mdd
 
     bool generateChild(int child_id, PBSNode* parent, int low, int high);
@@ -104,7 +106,7 @@ private:
 
 		 // high level search
 	bool generateRoot();
-    bool findPathForSingleAgent(PBSNode& node, const set<int>& higher_agents, int a, Path& new_path);
+    bool findPathForSingleAgent(PBSNode& node, const set<int>& higher_agents, int a, PBSPath& new_path);
 	void classifyConflicts(PBSNode &parent);
 	void update(PBSNode* node);
 

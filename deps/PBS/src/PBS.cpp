@@ -48,7 +48,7 @@ bool PBS::solve(double _time_limit)
         assert(!hasHigherPriority(curr->conflict->a1, curr->conflict->a2) &&
                !hasHigherPriority(curr->conflict->a2, curr->conflict->a1) );
         auto t1 = clock();
-        vector<Path*> copy(paths);
+        vector<PBSPath*> copy(paths);
         generateChild(0, curr, curr->conflict->a1, curr->conflict->a2);
         paths = copy;
         generateChild(1, curr, curr->conflict->a2, curr->conflict->a1);
@@ -145,7 +145,7 @@ bool PBS::generateChild(int child_id, PBSNode* parent, int low, int high)
                 cout << i << ",";
             cout << endl;
         }
-        Path new_path;
+        PBSPath new_path;
         if(!findPathForSingleAgent(*node, higher_agents, a, new_path))
         {
             delete node;
@@ -203,7 +203,7 @@ bool PBS::generateChild(int child_id, PBSNode* parent, int low, int high)
     return true;
 }
 
-bool PBS::findPathForSingleAgent(PBSNode& node, const set<int>& higher_agents, int a, Path& new_path)
+bool PBS::findPathForSingleAgent(PBSNode& node, const set<int>& higher_agents, int a, PBSPath& new_path)
 {
     clock_t t = clock();
     new_path = search_engines[a]->findOptimalPath(higher_agents, paths, a);  //TODO: add runtime check to the low level
@@ -822,4 +822,21 @@ void PBS::printPaths() const {
         }
         std::cout << endl;
     }
+}
+
+[[nodiscard]] std::vector<std::vector<int>> PBS::getPaths() const{
+    std::vector<std::vector<int>> agentsPaths{};
+    agentsPaths.reserve(num_of_agents);
+
+    for(int i = 0 ; i < num_of_agents; i++){
+        std::vector<int> path{};
+        path.reserve(paths[i]->size());
+
+        for (const auto & t : *paths[i]){
+            path.push_back(t.location);
+        }
+        agentsPaths.push_back(path);
+    }
+
+    return agentsPaths;
 }
