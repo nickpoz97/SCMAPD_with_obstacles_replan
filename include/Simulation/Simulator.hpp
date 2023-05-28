@@ -37,6 +37,9 @@ private:
     void updatePlannedPaths(const std::vector<Path>& paths);
 
     std::vector<CompressedCoord> getNextPositions() const;
+
+    bool rePlan(const std::vector<CompressedCoord>& actualObstacles);
+    void wait(const std::vector<CompressedCoord>& actualObstacles);
 };
 
 

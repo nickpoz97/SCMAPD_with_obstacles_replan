@@ -21,9 +21,7 @@ void Simulator::simulate(size_t hash, Strategy strategy) {
             switch (strategy) {
                 // warning cannot solve if obstacles is on a target
                 case Strategy::RE_PLAN:
-                    PBS pbs{generatePBSInstance(actualObstacles), true, 0};
-                    pbs.solve(7200);
-                    updatePlannedPaths(pbs.getPaths());
+                    rePlan(actualObstacles);
                 break;
                 case Strategy::WAIT:
 
@@ -78,4 +76,13 @@ void Simulator::updatePlannedPaths(const std::vector<Path>& paths) {
         assert(i = runningAgents[i].getAgentId());
         runningAgents[i].setPlannedPath(paths[i]);
     }
+}
+
+bool Simulator::rePlan(const std::vector<CompressedCoord>& actualObstacles) {
+    PBS pbs{generatePBSInstance(actualObstacles), true, 0};
+    if(pbs.solve(7200)){
+        updatePlannedPaths(pbs.getPaths());
+        return true;
+    }
+    return false;
 }
