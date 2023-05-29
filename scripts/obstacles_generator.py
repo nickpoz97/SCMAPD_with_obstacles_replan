@@ -3,16 +3,21 @@ import random
 import os
 
 grid_path = os.path.normpath('data/grid.txt')
-agents_path = os.path.normpath('instances/20_500_paper/0.agents')
+#agents_path = os.path.normpath('instances/20_500_paper/0.agents')
 
-subdir_name, file_name = agents_path.split(os.sep)[-2:]
+#subdir_name, file_name = agents_path.split(os.sep)[-2:]
 
-instance_id = file_name.split('.')[0]
+#instance_id = file_name.split('.')[0]
 
 # saving obstacles here
-obstacles_dir = subdir_name + '_obstacles'
+obstacles_dir = 'obstacles'
 if not os.path.exists(obstacles_dir):
     os.makedirs(obstacles_dir)
+
+# saving obstacles probs here
+probs_dir = 'probs'
+if not os.path.exists(probs_dir):
+    os.makedirs(probs_dir)
 
 occupation_types = {'quick': (6, 2), 'med': (10, 3), 'slow': (50, 15)}
 configs = {
@@ -30,29 +35,30 @@ spawn_time_limit = 50
 
 # get possible obstacle positions and number of rows and cols
 candidates = set()
-n_rows, n_cols = 0, 0
+
 with open(grid_path, 'r') as grid_file:
+    n_rows, n_cols = 0, 0
+
     rows = grid_file.readlines()
     n_rows, n_cols = len(rows), len(rows[0].strip())
 
     for rowi, row in enumerate(rows):
         for coli, cell in enumerate(row.strip()):
             if cell == '.' or cell == 'G':
-                candidates.add((rowi, coli))
+                candidates.add(rowi * n_cols + coli)
 
-# get agents positions
-agents_pos = set()
-with open(agents_path, 'r') as agents_file:
-    n_agents = int(agents_file.readline().strip())
-    for val in agents_file.readlines():
-        row_str, col_str = val.strip().split(',')
-        agents_pos.add((int(row_str), int(col_str)))
-    assert(n_agents == len(agents_pos))
+# # get agents positions
+# agents_pos = set()
+# with open(agents_path, 'r') as agents_file:
+#     n_agents = int(agents_file.readline().strip())
+#     for val in agents_file.readlines():
+#         row_str, col_str = val.strip().split(',')
+#         agents_pos.add((int(row_str), int(col_str)))
+#     assert(n_agents == len(agents_pos))
 
-# obstacles cannot spawn on agents
-candidates.difference_update(agents_pos)
+# # obstacles cannot spawn on agents
+# candidates.difference_update(agents_pos)
 
-# obtain shuffled list
 candidates = list(candidates)
 
 quick_positions = list()
@@ -88,17 +94,22 @@ for c, n in product(configs.items(), n_obstacles_list):
 
     upper_bound = spawn_time_limit + occupation_types['slow'][0] + occupation_types['slow'][1] * 4
 
-    obstacles_to_print = [[0 for _ in range(n)] for _ in range(upper_bound)]
+    obstacles_to_print = [[-1 for _ in range(n)] for _ in range(upper_bound)]
     for i, (pos, spawn_time, duration) in enumerate(obstacles):
         for t in range(spawn_time, spawn_time + duration):
-            obstacles_to_print[t][i] = pos[0] * n_cols + pos[1]
+            obstacles_to_print[t][i] = pos
 
-    while obstacles_to_print[-1] == [0 for _ in range(n)]:
+    while obstacles_to_print[-1] == [-1 for _ in range(n)]:
         obstacles_to_print.pop()
 
-    with open(os.path.join(obstacles_dir, '_'.join([instance_id, c_name, str(n)]) + '.csv'), 'w') as out_file:
+    with open(os.path.join(obstacles_dir, '_'.join([c_name, str(n)]) + '.csv'), 'w') as out_file:
         print(*['obs_' + str(i) for i in range(n)], sep=',', end='\n', file=out_file)
         
         for row in obstacles_to_print:
             print(*row, sep=',', end='\n', file=out_file)
-        
+
+    with open(os.path.join(probs_dir, '_'.join([c_name, str(n)]) + '.csv'), 'w') as out_file:
+        print(*['pos', 'mu', 'std'], sep=',', end='\n', file=out_file)
+
+        for pos, (mu, std) in candidates_with_probs:
+            print(*[pos, mu, std], sep=',', end='\n', file=out_file)
