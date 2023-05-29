@@ -24,7 +24,7 @@ enum class Strategy{
 
 class Simulator {
 public:
-    Simulator(std::vector<RunningAgent> runningAgents, nlohmann::json obstaclesJson, AmbientMap ambientMap);
+    Simulator(std::vector<RunningAgent> runningAgents, std::ifstream obstaclesCsv, AmbientMap ambientMap);
     void simulate(size_t hash, Strategy strategy);
     void printResults(const std::filesystem::path& out);
 private:
@@ -40,6 +40,8 @@ private:
 
     bool rePlan(const std::vector<CompressedCoord>& actualObstacles);
     void wait(const std::vector<CompressedCoord>& actualObstacles);
+
+    static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
 };
 
 

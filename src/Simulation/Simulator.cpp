@@ -2,6 +2,7 @@
 // Created by nicco on 27/05/2023.
 //
 
+#include <boost/tokenizer.hpp>
 #include "Simulation/Simulator.hpp"
 #include "PBS.h"
 
@@ -85,4 +86,30 @@ bool Simulator::rePlan(const std::vector<CompressedCoord>& actualObstacles) {
         return true;
     }
     return false;
+}
+
+std::list<std::vector<CompressedCoord>> Simulator::getObstaclesFromCsv(std::ifstream obstaclesCsv) {
+    using Tokenizer = boost::tokenizer<boost::escaped_list_separator<char>>;
+
+    std::list<std::vector<CompressedCoord>> obstaclesList{};
+
+    std::string line;
+    std::getline(obstaclesCsv, line);
+
+    Tokenizer tok(line);
+    if(*tok.begin() != "obs_0"){
+        throw std::runtime_error("Wrong csv file");
+    }
+
+    while(std::getline(obstaclesCsv, line)){
+        tok = line;
+
+        auto actualObstacles = tok |
+        std::views::filter([](const std::string& token){return token != "-1";}) |
+        std::views::transform([](const std::string& token){return std::stoi(token);});
+
+        obstaclesList.emplace_back(actualObstacles.begin(), actualObstacles.end());
+    }
+
+    return obstaclesList;
 }
