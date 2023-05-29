@@ -1,0 +1,168 @@
+import pygame
+import sys
+import json
+import tkinter as tk
+from tkinter import filedialog
+import os
+
+# Set up the grid dimensions
+n_rows = 21
+n_columns = 35
+
+# Create a Tkinter root window (it won't be shown)
+root = tk.Tk()
+root.withdraw()
+
+# Open a file dialog and get the selected file path
+file_path = filedialog.askopenfilename(filetypes=[('JSON files', '*.json')], initialdir=os.getcwd())
+
+# Load the JSON data from the selected file
+with open(file_path, 'r') as f:
+    data = json.load(f)
+
+# Extract the agent paths from the JSON data
+agents = [agent['path'] for agent in data['agents']]
+
+
+# Extract the agent paths from the JSON data
+agents = [agent['path'] for agent in data['agents']]
+
+# Load the grid data from a file
+with open('grid.txt', 'r') as f:
+    grid_data = f.readlines()
+
+# Set up the grid dimensions
+n_rows = len(grid_data)
+n_columns = len(grid_data[0].strip())
+
+# Extract the wall positions from the grid data
+walls = []
+for row in range(n_rows):
+    for column in range(n_columns):
+        if grid_data[row][column] == '@':
+            walls.append((row, column))
+
+# Set up the colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+LIGHT_BLUE = (125, 125, 255)
+GRAY = (128, 128, 128)
+
+# Set up the cell size and margin
+cell_size = 22
+cell_margin = 1
+
+# Set up the screen dimensions
+screen_width = n_columns * (cell_size + cell_margin) + cell_margin
+screen_height = n_rows * (cell_size + cell_margin) + cell_margin + 50
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the screen
+screen = pygame.display.set_mode((screen_width, screen_height))
+
+# Set up the font
+font = pygame.font.Font(None, 26)
+
+# Set up the slider
+slider_x = cell_margin
+slider_y = screen_height - 40
+slider_width = screen_width - cell_margin * 2
+slider_height = 20
+
+# Set up the timestep
+timestep = 0
+
+# find longest path value
+max_timestep = len(max(agents, key=len))
+
+def draw_grid():
+    # Draw the grid
+    for row in range(n_rows):
+        for column in range(n_columns):
+            # Calculate the coordinates of the top left corner of the cell
+            x = column * (cell_size + cell_margin) + cell_margin
+            y = row * (cell_size + cell_margin) + cell_margin
+
+            # Check if there is a wall in this cell
+            if (row, column) in walls:
+                color = GRAY
+            else:
+                color = WHITE
+
+            # Draw the cell
+            pygame.draw.rect(screen, color, (x, y, cell_size, cell_size))
+
+def draw_agents():
+    # Draw the agents
+    for agent in agents:
+        # Calculate the row and column of the agent's position at this timestep
+        row,column = agent[timestep] if timestep < len(agent) else agent[-1]
+
+        # Calculate the coordinates of the center of the cell
+        x = column * (cell_size + cell_margin) + cell_margin + cell_size // 2
+        y = row * (cell_size + cell_margin) + cell_margin + cell_size // 2
+
+        # Draw the agent
+        pygame.draw.circle(screen, LIGHT_BLUE , (x,y), cell_size/2)
+
+        # Render the text with current agent index value.
+        text = font.render(f"{agents.index(agent)}", True, BLACK)
+        text_rect=text.get_rect(center=(x,y))
+        screen.blit(text,text_rect)
+
+def draw_slider():
+    # Draw the slider background
+    pygame.draw.rect(screen, WHITE, (slider_x, slider_y, slider_width, slider_height))
+
+    # Calculate the position of the slider button based on the current timestep
+    button_x = slider_x + timestep / (max_timestep -1) * slider_width - slider_height //2
+
+    # Draw the slider button
+    pygame.draw.circle(screen,RED,(int(button_x+slider_height//2), int(slider_y+slider_height//2)), slider_height//2)
+
+    # Draw a border around the slider
+    border_color = BLACK
+    border_width = 2
+    pygame.draw.rect(screen, border_color, (slider_x - border_width, slider_y - border_width, slider_width + border_width * 2, slider_height + border_width * 2), border_width)
+
+def draw_text():
+    # Render the text with current timestep value.
+    text = font.render(f"Timestep: {timestep}", True,BLACK)
+    text_rect=text.get_rect(center=(screen_width/2,n_rows*(cell_size+cell_margin)+cell_margin+20))
+    screen.blit(text,text_rect)
+
+def update_timestep(pos):
+    global timestep
+
+    # Check if pos is within slider range.
+    if pos[0] >= slider_x and pos[0] <= slider_x+slider_width:
+        # Update timestep based on mouse position.
+        timestep = int(round((pos[0]-slider_x)/slider_width*(len(max(agents,key=len))-1)))
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            update_timestep(pygame.mouse.get_pos())
+        elif event.type == pygame.MOUSEMOTION:
+            if pygame.mouse.get_pressed()[0]:
+                update_timestep(pygame.mouse.get_pos())
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                timestep = max(0, timestep - 1)
+            elif event.key == pygame.K_RIGHT:
+                timestep = min(max_timestep - 1, timestep + 1)
+
+    screen.fill(BLACK)
+
+    draw_grid()
+    draw_agents()
+    draw_slider()
+    draw_text()
+
+    pygame.display.flip()
