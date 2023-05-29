@@ -39,7 +39,7 @@ private:
     std::vector<CompressedCoord> getNextPositions() const;
 
     bool rePlan(const std::vector<CompressedCoord>& actualObstacles);
-    void wait(const std::vector<CompressedCoord>& actualObstacles);
+    void wait(const std::vector<CompressedCoord>& actualObstacles, const vector<CompressedCoord> &waitingAgents);
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
 };

@@ -24,8 +24,8 @@ void Simulator::simulate(size_t hash, Strategy strategy) {
                 case Strategy::RE_PLAN:
                     rePlan(actualObstacles);
                 break;
-                case Strategy::WAIT:
-
+                default:
+                    throw std::runtime_error("Not handled case");
                 break;
             }
         }
