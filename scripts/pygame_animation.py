@@ -14,7 +14,7 @@ root = tk.Tk()
 root.withdraw()
 
 # Open a file dialog and get the selected file path
-file_path = filedialog.askopenfilename(filetypes=[('JSON files', '*.json')], initialdir=os.getcwd())
+file_path = filedialog.askopenfilename(filetypes=[('result files', 'result*.json')], initialdir=os.getcwd())
 
 # Load the JSON data from the selected file
 with open(file_path, 'r') as f:
@@ -27,8 +27,11 @@ agents = [agent['path'] for agent in data['agents']]
 # Extract the agent paths from the JSON data
 agents = [agent['path'] for agent in data['agents']]
 
+# Open a file dialog and get the selected file path
+grid_path = filedialog.askopenfilename(filetypes=[('grid files', 'grid*.txt')], initialdir=os.getcwd())
+
 # Load the grid data from a file
-with open('grid.txt', 'r') as f:
+with open(grid_path, 'r') as f:
     grid_data = f.readlines()
 
 # Set up the grid dimensions
@@ -143,12 +146,71 @@ def update_timestep(pos):
         # Update timestep based on mouse position.
         timestep = int(round((pos[0]-slider_x)/slider_width*(len(max(agents,key=len))-1)))
 
+# Set up the pop-up dialog state
+popup_active = False
+popup_row = 0
+popup_column = 0
+
+def draw_popup():
+    if popup_active:
+        # Calculate the coordinates of the top left corner of the cell
+        x = popup_column * (cell_size + cell_margin) + cell_margin
+        y = popup_row * (cell_size + cell_margin) + cell_margin
+
+        # Draw the pop-up background
+        popup_width = 100
+        popup_height = 50
+        popup_x = x + (cell_size - popup_width) // 2
+        popup_y = y - popup_height - cell_margin
+
+        # Adjust the pop-up position if it would be off-screen
+        if popup_x < 0:
+            popup_x = 0
+        elif popup_x + popup_width > screen_width:
+            popup_x = screen_width - popup_width
+        if popup_y < 0:
+            popup_y = y + cell_size + cell_margin
+
+        pygame.draw.rect(screen, WHITE, (popup_x, popup_y, popup_width, popup_height))
+
+        # Draw the pop-up border
+        border_color = BLACK
+        border_width = 2
+        pygame.draw.rect(screen, border_color, (popup_x - border_width, popup_y - border_width, popup_width + border_width * 2, popup_height + border_width * 2), border_width)
+
+        # Draw the pop-up text
+        text = f"Row: {popup_row}\nColumn: {popup_column}"
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            rendered_text = font.render(line, True, BLACK)
+            text_rect = rendered_text.get_rect(center=(popup_x + popup_width // 2, popup_y + (i + 1) * (popup_height // (len(lines) + 1))))
+            screen.blit(rendered_text, text_rect)
+
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            update_timestep(pygame.mouse.get_pos())
+            pos = pygame.mouse.get_pos()
+
+            # Check if the click was within the grid area
+            if pos[0] >= cell_margin and pos[0] < screen_width - cell_margin and pos[1] >= cell_margin and pos[1] < screen_height - cell_margin - 50:
+                # Calculate the row and column of the clicked cell
+                row = (pos[1] - cell_margin) // (cell_size + cell_margin)
+                column = (pos[0] - cell_margin) // (cell_size + cell_margin)
+
+                # Toggle the pop-up dialog state
+                if not popup_active or row != popup_row or column != popup_column:
+                    # Activate the pop-up dialog and update its position
+                    popup_active = True
+                    popup_row = row
+                    popup_column = column
+                else:
+                    # Deactivate the pop-up dialog
+                    popup_active = False
+            else:
+                update_timestep(pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEMOTION:
             if pygame.mouse.get_pressed()[0]:
                 update_timestep(pygame.mouse.get_pos())
@@ -164,5 +226,6 @@ while True:
     draw_agents()
     draw_slider()
     draw_text()
+    draw_popup()
 
     pygame.display.flip()
