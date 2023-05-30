@@ -11,10 +11,14 @@
 #include "Instance.h"
 #include "AmbientMap.hpp"
 
+using ObstaclesMap = std::unordered_map<TimeStep , std::vector<CompressedCoord>>;
+
 struct NormalInfo{
     TimeStep mu;
     TimeStep std;
 };
+
+using ProbabilitiesMap = std::unordered_map<CompressedCoord, NormalInfo>;
 
 enum class Strategy{
     RE_PLAN,
@@ -25,11 +29,12 @@ enum class Strategy{
 class Simulator {
 public:
     Simulator(std::vector<RunningAgent> runningAgents, std::ifstream obstaclesCsv, AmbientMap ambientMap);
+    Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::json &obstaclesJson, AmbientMap ambientMap);
     void simulate(size_t hash, Strategy strategy);
     void printResults(const std::filesystem::path& out);
 private:
     std::vector<RunningAgent> runningAgents;
-    std::list<std::vector<CompressedCoord>> obstacles;
+    ObstaclesMap obstacles;
     std::unordered_map<CompressedCoord, NormalInfo> obstaclesTimeProb;
     AmbientMap ambientMap;
 
@@ -42,6 +47,9 @@ private:
     void wait(const std::vector<CompressedCoord>& actualObstacles, const vector<CompressedCoord> &waitingAgents);
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
+
+    static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
+    static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
 };
 
 

@@ -9,10 +9,10 @@
 void Simulator::simulate(size_t hash, Strategy strategy) {
     using std::ranges::any_of;
 
-    while(any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();})){
-        // extract obstacles at this timeStep
-        auto actualObstacles = obstacles.front();
-        obstacles.pop_front();
+    for(TimeStep t = 0 ; any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();}) ; ++t){
+        // extract obstacles at this timeStep (empty forward list otherwise)
+        // agents don' t know about this vector
+        const auto& actualObstacles = obstacles[t];
 
         // obstacles in that our agent will cross in this iteration
         std::vector<CompressedCoord> foundObstacles{};
@@ -112,4 +112,40 @@ std::list<std::vector<CompressedCoord>> Simulator::getObstaclesFromCsv(std::ifst
     }
 
     return obstaclesList;
+}
+
+ObstaclesMap Simulator::getObstaclesFromJson(const nlohmann::json &obstaclesJson) {
+    ObstaclesMap obstacles{};
+
+    for(const auto& obsObj : obstaclesJson["obstacles"]){
+        TimeStep from = obsObj["t"];
+        TimeStep to = from + static_cast<Interval>(obsObj["interval"]);
+
+        for(auto t = from ; t < to ; ++t){
+            obstacles[t].push_back(obsObj["pos"]);
+        }
+    }
+
+    return obstacles;
+}
+
+ProbabilitiesMap Simulator::getProbabilitiesFromJson(const nlohmann::json &obstaclesJson) {
+    ProbabilitiesMap probabilitiesMap{};
+
+    // one distribution for each obstacle
+    const auto& pObj = obstaclesJson["probability"];
+
+    for(const auto& obsObj : obstaclesJson["obstacles"]){
+        probabilitiesMap[obsObj["pos"]] = NormalInfo{pObj["mu"], pObj["sigma"]};
+    }
+
+    return probabilitiesMap;
+}
+
+Simulator::Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::json &obstaclesJson, AmbientMap ambientMap) :
+    runningAgents{std::move(runningAgents)},
+    obstacles{getObstaclesFromJson(obstaclesJson)},
+    obstaclesTimeProb{getProbabilitiesFromJson(obstaclesJson)},
+    ambientMap{std::move(ambientMap)}
+{
 }
