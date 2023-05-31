@@ -84,3 +84,14 @@ std::optional<CompressedCoord> RunningAgent::getNextPosition() const {
     assert(plannedPath.size() >= 1);
     return plannedPath.size() >= 2 ? std::optional{plannedPath[1]} : std::nullopt;
 }
+
+std::size_t hash_value(const RunningAgent& s){
+    size_t seed = 0;
+
+    auto hashCombiner = [&seed](CompressedCoord cc) {boost::hash_combine(seed, cc);};
+
+    std::ranges::for_each(s.getPlannedPath(), hashCombiner);
+    //std::ranges::for_each(s.getPlannedCheckpoints(), hashCombiner);
+
+    return seed;
+}
