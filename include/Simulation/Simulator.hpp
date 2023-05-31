@@ -59,7 +59,7 @@ private:
     static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
 
-    static unordered_set<SpawnedObstacle>
+    static SpawnedObstaclesSet
     getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep) ;
 };
 

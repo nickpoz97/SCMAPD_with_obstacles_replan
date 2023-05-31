@@ -83,27 +83,29 @@ Instance Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &
     };
 }
 
-boost::unordered_set<SpawnedObstacle>
+SpawnedObstaclesSet
 Simulator::getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence,
                                TimeStep actualTimeStep) {
-    boost::unordered::unordered_set<SpawnedObstacle> spawnedObstacles{};
+    SpawnedObstaclesSet spawnedObstaclesSet{};
     for (const auto& owp : obstaclesWithPermanence){
-        for(int t = actualTimeStep ; t < actualTimeStep + owp.duration ; ++t){
-            spawnedObstacles.emplace(t, owp.loc);
+        for(int t = 0 ; t < owp.duration ; ++t){
+            spawnedObstaclesSet.emplace(t, owp.loc);
         }
     }
-    return spawnedObstacles;
+    return spawnedObstaclesSet;
 }
 
 void Simulator::updatePlannedPaths(const std::vector<Path>& paths) {
     for (int i = 0 ; i < paths.size() ; i++){
-        assert(i = runningAgents[i].getAgentId());
+        assert(i == runningAgents[i].getAgentId());
         runningAgents[i].setPlannedPath(paths[i]);
     }
 }
 
 bool Simulator::rePlan(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t) {
-    PBS pbs{generatePBSInstance(obstaclesWithPermanence, t), true, 0};
+    auto pbsInstance{generatePBSInstance(obstaclesWithPermanence, t)};
+
+    PBS pbs{pbsInstance, true, 0};
     if(pbs.solve(7200)){
         updatePlannedPaths(pbs.getPaths());
         return true;
