@@ -63,6 +63,19 @@ for row in range(n_rows):
         if grid_data[row][column] == '@':
             walls.append((row, column))
 
+# Extract obstacles positions from the grid data
+obstacles = list()
+if len(obstacles_files_paths) == 1:
+    # Load the JSON data from the selected file
+    with open(obstacles_files_paths[0], 'r') as f:
+        obs_data = json.load(f)
+
+        for obs_info in obs_data['obstacles']:
+            spawn_time = obs_info['t']
+            vanish_time = spawn_time + obs_info['interval']
+            for t in range(spawn_time, vanish_time):
+                obstacles.append((t, obs_info['pos'] // n_columns, obs_info['pos'] % n_columns))
+
 # Set up the colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -113,6 +126,8 @@ def draw_grid():
                 color = GRAY
             else:
                 color = WHITE
+            if (timestep, row, column) in obstacles:
+                color = RED
 
             # Draw the cell
             pygame.draw.rect(screen, color, (x, y, cell_size, cell_size))
