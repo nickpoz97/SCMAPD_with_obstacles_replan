@@ -24,7 +24,8 @@ int main(int argc, char* argv[]){
         ("m", po::value<std::string>()->required(), "input file for map")
         ("dm", po::value<std::string>()->required(), "distance matrix file")
         ("plans", po::value<std::string>()->required(), "plans json file")
-        ("obstacles", po::value<std::string>()->required(), "obstacles json file");
+        ("obstacles", po::value<std::string>()->required(), "obstacles json file")
+        ("out", po::value<std::string>()->required(), "results json file");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]){
     };
 
     simulator.simulate(Strategy::RE_PLAN);
+    simulator.printResults(vm["out"].as<std::string>());
 
     return 0;
 }

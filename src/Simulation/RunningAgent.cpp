@@ -33,6 +33,11 @@ std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const Dista
             }
         );
 
+        auto initialPos = plannedPath.front();
+        if(plannedCheckpoints.back() != initialPos){
+            plannedCheckpoints.push_back(initialPos);
+        }
+
         runningAgents.emplace_back(agentsStats["index"], std::move(plannedPath), std::move(plannedCheckpoints));
     }
 
@@ -50,13 +55,13 @@ CompressedCoord RunningAgent::getActualPosition() const {
 void RunningAgent::stepAndUpdate(){
     assert(!plannedPath.empty() && !plannedCheckpoints.empty());
 
+    if(plannedCheckpoints.size() > 1 && plannedPath.front() == plannedCheckpoints.front()){
+        plannedCheckpoints.pop_front();
+    }
+
     // do a step
     if(plannedPath.size() > 1) {
         plannedPath.erase(plannedPath.begin());
-
-        if(plannedCheckpoints.size() > 1 && plannedPath.front() == plannedCheckpoints.front()){
-            plannedCheckpoints.pop_front();
-        }
     }
 
     // only one position -> last waypoint reached

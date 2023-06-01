@@ -43,6 +43,8 @@ private:
     std::unordered_map<CompressedCoord, NormalInfo> obstaclesTimeProb;
     AmbientMap ambientMap;
 
+    std::vector<Path> agentsHistory{};
+
     Instance generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence,
                                  TimeStep actualTimeStep) const;
     void updatePlannedPaths(const std::vector<Path>& paths);

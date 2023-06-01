@@ -17,6 +17,10 @@ void Simulator::simulate(Strategy strategy) {
         // agents don' t know about this vector
         const auto& actualObstacles = obstacles[t];
 
+        for(const auto& ra : this->runningAgents){
+            agentsHistory[ra.getAgentId()].push_back(ra.getPlannedPath().front());
+        }
+
         auto obstaclesWithPermanence = getNextPositions() |
             std::views::filter([&](CompressedCoord cc){return actualObstacles.contains(cc);}) |
             std::views::transform([&](CompressedCoord cc) -> ObstaclePersistence{
@@ -171,12 +175,28 @@ Simulator::Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::js
     runningAgents{std::move(runningAgents)},
     obstacles{getObstaclesFromJson(obstaclesJson)},
     obstaclesTimeProb{getProbabilitiesFromJson(obstaclesJson)},
-    ambientMap{std::move(ambientMap)}
-{
-}
+    ambientMap{std::move(ambientMap)},
+    agentsHistory{this->runningAgents.size()}
+{}
 
 size_t Simulator::computeSeed() const {
     size_t seed = 0;
     std::ranges::for_each(runningAgents, [&seed](const RunningAgent& ra){boost::hash_combine(seed, hash_value(ra));});
     return seed;
+}
+
+void Simulator::printResults(const std::filesystem::path &out) {
+    using namespace nlohmann;
+
+    json j;
+    j["agents"] = json::array();
+
+    for (const auto& ah : agentsHistory){
+        j["agents"].push_back({
+            {"path", static_cast<json>(getVerbosePath(ah, ambientMap.getNCols()))}
+        });
+    }
+
+    std::ofstream file(out);
+    file << j.dump();
 }

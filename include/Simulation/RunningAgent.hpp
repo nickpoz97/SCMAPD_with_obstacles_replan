@@ -29,7 +29,7 @@ public:
 
     [[nodiscard]] bool hasFinished() const;
 
-    std::optional<CompressedCoord> getNextPosition() const;
+    [[nodiscard]] std::optional<CompressedCoord> getNextPosition() const;
 
 private:
     int agentId;
