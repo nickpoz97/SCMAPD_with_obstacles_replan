@@ -48,15 +48,22 @@ CompressedCoord RunningAgent::getActualPosition() const {
 }
 
 void RunningAgent::stepAndUpdate(){
+    assert(!plannedPath.empty() && !plannedCheckpoints.empty());
+
     // do a step
-    if(!plannedPath.empty()) {
+    if(plannedPath.size() > 1) {
         plannedPath.erase(plannedPath.begin());
 
-        assert(!plannedCheckpoints.empty());
-        if(plannedPath.front() == *plannedCheckpoints.cbegin()){
+        if(plannedCheckpoints.size() > 1 && plannedPath.front() == plannedCheckpoints.front()){
             plannedCheckpoints.pop_front();
         }
     }
+
+    // only one position -> last waypoint reached
+    assert(
+        !(plannedPath.size() == 1) ||
+            (plannedPath.front() == plannedCheckpoints.front() && plannedCheckpoints.size() == 1)
+    );
 }
 
 const Path &RunningAgent::getPlannedPath() const {
