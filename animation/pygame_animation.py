@@ -4,6 +4,7 @@ import json
 import tkinter as tk
 from tkinter import filedialog
 import os
+import fnmatch
 
 # Set up the grid dimensions
 n_rows = 21
@@ -13,11 +14,31 @@ n_columns = 35
 root = tk.Tk()
 root.withdraw()
 
-# Open a file dialog and get the selected file path
-file_path = filedialog.askopenfilename(filetypes=[('result files', 'result*.json')], initialdir=os.getcwd())
+# Open a file dialog and get the selected data directory path
+data_dir_path = filedialog.askdirectory(initialdir=os.path.abspath(__file__), title='select folder containing data', mustexist=True)
+
+result_file_pattern = 'results*.json'
+grid_file_pattern = 'grid*.txt'
+obstacles_file_pattern = 'obs_*.json'
+
+result_files_paths = list()
+grid_files_paths = list()
+obstacles_files_paths = list()
+
+for filename in os.listdir(data_dir_path):
+    if fnmatch.fnmatch(filename, result_file_pattern):
+        result_files_paths.append(os.path.join(data_dir_path, filename))
+    if fnmatch.fnmatch(filename, grid_file_pattern):
+        grid_files_paths.append(os.path.join(data_dir_path, filename))
+    if fnmatch.fnmatch(filename, obstacles_file_pattern):
+        obstacles_files_paths.append(os.path.join(data_dir_path, filename))
+
+if not (len(result_files_paths) == 1 and len(grid_files_paths) == 1 and len(obstacles_files_paths) < 2):
+    print("You must have 1 result file, 1 grid file and at most 1 obstacle file in the folder")
+    exit(1)
 
 # Load the JSON data from the selected file
-with open(file_path, 'r') as f:
+with open(result_files_paths[0], 'r') as f:
     data = json.load(f)
 
 # Extract the agent paths from the JSON data
@@ -27,11 +48,8 @@ agents = [agent['path'] for agent in data['agents']]
 # Extract the agent paths from the JSON data
 agents = [agent['path'] for agent in data['agents']]
 
-# Open a file dialog and get the selected file path
-grid_path = filedialog.askopenfilename(filetypes=[('grid files', 'grid*.txt')], initialdir=os.getcwd())
-
 # Load the grid data from a file
-with open(grid_path, 'r') as f:
+with open(grid_files_paths[0], 'r') as f:
     grid_data = f.readlines()
 
 # Set up the grid dimensions
