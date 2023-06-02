@@ -12,9 +12,7 @@ struct SpawnedObstacle{
     int t;
     int position;
 
-    inline bool operator==(const SpawnedObstacle& other) const{
-        return t == other.t && position == other.position;
-    }
+    bool operator==(const SpawnedObstacle& other) const = default;
 };
 
 template<>

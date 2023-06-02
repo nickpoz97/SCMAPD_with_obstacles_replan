@@ -1,22 +1,28 @@
-[
-    {
-        "t":31,
-        "pos":542,
-        "true_interval":14
-    },
-    {
-        "t":27,
-        "pos":332,
-        "true_interval":11
-    },
-    {
-        "t":33,
-        "pos":539,
-        "true_interval":10
-    },
-    {
-        "t":59,
-        "pos":52,
-        "true_interval":10
+{
+    "obstacles" : [
+        {
+            "t":31,
+            "pos":542,
+            "interval":14
+        },
+        {
+            "t":27,
+            "pos":332,
+            "interval":11
+        },
+        {
+            "t":33,
+            "pos":539,
+            "interval":10
+        },
+        {
+            "t":59,
+            "pos":52,
+            "interval":10
+        }
+    ],
+    "probability" : {
+        "mu": 50,
+        "sigma": 5
     }
-]
+}
