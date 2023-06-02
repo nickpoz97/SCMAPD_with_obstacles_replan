@@ -12,8 +12,8 @@ add_library(pbs STATIC ${SOURCES})
 
 # Find Boost
 find_package(Boost REQUIRED COMPONENTS program_options system filesystem)
-include_directories( ${Boost_INCLUDE_DIRS} )
-target_link_libraries(pbs ${Boost_LIBRARIES})
+target_include_directories(pbs PRIVATE ${Boost_INCLUDE_DIRS} )
+target_link_libraries(pbs PRIVATE ${Boost_LIBRARIES})
 
 if(MSVC)
     set_target_properties(
@@ -22,3 +22,4 @@ if(MSVC)
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}
     )
 endif()
+

@@ -14,20 +14,21 @@ set(OBS_EXE obstacle_avoidance)
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/src/main/.*\\.cpp$")
 
-set(INCLUDE_DIRS include deps/cnpy/include deps/PBS/inc)
+set(INCLUDE_DIRS include)
 
 add_subdirectory(deps)
 
 add_executable(${SCMAPD_EXE} ${SOURCES} src/main/scmapdMain.cpp)
 add_executable(${OBS_EXE} ${SOURCES} src/main/obsAvoid.cpp)
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+target_include_directories(${SCMAPD_EXE} PUBLIC ${INCLUDE_DIRS})
+target_link_libraries(${SCMAPD_EXE} PRIVATE ExternalLibs)
 
-target_include_directories(${SCMAPD_EXE} PUBLIC ${INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-target_link_libraries(${SCMAPD_EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options pbs)
+target_include_directories(${OBS_EXE} PUBLIC ${INCLUDE_DIRS})
+target_link_libraries(${OBS_EXE} PRIVATE ExternalLibs)
 
-target_include_directories(${OBS_EXE} PUBLIC ${INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-target_link_libraries(${OBS_EXE} PRIVATE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options)
+get_target_property(external_libs_include_dirs ExternalLibs INTERFACE_INCLUDE_DIRECTORIES)
+message("ExternalLibs include directories: ${external_libs_include_dirs}")
 
 set(CMAKE_CXX_FLAGS_SANIT "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" )
 

@@ -33,6 +33,11 @@ std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const Dista
             }
         );
 
+        auto initialPos = plannedPath.front();
+        if(plannedCheckpoints.back() != initialPos){
+            plannedCheckpoints.push_back(initialPos);
+        }
+
         runningAgents.emplace_back(agentsStats["index"], std::move(plannedPath), std::move(plannedCheckpoints));
     }
 
@@ -48,15 +53,22 @@ CompressedCoord RunningAgent::getActualPosition() const {
 }
 
 void RunningAgent::stepAndUpdate(){
-    // do a step
-    if(!plannedPath.empty()) {
-        plannedPath.erase(plannedPath.begin());
+    assert(!plannedPath.empty() && !plannedCheckpoints.empty());
 
-        assert(!plannedCheckpoints.empty());
-        if(plannedPath.front() == *plannedCheckpoints.cbegin()){
-            plannedCheckpoints.pop_front();
-        }
+    if(plannedCheckpoints.size() > 1 && plannedPath.front() == plannedCheckpoints.front()){
+        plannedCheckpoints.pop_front();
     }
+
+    // do a step
+    if(plannedPath.size() > 1) {
+        plannedPath.erase(plannedPath.begin());
+    }
+
+    // only one position -> last waypoint reached
+    assert(
+        !(plannedPath.size() == 1) ||
+            (plannedPath.front() == plannedCheckpoints.front() && plannedCheckpoints.size() == 1)
+    );
 }
 
 const Path &RunningAgent::getPlannedPath() const {
@@ -83,4 +95,15 @@ bool RunningAgent::hasFinished() const {
 std::optional<CompressedCoord> RunningAgent::getNextPosition() const {
     assert(plannedPath.size() >= 1);
     return plannedPath.size() >= 2 ? std::optional{plannedPath[1]} : std::nullopt;
+}
+
+std::size_t hash_value(const RunningAgent& s){
+    size_t seed = 0;
+
+    auto hashCombiner = [&seed](CompressedCoord cc) {boost::hash_combine(seed, cc);};
+
+    std::ranges::for_each(s.getPlannedPath(), hashCombiner);
+    //std::ranges::for_each(s.getPlannedCheckpoints(), hashCombiner);
+
+    return seed;
 }

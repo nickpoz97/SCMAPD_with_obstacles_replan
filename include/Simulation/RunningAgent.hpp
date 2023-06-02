@@ -29,7 +29,7 @@ public:
 
     [[nodiscard]] bool hasFinished() const;
 
-    std::optional<CompressedCoord> getNextPosition() const;
+    [[nodiscard]] std::optional<CompressedCoord> getNextPosition() const;
 
 private:
     int agentId;
@@ -38,6 +38,7 @@ private:
 };
 
 std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const DistanceMatrix &dm);
+std::size_t hash_value(const RunningAgent& s);
 
 
 #endif //SIMULTANEOUS_CMAPD_RUNNINGAGENT_HPP

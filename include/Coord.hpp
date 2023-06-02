@@ -34,4 +34,6 @@ public:
     explicit operator nlohmann::json() const;
 };
 
+VerbosePath getVerbosePath(Path path, int nCols);
+
 #endif //SIMULTANEOUS_CMAPD_COORD_HPP

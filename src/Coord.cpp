@@ -29,7 +29,20 @@ template <> struct fmt::formatter<Coord>{
 VerbosePath::operator nlohmann::json() const {
     nlohmann::json j;
     for (const auto& coord : *this){
-        j.push_back(nlohmann::json(coord).dump());
+        j.push_back(nlohmann::json(coord));
     }
     return j;
+}
+
+VerbosePath getVerbosePath(Path path, int nCols) {
+    VerbosePath vp{};
+    vp.reserve(path.size());
+
+    std::ranges::transform(
+            path,
+            std::back_inserter(vp),
+            [nCols](CompressedCoord cc) -> Coord {return {cc / nCols, cc % nCols};}
+    );
+
+    return vp;
 }
