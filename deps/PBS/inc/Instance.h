@@ -1,5 +1,7 @@
 #pragma once
-#include"common.h"
+
+#include "common.h"
+#include "SpawnedObstacle.hpp"
 
 // Currently only works for undirected unweighted 4-nighbor grids
 class Instance 
@@ -11,13 +13,19 @@ public:
 
 	// enum valid_moves_t { NORTH, EAST, SOUTH, WEST, WAIT_MOVE, MOVE_COUNT };  // MOVE_COUNT is the enum's size
 
-	Instance(){}
-
     Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols);
+    Instance(
+        vector<bool> map,
+        vector<vector<int>> agents,
+        int nRows,
+        int nCols,
+        SpawnedObstaclesSet spawnedObstacles
+    );
 
 
 		inline bool isObstacle(int loc) const { return my_map[loc]; }
 		inline bool validMove(int curr, int next) const;
+		list<int> getNeighbors(int curr, int t) const;
 		list<int> getNeighbors(int curr) const;
 
 
@@ -58,7 +66,6 @@ public:
 
 	int getDefaultNumberOfAgents() const { return num_of_agents; }
 
-    void printMap() const;
 private:
 	  // int moves_offset[MOVE_COUNT];
 	  vector<bool> my_map;
@@ -68,18 +75,12 @@ private:
 	  int num_of_agents;
 	  vector<vector<int>> locations;
 
-	  bool loadMap();
-	  void saveMap() const;
+      SpawnedObstaclesSet spawnedObstacles{};
 
-	  bool loadAgents();
+    // add this obsatcle only if the map is still connected
+    // run BFS to find a path between start and goal, return true if a path exists.
 
-	  void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles
-	  bool addObstacle(int obstacle); // add this obsatcle only if the map is still connected
-	  bool isConnected(int start, int goal); // run BFS to find a path between start and goal, return true if a path exists.
-
-	  int randomWalk(int loc, int steps) const;
-
-	  // Class  SingleAgentSolver can access private members of Node 
+    // Class  SingleAgentSolver can access private members of Node
 	  friend class SingleAgentSolver;
 };
 

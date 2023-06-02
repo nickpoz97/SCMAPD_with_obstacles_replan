@@ -97,10 +97,7 @@ public:
 	virtual PBSPath findOptimalPath(const set<int>& higher_agents, const vector<PBSPath*>& paths, int agent) = 0;
 	virtual string getName() const = 0;
 
-	list<int> getNextLocations(int curr) const; // including itself and its neighbors
-	list<int> getNeighbors(int curr) const { return instance.getNeighbors(curr); }
-
-	// int getStartLocation() const {return instance.start_locations[agent]; }
+    // int getStartLocation() const {return instance.start_locations[agent]; }
 	// int getGoalLocation() const {return instance.goal_locations[agent]; }
 
 	SingleAgentSolver(const Instance& instance, int agent) :
