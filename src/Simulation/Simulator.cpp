@@ -35,6 +35,8 @@ void Simulator::simulate(Strategy strategy) {
                 case Strategy::RE_PLAN:
                     rePlan({obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()}, t);
                 break;
+                case Strategy::WAIT:
+                break;
                 default:
                     throw std::runtime_error("Not handled case");
                 break;
