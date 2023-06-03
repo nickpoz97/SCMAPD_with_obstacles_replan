@@ -40,7 +40,7 @@ public:
                 bool nodeConflict = path.getPos(toT) == toPos;
 
                 // switch position
-                bool edgeConflict = path.size() > 1 && path.getPos(fromT) == toPos && path.getPos(toT) == fromPos;
+                bool edgeConflict = fromT < (std::ssize(path) - 1) && path.getPos(fromT) == toPos && path.getPos(toT) == fromPos;
 
                 // staying on other path
                 bool dockConflict = isFinal && toT < path.size() &&

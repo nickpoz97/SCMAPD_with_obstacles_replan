@@ -45,14 +45,15 @@ private:
 
     std::vector<Path> agentsHistory{};
 
-    Instance generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence,
-                                 TimeStep actualTimeStep) const;
-    void updatePlannedPaths(const std::vector<Path>& paths);
+    Instance
+    generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep,
+                        FixedPaths fixedPaths, const std::unordered_set<int> &notAllowedAgents) const;
+    void updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds);
 
     std::vector<CompressedCoord> getNextPositions() const;
 
     bool rePlan(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t);
-    void wait(const std::vector<CompressedCoord>& actualObstacles, const vector<CompressedCoord> &waitingAgents);
+    bool wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents);
 
     size_t computeSeed() const;
 
@@ -62,7 +63,15 @@ private:
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
 
     static SpawnedObstaclesSet
-    getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep) ;
+    getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence);
+
+    bool solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &waitingAgentsIds);
+
+    vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
+
+    FixedPaths extendsAndExtractFixedPaths(const std::unordered_set<int> &waitingAgents);
+
+    std::unordered_set<int> getInvolvedAgents(const std::unordered_set<CompressedCoord>& actualObstacles) const;
 };
 
 

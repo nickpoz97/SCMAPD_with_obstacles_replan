@@ -17,9 +17,12 @@ void Simulator::simulate(Strategy strategy) {
         // agents don' t know about this vector
         const auto& actualObstacles = obstacles[t];
 
-        for(const auto& ra : this->runningAgents){
+        for(const auto& ra : runningAgents){
             agentsHistory[ra.getAgentId()].push_back(ra.getPlannedPath().front());
         }
+
+        const auto involvedAgents{getInvolvedAgents(actualObstacles)};
+
 
         auto obstaclesWithPermanence = getNextPositions() |
             std::views::filter([&](CompressedCoord cc){return actualObstacles.contains(cc);}) |
@@ -36,6 +39,11 @@ void Simulator::simulate(Strategy strategy) {
                     rePlan({obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()}, t);
                 break;
                 case Strategy::WAIT:
+                    wait(
+                        {obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()},
+                        t,
+                        involvedAgents
+                    );
                 break;
                 default:
                     throw std::runtime_error("Not handled case");
@@ -58,23 +66,10 @@ std::vector<CompressedCoord> Simulator::getNextPositions() const {
     return {nextPositions.begin(), nextPositions.end()};
 }
 
-Instance Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence,
-                                        TimeStep actualTimeStep) const {
-    auto checkPointsExtractor = [](const RunningAgent& ra) -> Path {
-        std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
-
-        std::ranges::copy(
-            ra.getPlannedCheckpoints(),
-            std::back_inserter(checkPoints)
-        );
-
-        return checkPoints;
-    };
-
-    std::vector<Path> agentsCheckpoints{};
-
-    std::ranges::transform(runningAgents, std::back_inserter(agentsCheckpoints), checkPointsExtractor);
-    assert(agentsCheckpoints.size() == runningAgents.size());
+Instance
+Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep,
+                               FixedPaths fixedPaths, const std::unordered_set<int> &notAllowedAgents) const {
+    vector<Path> agentsCheckpoints = extractPBSCheckpoints(notAllowedAgents);
 
     // extract grid
     auto grid{ambientMap.getGrid()};
@@ -85,13 +80,35 @@ Instance Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &
         agentsCheckpoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
-        getSpawnedObstacles(obstaclesWithPermanence, actualTimeStep)
+        getSpawnedObstacles(obstaclesWithPermanence),
+        std::move(fixedPaths)
     };
 }
 
+vector<Path> Simulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
+    auto checkPointsExtractor = [](const RunningAgent& ra) -> std::vector<CompressedCoord>{
+        // the first one is the first position
+        std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
+
+        std::ranges::copy(
+            ra.getPlannedCheckpoints(),
+            std::back_inserter(checkPoints)
+        );
+
+        return checkPoints;
+    };
+
+    // take out waiting agents and extract the checkpoints of the remaining ones
+    auto agentsCheckpoints = runningAgents |
+        std::views::filter([&](const RunningAgent& ra){return !notAllowedAgents.contains(ra.getAgentId());}) |
+        std::views::transform(checkPointsExtractor);
+
+    assert(std::ranges::distance(agentsCheckpoints) == (runningAgents.size() - notAllowedAgents.size()));
+    return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
+}
+
 SpawnedObstaclesSet
-Simulator::getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence,
-                               TimeStep actualTimeStep) {
+Simulator::getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence) {
     SpawnedObstaclesSet spawnedObstaclesSet{};
     for (const auto& owp : obstaclesWithPermanence){
         for(int t = 0 ; t < owp.duration ; ++t){
@@ -101,19 +118,31 @@ Simulator::getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithP
     return spawnedObstaclesSet;
 }
 
-void Simulator::updatePlannedPaths(const std::vector<Path>& paths) {
-    for (int i = 0 ; i < paths.size() ; i++){
-        assert(i == runningAgents[i].getAgentId());
-        runningAgents[i].setPlannedPath(paths[i]);
+void Simulator::updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds) {
+    auto pathsIt = paths.cbegin();
+
+    auto notWaitingAgents = runningAgents |
+        std::views::transform([](const RunningAgent& ra){return ra.getAgentId();}) |
+        std::views::filter([&waitingAgentsIds](int agentId){return !waitingAgentsIds.contains(agentId);});
+
+    for (int agentId : notWaitingAgents){
+        auto& actualAgent = runningAgents[agentId];
+
+        actualAgent.setPlannedPath(*pathsIt);
+        ++pathsIt;
+        assert(actualAgent.checkpointChecker());
     }
 }
 
 bool Simulator::rePlan(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t) {
-    auto pbsInstance{generatePBSInstance(obstaclesWithPermanence, t)};
+    auto pbsInstance{generatePBSInstance(obstaclesWithPermanence, t, {}, std::unordered_set<int>())};
+    return solveWithPBS(pbsInstance, {});
+}
 
+bool Simulator::solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &waitingAgentsIds) {
     PBS pbs{pbsInstance, true, 0};
     if(pbs.solve(7200)){
-        updatePlannedPaths(pbs.getPaths());
+        updatePlannedPaths(pbs.getPaths(), waitingAgentsIds);
         return true;
     }
     return false;
@@ -201,4 +230,52 @@ void Simulator::printResults(const std::filesystem::path &out) {
 
     std::ofstream file(out);
     file << j.dump();
+}
+
+bool Simulator::wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents) {
+    FixedPaths fixedPaths = extendsAndExtractFixedPaths(waitingAgents);
+
+    auto pbsInstance{
+        generatePBSInstance(obstaclesWithPermanence, t, fixedPaths, waitingAgents)
+    };
+    return solveWithPBS(pbsInstance, waitingAgents);
+}
+
+FixedPaths Simulator::extendsAndExtractFixedPaths(const std::unordered_set<int> &waitingAgents) {
+    FixedPaths fixedPaths{};
+
+    auto extendPath = [this](int agentId){
+        assert(agentId == runningAgents[agentId].getAgentId());
+        const auto& oldPath = runningAgents[agentId].getPlannedPath();
+
+        FixedPath newPath{};
+        newPath.reserve(oldPath.size() + 1);
+
+        newPath.push_back(oldPath.front());
+        newPath.insert(newPath.end(), oldPath.begin(), oldPath.end());
+
+        // saving (side effect)
+        runningAgents[agentId].setPlannedPath(newPath);
+        return newPath;
+    };
+
+    std::ranges::transform(
+        waitingAgents,
+        std::back_inserter(fixedPaths),
+        extendPath
+    );
+    return fixedPaths;
+}
+
+std::unordered_set<int> Simulator::getInvolvedAgents(const std::unordered_set<CompressedCoord>& actualObstacles) const {
+    auto result = runningAgents |
+        std::views::filter(
+            [&actualObstacles](const RunningAgent& ra){
+                auto nextPos = ra.getNextPosition();
+                return nextPos.has_value() && actualObstacles.contains(*nextPos);
+            }
+        ) |
+        std::views::transform([](const RunningAgent& ra){return ra.getAgentId();});
+
+    return {result.begin(), result.end()};
 }

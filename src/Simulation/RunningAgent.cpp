@@ -93,8 +93,26 @@ bool RunningAgent::hasFinished() const {
 }
 
 std::optional<CompressedCoord> RunningAgent::getNextPosition() const {
-    assert(plannedPath.size() >= 1);
+    assert(!plannedPath.empty());
     return plannedPath.size() >= 2 ? std::optional{plannedPath[1]} : std::nullopt;
+}
+
+bool RunningAgent::checkpointChecker() const {
+    auto cpIt = plannedCheckpoints.cbegin();
+    assert(!plannedCheckpoints.empty());
+
+    bool endReached = false;
+
+    for(auto cc : plannedPath){
+        if(cc == *cpIt){
+            ++cpIt;
+            if(cpIt == plannedCheckpoints.end()){
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 std::size_t hash_value(const RunningAgent& s){

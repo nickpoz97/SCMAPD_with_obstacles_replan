@@ -58,14 +58,14 @@ Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int 
         spawnedObstacles{std::move(spawnedObstacles)}
     {}
 
-Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols,
-                   SpawnedObstaclesSet spawnedObstacles, FixedPaths fixedPaths) :
-        num_of_rows{nRows},
-        num_of_cols{nCols},
-        map_size(nRows * nCols),
-        my_map{std::move(map)},
-        num_of_agents{static_cast<int>(agents.size())},
-        locations{std::move(agents)},
-        spawnedObstacles{std::move(spawnedObstacles)},
-        fixedPaths{std::move(fixedPaths)}
-{}
+//Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols,
+//                   SpawnedObstaclesSet spawnedObstacles, FixedPaths fixedPaths) :
+//        num_of_rows{nRows},
+//        num_of_cols{nCols},
+//        map_size(nRows * nCols),
+//        my_map{std::move(map)},
+//        num_of_agents{static_cast<int>(agents.size())},
+//        locations{std::move(agents)},
+//        spawnedObstacles{std::move(spawnedObstacles)},
+//        fixedPaths{std::move(fixedPaths)}
+//{}

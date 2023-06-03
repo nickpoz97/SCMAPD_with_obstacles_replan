@@ -31,6 +31,7 @@ public:
 
     [[nodiscard]] std::optional<CompressedCoord> getNextPosition() const;
 
+    [[nodiscard]] bool checkpointChecker() const;
 private:
     int agentId;
     Path plannedPath;

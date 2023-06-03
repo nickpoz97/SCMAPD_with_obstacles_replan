@@ -12,11 +12,25 @@ namespace po = boost::program_options;
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+std::istream& operator>> (std::istream& in, Strategy& strategy)
+{
+    std::string token;
+    in >> token;
+    if (token == "RE_PLAN")
+        strategy = Strategy::RE_PLAN;
+    else if (token == "WAIT")
+        strategy = Strategy::WAIT;
+    else
+        in.setstate(std::ios_base::failbit);
+    return in;
+}
+
 int main(int argc, char* argv[]){
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
 
+    Strategy strategy;
     desc.add_options()
         ("help", "produce help message")
 
@@ -25,6 +39,7 @@ int main(int argc, char* argv[]){
         ("dm", po::value<std::string>()->required(), "distance matrix file")
         ("plans", po::value<std::string>()->required(), "plans json file")
         ("obstacles", po::value<std::string>()->required(), "obstacles json file")
+        ("strategy", po::value<Strategy>(&strategy)->required(), "obstacles json file")
         ("out", po::value<std::string>()->required(), "results json file");
 
     po::variables_map vm;
@@ -56,7 +71,7 @@ int main(int argc, char* argv[]){
         ambient
     };
 
-    simulator.simulate(Strategy::RE_PLAN);
+    simulator.simulate(strategy);
     simulator.printResults(vm["out"].as<std::string>());
 
     return 0;

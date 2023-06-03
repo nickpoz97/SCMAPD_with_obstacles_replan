@@ -73,7 +73,7 @@ PBSPath SIPP::findOptimalPath(const set<int>& higher_agents, const vector<PBSPat
             break;
         }
 
-        for (int next_location : instance.getNeighbors(curr->location, curr->timestep, goal_location)) // move to neighboring locations
+        for (int next_location : instance.getNeighbors(curr->location, curr->timestep, *locs.crbegin())) // move to neighboring locations
         {
             for (auto & i : reservation_table.get_safe_intervals(
                     curr->location, next_location, curr->timestep + 1, curr->high_expansion + 1))
