@@ -10,20 +10,7 @@
 #include "RunningAgent.hpp"
 #include "Instance.h"
 #include "AmbientMap.hpp"
-
-using ObstaclesMap = std::unordered_map<TimeStep , std::unordered_set<CompressedCoord>>;
-
-struct NormalInfo{
-    TimeStep mu;
-    TimeStep std;
-};
-
-using ProbabilitiesMap = std::unordered_map<CompressedCoord, NormalInfo>;
-
-struct ObstaclePersistence{
-    CompressedCoord loc;
-    Interval duration;
-};
+#include "ObstaclesWrapper.hpp"
 
 enum class Strategy{
     RE_PLAN,
@@ -33,37 +20,27 @@ enum class Strategy{
 
 class Simulator {
 public:
-    Simulator(std::vector<RunningAgent> runningAgents, std::ifstream obstaclesCsv, AmbientMap ambientMap);
-    Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::json &obstaclesJson, AmbientMap ambientMap);
+    Simulator(std::vector<RunningAgent> runningAgents, ObstaclesWrapper obstaclesWrapper, AmbientMap ambientMap);
     void simulate(Strategy strategy);
     void printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson);
 private:
     std::vector<RunningAgent> runningAgents;
-    ObstaclesMap obstacles;
-    std::unordered_map<CompressedCoord, NormalInfo> obstaclesTimeProb;
+    ObstaclesWrapper obstaclesWrapper;
     AmbientMap ambientMap;
 
     std::vector<Path> agentsHistory{};
 
     Instance
-    generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep,
+    generatePBSInstance(const SpawnedObstaclesSet &sOSet, TimeStep actualTimeStep,
                         FixedPaths fixedPaths, const std::unordered_set<int> &notAllowedAgents) const;
     void updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds);
 
     std::vector<CompressedCoord> getNextPositions() const;
 
-    bool rePlan(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t);
-    bool wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents);
-
-    size_t computeSeed() const;
+    bool rePlan(const SpawnedObstaclesSet &sOSet, TimeStep t);
+    //bool wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents);
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
-
-    static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
-    static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
-
-    static SpawnedObstaclesSet
-    getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence);
 
     bool solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &waitingAgentsIds);
 

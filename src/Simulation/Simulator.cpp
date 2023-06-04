@@ -2,7 +2,6 @@
 // Created by nicco on 27/05/2023.
 //
 
-#include <random>
 #include <boost/tokenizer.hpp>
 #include "Simulation/Simulator.hpp"
 #include "PBS.h"
@@ -10,40 +9,28 @@
 void Simulator::simulate(Strategy strategy) {
     using std::ranges::any_of;
 
-    auto gen = std::default_random_engine(computeSeed());
-
     for(TimeStep t = 0 ; any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();}) ; ++t){
-        // extract obstacles at this timeStep (empty forward list otherwise)
-        // agents don' t know about this vector
-        const auto& actualObstacles = obstacles[t];
-
         for(const auto& ra : runningAgents){
             agentsHistory[ra.getAgentId()].push_back(ra.getPlannedPath().front());
         }
 
-        const auto involvedAgents{getInvolvedAgents(actualObstacles)};
+        // extract obstacles at this timeStep (empty forward list otherwise)
+        const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, getNextPositions());
 
+        if(!actualObstacles.empty()){
+            //const auto involvedAgents{getInvolvedAgents(actualObstacles)};
 
-        auto obstaclesWithPermanence = getNextPositions() |
-            std::views::filter([&](CompressedCoord cc){return actualObstacles.contains(cc);}) |
-            std::views::transform([&](CompressedCoord cc) -> ObstaclePersistence{
-                auto [mu, std] = obstaclesTimeProb[cc];
-                std::normal_distribution<float> d(static_cast<float>(mu), static_cast<float>(std));
-                return {cc, static_cast<Interval>(d(gen))};}
-            );
-
-        if(!obstaclesWithPermanence.empty()){
             switch (strategy) {
                 // warning cannot solve if obstacles is on a target
                 case Strategy::RE_PLAN:
-                    rePlan({obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()}, t);
+                    rePlan(actualObstacles, t);
                 break;
                 case Strategy::WAIT:
-                    wait(
-                        {obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()},
-                        t,
-                        involvedAgents
-                    );
+//                    wait(
+//                        {obstaclesWithPermanence.begin(), obstaclesWithPermanence.end()},
+//                        t,
+//                        involvedAgents
+//                    );
                 break;
                 default:
                     throw std::runtime_error("Not handled case");
@@ -70,7 +57,7 @@ std::vector<CompressedCoord> Simulator::getNextPositions() const {
 }
 
 Instance
-Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &obstaclesWithPermanence, TimeStep actualTimeStep,
+Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, TimeStep actualTimeStep,
                                FixedPaths fixedPaths, const std::unordered_set<int> &notAllowedAgents) const {
     vector<Path> agentsCheckpoints = extractPBSCheckpoints(notAllowedAgents);
 
@@ -83,7 +70,7 @@ Simulator::generatePBSInstance(const std::vector<ObstaclePersistence> &obstacles
         agentsCheckpoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
-        getSpawnedObstacles(obstaclesWithPermanence),
+        sOSet,
         std::move(fixedPaths)
     };
 }
@@ -110,17 +97,6 @@ vector<Path> Simulator::extractPBSCheckpoints(const std::unordered_set<int> &not
     return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
 }
 
-SpawnedObstaclesSet
-Simulator::getSpawnedObstacles(const vector<ObstaclePersistence> &obstaclesWithPermanence) {
-    SpawnedObstaclesSet spawnedObstaclesSet{};
-    for (const auto& owp : obstaclesWithPermanence){
-        for(int t = 0 ; t < owp.duration ; ++t){
-            spawnedObstaclesSet.emplace(t, owp.loc);
-        }
-    }
-    return spawnedObstaclesSet;
-}
-
 void Simulator::updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds) {
     auto pathsIt = paths.cbegin();
 
@@ -137,8 +113,8 @@ void Simulator::updatePlannedPaths(const std::vector<Path> &paths, const std::un
     }
 }
 
-bool Simulator::rePlan(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t) {
-    auto pbsInstance{generatePBSInstance(obstaclesWithPermanence, t, {}, std::unordered_set<int>())};
+bool Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
+    auto pbsInstance{generatePBSInstance(sOSet, t, {}, std::unordered_set<int>())};
     return solveWithPBS(pbsInstance, {});
 }
 
@@ -177,47 +153,12 @@ std::list<std::vector<CompressedCoord>> Simulator::getObstaclesFromCsv(std::ifst
     return obstaclesList;
 }
 
-ObstaclesMap Simulator::getObstaclesFromJson(const nlohmann::json &obstaclesJson) {
-    ObstaclesMap obstacles{};
-
-    for(const auto& obsObj : obstaclesJson["obstacles"]){
-        TimeStep from = obsObj["t"];
-        TimeStep to = from + static_cast<Interval>(obsObj["interval"]);
-
-        for(auto t = from ; t < to ; ++t){
-            obstacles[t].insert(static_cast<CompressedCoord>(obsObj["pos"]));
-        }
-    }
-
-    return obstacles;
-}
-
-ProbabilitiesMap Simulator::getProbabilitiesFromJson(const nlohmann::json &obstaclesJson) {
-    ProbabilitiesMap probabilitiesMap{};
-
-    // one distribution for each obstacle
-    const auto& pObj = obstaclesJson["probability"];
-
-    for(const auto& obsObj : obstaclesJson["obstacles"]){
-        probabilitiesMap[obsObj["pos"]] = NormalInfo{pObj["mu"], pObj["sigma"]};
-    }
-
-    return probabilitiesMap;
-}
-
-Simulator::Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::json &obstaclesJson, AmbientMap ambientMap) :
+Simulator::Simulator(std::vector<RunningAgent> runningAgents, ObstaclesWrapper obstaclesWrapper, AmbientMap ambientMap) :
     runningAgents{std::move(runningAgents)},
-    obstacles{getObstaclesFromJson(obstaclesJson)},
-    obstaclesTimeProb{getProbabilitiesFromJson(obstaclesJson)},
+    obstaclesWrapper(std::move(obstaclesWrapper)),
     ambientMap{std::move(ambientMap)},
     agentsHistory{this->runningAgents.size()}
 {}
-
-size_t Simulator::computeSeed() const {
-    size_t seed = 0;
-    std::ranges::for_each(runningAgents, [&seed](const RunningAgent& ra){boost::hash_combine(seed, hash_value(ra));});
-    return seed;
-}
 
 void Simulator::printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson) {
     using namespace nlohmann;
@@ -244,14 +185,14 @@ void Simulator::printResults(const std::filesystem::path &out, const nlohmann::j
     file << j.dump();
 }
 
-bool Simulator::wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents) {
-    FixedPaths fixedPaths = extendsAndExtractFixedPaths(waitingAgents);
-
-    auto pbsInstance{
-        generatePBSInstance(obstaclesWithPermanence, t, fixedPaths, waitingAgents)
-    };
-    return solveWithPBS(pbsInstance, waitingAgents);
-}
+//bool Simulator::wait(const std::vector<ObstaclePersistence>& obstaclesWithPermanence, TimeStep t, const std::unordered_set<int>& waitingAgents) {
+//    FixedPaths fixedPaths = extendsAndExtractFixedPaths(waitingAgents);
+//
+//    auto pbsInstance{
+//        generatePBSInstance(obstaclesWithPermanence, t, fixedPaths, waitingAgents)
+//    };
+//    return solveWithPBS(pbsInstance, waitingAgents);
+//}
 
 FixedPaths Simulator::extendsAndExtractFixedPaths(const std::unordered_set<int> &waitingAgents) {
     FixedPaths fixedPaths{};

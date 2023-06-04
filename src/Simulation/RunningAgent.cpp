@@ -125,3 +125,9 @@ std::size_t hash_value(const RunningAgent& s){
 
     return seed;
 }
+
+size_t computeSeed(const std::vector<RunningAgent>& runningAgentsVector) {
+    size_t seed = 0;
+    std::ranges::for_each(runningAgentsVector, [&seed](const RunningAgent& ra){boost::hash_combine(seed, hash_value(ra));});
+    return seed;
+}
