@@ -29,8 +29,8 @@ struct ObstaclePersistence{
 
 class ObstaclesWrapper {
 public:
-    ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson);
-    SpawnedObstaclesSet updateAndGet(TimeStep actualT, const std::vector<CompressedCoord>& nextPositions);
+    ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson, bool predict);
+    SpawnedObstaclesSet updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions);
 private:
     ProbabilitiesMap probabilitiesMap;
     ObstaclesMap trueObstacles;
@@ -38,8 +38,13 @@ private:
 
     std::default_random_engine gen;
 
+    bool predict;
+
     static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
+
+    void updateWithPrediction(TimeStep actualT, const std::vector<CompressedCoord> &visibleObstacles);
+    void updateSimple(TimeStep actualT, const std::vector<CompressedCoord> &visibleObstacles);
 };
 
 
