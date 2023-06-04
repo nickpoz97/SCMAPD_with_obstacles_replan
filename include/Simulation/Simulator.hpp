@@ -33,9 +33,8 @@ private:
     Strategy strategy;
 
     Instance
-    generatePBSInstance(const SpawnedObstaclesSet &sOSet, TimeStep actualTimeStep,
-                        const std::unordered_set<int> &notAllowedAgents) const;
-    void updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds);
+    generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const;
+    void updatePlannedPaths(const std::vector<Path> &paths);
 
     std::vector<CompressedCoord> getNextPositions() const;
 
@@ -44,11 +43,9 @@ private:
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
 
-    bool solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &waitingAgentsIds);
+    bool solveWithPBS(const Instance &pbsInstance);
 
     vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
-
-    FixedPaths extendsAndExtractFixedPaths(const std::unordered_set<int> &waitingAgents);
 
     std::unordered_set<int>
     getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeStep actualT) const;

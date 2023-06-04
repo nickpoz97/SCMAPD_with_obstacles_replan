@@ -15,13 +15,13 @@ bool Instance::validMove(int curr, int next) const
 }
 
 
-list<int> Instance::getNeighbors(int curr, int t, int goal_loc) const
+list<int> Instance::getNeighbors(int curr, int t) const
 {
 	list<int> neighbors;
 	int candidates[4] = {curr + 1, curr - 1, curr + num_of_cols, curr - num_of_cols};
 	for (int next : candidates) {
         // check if move is valid and no spawned obstacles collision
-		if (validMove(curr, next) && !spawnedObstacles.contains({t+1, next}) && !fixedPaths.conflict(curr, next, t, next == goal_loc))
+		if (validMove(curr, next) && !spawnedObstacles.contains({t+1, next}))
 			neighbors.emplace_back(next);
 	}
 	return neighbors;
@@ -38,15 +38,6 @@ list<int> Instance::getNeighbors(int curr) const
     return neighbors;
 }
 
-Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols) :
-    num_of_rows{nRows},
-    num_of_cols{nCols},
-    map_size(nRows * nCols),
-    my_map{std::move(map)},
-    num_of_agents{static_cast<int>(agents.size())},
-    locations{std::move(agents)}
-    {}
-
 Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols,
                    SpawnedObstaclesSet spawnedObstacles) :
         num_of_rows{nRows},
@@ -58,14 +49,3 @@ Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int 
         spawnedObstacles{std::move(spawnedObstacles)}
     {}
 
-Instance::Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols,
-                   SpawnedObstaclesSet spawnedObstacles, FixedPaths fixedPaths) :
-        num_of_rows{nRows},
-        num_of_cols{nCols},
-        map_size(nRows * nCols),
-        my_map{std::move(map)},
-        num_of_agents{static_cast<int>(agents.size())},
-        locations{std::move(agents)},
-        spawnedObstacles{std::move(spawnedObstacles)},
-        fixedPaths{std::move(fixedPaths)}
-{}

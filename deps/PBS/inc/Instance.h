@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "SpawnedObstacle.hpp"
-#include "FixedPath.hpp"
 
 // Currently only works for undirected unweighted 4-nighbor grids
 class Instance 
@@ -13,8 +12,6 @@ public:
 	int map_size;
 
 	// enum valid_moves_t { NORTH, EAST, SOUTH, WEST, WAIT_MOVE, MOVE_COUNT };  // MOVE_COUNT is the enum's size
-
-    Instance(vector<bool> map, vector<vector<int>> agents, int nRows, int nCols);
     Instance(
         vector<bool> map,
         vector<vector<int>> agents,
@@ -22,19 +19,11 @@ public:
         int nCols,
         SpawnedObstaclesSet spawnedObstacles
     );
-    Instance(
-        vector<bool> map,
-        vector<vector<int>> agents,
-        int nRows,
-        int nCols,
-        SpawnedObstaclesSet spawnedObstacles,
-        FixedPaths fixedPaths
-    );
 
 
-		inline bool isObstacle(int loc) const { return my_map[loc]; }
+    inline bool isObstacle(int loc) const { return my_map[loc]; }
 		inline bool validMove(int curr, int next) const;
-		list<int> getNeighbors(int curr, int t, int goal_loc) const;
+		list<int> getNeighbors(int curr, int t) const;
 		list<int> getNeighbors(int curr) const;
 
 
@@ -85,7 +74,6 @@ private:
 	  vector<vector<int>> locations;
 
       SpawnedObstaclesSet spawnedObstacles{};
-      FixedPaths fixedPaths{};
 
     // add this obsatcle only if the map is still connected
     // run BFS to find a path between start and goal, return true if a path exists.

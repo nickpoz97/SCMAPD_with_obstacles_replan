@@ -57,16 +57,11 @@ std::vector<CompressedCoord> Simulator::getNextPositions() const {
 }
 
 Instance
-Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, TimeStep actualTimeStep,
-                               const std::unordered_set<int> &notAllowedAgents) const {
-    vector<Path> agentsCheckpoints = extractPBSCheckpoints(notAllowedAgents);
-
-    // extract grid
-    auto grid{ambientMap.getGrid()};
-    assert(grid.size() == ambientMap.getNRows() * ambientMap.getNCols());
+Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const {
+    vector<Path> agentsCheckpoints = extractPBSCheckpoints(waitingAgents);
 
     return {
-        grid,
+        ambientMap.getGrid(),
         agentsCheckpoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
@@ -75,52 +70,44 @@ Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, TimeStep actual
 }
 
 vector<Path> Simulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
-    auto checkPointsExtractor = [](const RunningAgent& ra) -> std::vector<CompressedCoord>{
+    auto checkPointsExtractor = [&notAllowedAgents](const RunningAgent& ra) -> std::vector<CompressedCoord>{
         // the first one is the first position
         std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
 
-        std::ranges::copy(
-            ra.getPlannedCheckpoints(),
-            std::back_inserter(checkPoints)
-        );
+        if (!notAllowedAgents.contains(ra.getAgentId())){
+            std::ranges::copy(
+                ra.getPlannedCheckpoints(),
+                std::back_inserter(checkPoints)
+            );
+        }
 
         return checkPoints;
     };
 
     // take out waiting agents and extract the checkpoints of the remaining ones
     auto agentsCheckpoints = runningAgents |
-        std::views::filter([&](const RunningAgent& ra){return !notAllowedAgents.contains(ra.getAgentId());}) |
         std::views::transform(checkPointsExtractor);
-
-    assert(std::ranges::distance(agentsCheckpoints) == (runningAgents.size() - notAllowedAgents.size()));
     return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
 }
 
-void Simulator::updatePlannedPaths(const std::vector<Path> &paths, const std::unordered_set<int> &waitingAgentsIds) {
+void Simulator::updatePlannedPaths(const std::vector<Path> &paths) {
     auto pathsIt = paths.cbegin();
 
-    auto notWaitingAgents = runningAgents |
-        std::views::transform([](const RunningAgent& ra){return ra.getAgentId();}) |
-        std::views::filter([&waitingAgentsIds](int agentId){return !waitingAgentsIds.contains(agentId);});
-
-    for (int agentId : notWaitingAgents){
-        auto& actualAgent = runningAgents[agentId];
-
-        actualAgent.setPlannedPath(*pathsIt);
-        ++pathsIt;
+    for (auto& actualAgent : runningAgents){
+        actualAgent.setPlannedPath(paths[actualAgent.getAgentId()]);
         assert(actualAgent.checkpointChecker());
     }
 }
 
 bool Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
-    auto pbsInstance{generatePBSInstance(sOSet, t, {})};
-    return solveWithPBS(pbsInstance, {});
+    auto pbsInstance{generatePBSInstance(sOSet, {})};
+    return solveWithPBS(pbsInstance);
 }
 
-bool Simulator::solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &waitingAgentsIds) {
+bool Simulator::solveWithPBS(const Instance &pbsInstance) {
     PBS pbs{pbsInstance, true, 0};
     if(pbs.solve(7200)){
-        updatePlannedPaths(pbs.getPaths(), waitingAgentsIds);
+        updatePlannedPaths(pbs.getPaths());
         return true;
     }
     return false;
@@ -188,35 +175,9 @@ void Simulator::printResults(const std::filesystem::path &out, const nlohmann::j
 
 bool Simulator::wait(const SpawnedObstaclesSet & spawnedObstacles, TimeStep t, const std::unordered_set<int>& waitingAgents) {
     auto pbsInstance{
-        generatePBSInstance(spawnedObstacles, t, waitingAgents)
+        generatePBSInstance(spawnedObstacles, waitingAgents)
     };
-    return solveWithPBS(pbsInstance, waitingAgents);
-}
-
-FixedPaths Simulator::extendsAndExtractFixedPaths(const std::unordered_set<int> &waitingAgents) {
-    FixedPaths fixedPaths{};
-
-    auto extendPath = [this](int agentId){
-        assert(agentId == runningAgents[agentId].getAgentId());
-        const auto& oldPath = runningAgents[agentId].getPlannedPath();
-
-        FixedPath newPath{};
-        newPath.reserve(oldPath.size() + 1);
-
-        newPath.push_back(oldPath.front());
-        newPath.insert(newPath.end(), oldPath.begin(), oldPath.end());
-
-        // saving (side effect)
-        runningAgents[agentId].setPlannedPath(newPath);
-        return newPath;
-    };
-
-    std::ranges::transform(
-        waitingAgents,
-        std::back_inserter(fixedPaths),
-        extendPath
-    );
-    return fixedPaths;
+    return solveWithPBS(pbsInstance);
 }
 
 std::unordered_set<int>
@@ -225,7 +186,7 @@ Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeSte
         std::views::filter(
             [&actualObstacles, actualT](const RunningAgent& ra){
                 auto nextPos = ra.getNextPosition();
-                return nextPos.has_value() && actualObstacles.contains({*nextPos, actualT + 1});
+                return nextPos.has_value() && actualObstacles.contains({1, *nextPos});
             }
         ) |
         std::views::transform([](const RunningAgent& ra){return ra.getAgentId();});
