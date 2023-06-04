@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
     };
 
     simulator.simulate(strategy);
-    simulator.printResults(vm["out"].as<std::string>());
+    simulator.printResults(vm["out"].as<std::string>(), plansJson);
 
     return 0;
 }

@@ -36,7 +36,7 @@ public:
     Simulator(std::vector<RunningAgent> runningAgents, std::ifstream obstaclesCsv, AmbientMap ambientMap);
     Simulator(std::vector<RunningAgent> runningAgents, const nlohmann::json &obstaclesJson, AmbientMap ambientMap);
     void simulate(Strategy strategy);
-    void printResults(const std::filesystem::path& out);
+    void printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson);
 private:
     std::vector<RunningAgent> runningAgents;
     ObstaclesMap obstacles;

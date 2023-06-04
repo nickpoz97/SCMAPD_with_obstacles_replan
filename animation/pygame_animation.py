@@ -42,11 +42,25 @@ with open(result_files_paths[0], 'r') as f:
     data = json.load(f)
 
 # Extract the agent paths from the JSON data
-agents = [agent['path'] for agent in data['agents']]
 
+agentsJson = data['agents']
+agents = [agent['path'] for agent in agentsJson]
 
-# Extract the agent paths from the JSON data
-agents = [agent['path'] for agent in data['agents']]
+waypoints = [agent['waypoints'] for agent in agentsJson]
+waypoints = [
+    [
+        (
+            wp['coords'],
+            'P' if wp['demand'] == 'PICKUP' else 'D',
+            agents[aI].index(wp['coords'])
+        )            
+        for wp in agentWps
+    ] for aI, agentWps in enumerate(waypoints)
+]
+
+for aI, agentWps in enumerate(waypoints):
+    agent = agents[aI]
+    agentWps.append((agent[0], 'H', len(agent) - 1))
 
 # Load the grid data from a file
 with open(grid_files_paths[0], 'r') as f:
@@ -80,12 +94,14 @@ if len(obstacles_files_paths) == 1:
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+ORANGE = (255, 128, 0)
+GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 LIGHT_BLUE = (125, 125, 255)
 GRAY = (128, 128, 128)
 
 # Set up the cell size and margin
-cell_size = 22
+cell_size = 25
 cell_margin = 1
 
 # Set up the screen dimensions
@@ -99,7 +115,7 @@ pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up the font
-font = pygame.font.Font(None, 26)
+font = pygame.font.Font(None, 20)
 
 # Set up the slider
 slider_x = cell_margin
@@ -149,6 +165,38 @@ def draw_agents():
         text = font.render(f"{agents.index(agent)}", True, BLACK)
         text_rect=text.get_rect(center=(x,y))
         screen.blit(text,text_rect)
+
+def draw_waypoints():
+    # Draw the waypoints
+
+    for aI, agentWps in enumerate(waypoints):
+        for wpI, wp in enumerate(agentWps):
+            coord, demand, arrival_timstep = wp
+
+            # already crossed
+            if timestep >= arrival_timstep:
+                continue
+
+            row,column = coord
+
+            # Calculate the coordinates of the center of the cell
+            x = column * (cell_size + cell_margin) + cell_margin + cell_size // 2
+            y = row * (cell_size + cell_margin) + cell_margin + cell_size // 2
+
+            label = ""
+
+            # Draw the wp
+            if wpI != len(agentWps) - 1:
+                pygame.draw.circle(screen, ORANGE , (x,y), cell_size/2)
+                label = f"a{aI}w{wpI}"
+            elif agents[aI][timestep] != [row,column]:
+                pygame.draw.circle(screen, GREEN , (x,y), cell_size/2)
+                label = f"h{aI}"
+
+            text = font.render(label, True, BLACK)
+            # Render the text with current wp index value.
+            text_rect=text.get_rect(center=(x,y))
+            screen.blit(text,text_rect)
 
 def draw_slider():
     # Draw the slider background
@@ -256,6 +304,7 @@ while True:
     screen.fill(BLACK)
 
     draw_grid()
+    draw_waypoints()
     draw_agents()
     draw_slider()
     draw_text()

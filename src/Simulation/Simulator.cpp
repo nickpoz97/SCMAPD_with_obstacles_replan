@@ -53,6 +53,9 @@ void Simulator::simulate(Strategy strategy) {
 
         std::ranges::for_each(runningAgents, [](RunningAgent& ra){ra.stepAndUpdate();});
     }
+    for(const auto& ra : runningAgents){
+        agentsHistory[ra.getAgentId()].push_back(ra.getPlannedPath().front());
+    }
 }
 
 std::vector<CompressedCoord> Simulator::getNextPositions() const {
@@ -216,15 +219,24 @@ size_t Simulator::computeSeed() const {
     return seed;
 }
 
-void Simulator::printResults(const std::filesystem::path &out) {
+void Simulator::printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson) {
     using namespace nlohmann;
 
     json j;
     j["agents"] = json::array();
 
+    int i = 0;
     for (const auto& ah : agentsHistory){
+        auto waypoints = json::array();
+        for(const auto& wp : sourceJson["agents"][i++]["waypoints"]){
+            waypoints.push_back({
+                {"coords", wp["coords"]},
+                {"demand", wp["demand"]}
+            });
+        }
         j["agents"].push_back({
-            {"path", static_cast<json>(getVerbosePath(ah, ambientMap.getNCols()))}
+            {"path", static_cast<json>(getVerbosePath(ah, ambientMap.getNCols()))},
+            {"waypoints", waypoints}
         });
     }
 
