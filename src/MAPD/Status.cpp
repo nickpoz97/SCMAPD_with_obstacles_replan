@@ -7,7 +7,7 @@
 #include <queue>
 #include <random>
 
-#include "Status.hpp"
+#include "MAPD/Status.hpp"
 
 Status::Status(AmbientMap ambientMap, const std::vector<AgentInfo> &agents, bool noConflicts, bool online) :
     ambient(std::move(ambientMap)),
@@ -66,10 +66,6 @@ bool Status::checkDynamicObstacle(int agentId, CompressedCoord coord1, Compresse
     };
 
     return std::ranges::any_of(pathsWrappers, predicate);
-}
-
-const DistanceMatrix& Status::getDistanceMatrix() const{
-    return ambient.getDistanceMatrix();
 }
 
 bool Status::checkPathWithStatus(const Path &path, int agentId) const{
@@ -167,7 +163,7 @@ VerbosePath Status::toVerbosePath(int i) const {
     std::ranges::transform(
         path,
         std::back_inserter(vP),
-        [this](const CompressedCoord& cc){return getDistanceMatrix().from1Dto2D(cc);}
+        [this](const CompressedCoord& cc){return ambient.getDistanceMatrix().from1Dto2D(cc);}
     );
 
     return vP;
@@ -399,4 +395,16 @@ std::vector<int> Status::getTaskIds() const{
 
 PWsVector &Status::getPathWrappers() {
     return pathsWrappers;
+}
+
+std::vector<Path> Status::getPaths(int outAgentId) const {
+    auto range = pathsWrappers |
+        std::views::filter([outAgentId](const PathWrapper& pW){return pW.getAgentId() != outAgentId;}) |
+        std::views::transform([](const PathWrapper& pW){return pW.getPath();});
+
+    return {range.begin(), range.end()};
+}
+
+const AmbientMap & Status::getAmbient() const {
+    return ambient;
 }

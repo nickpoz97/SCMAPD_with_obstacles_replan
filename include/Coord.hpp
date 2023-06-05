@@ -26,7 +26,12 @@ using Direction = Coord::Direction;
 
 using CompressedCoord = int;
 
-using Path = std::vector<CompressedCoord>;
+class Path : public std::vector<CompressedCoord>{
+public:
+    using std::vector<int>::vector;
+    [[nodiscard]] bool hasConflict(CompressedCoord coord1, CompressedCoord coord2, TimeStep t1, bool isFinal) const;
+};
+
 inline std::size_t hash_value(const Path& p){ return boost::hash_range(p.cbegin(), p.cend()); }
 
 class VerbosePath : public std::vector<Coord>{

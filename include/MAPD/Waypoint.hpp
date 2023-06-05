@@ -10,7 +10,7 @@
 #include "NewTypes.hpp"
 #include "Coord.hpp"
 #include "utils.hpp"
-#include "Task.hpp"
+#include "MAPD/Task.hpp"
 #include <nlohmann/json.hpp>
 
 struct Waypoint{

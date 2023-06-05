@@ -1,7 +1,7 @@
 #include <functional>
 #include <fmt/ostream.h>
 
-#include "SCMAPD.hpp"
+#include "MAPD/SCMAPD.hpp"
 #include "MAPF/PathFinder.hpp"
 
 #include <nlohmann/json.hpp>
@@ -23,7 +23,7 @@ void SCMAPD::solve(TimeStep cutOffTime, int nOptimizationTasks, Objective obj, M
     status.updateTasks(taskHandler.getNextBatch());
 
     if (!bigH.addNewTasks(status, status.getTaskIds()) || !findSolution()) {
-        throw std::runtime_error("No solution");;
+        throw std::runtime_error("No solution");
     }
     int nIterations = 0;
 
@@ -79,7 +79,7 @@ void SCMAPD::printResult(bool printAgentsInfo, const std::optional<std::filesyst
                 {"index", i},
                 {"ttt", pW.getLastDeliveryTimeStep()},
                 {"ttd", pW.getTTD()},
-                {"waypoints", getWpsJson(pW.getWaypoints(), status.getDistanceMatrix())},
+                {"waypoints", getWpsJson(pW.getWaypoints(), status.getAmbient().getDistanceMatrix())},
                 {"path", status.toVerbosePath(i)},
                 {"task_ids", json(pW.getSatisfiedTasksIds()).dump()}
             });

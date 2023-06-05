@@ -100,3 +100,16 @@ std::vector<std::string> AmbientMap::getRowsStrings() const {
 
     return rowStrings;
 }
+
+std::vector<CompressedCoord> AmbientMap::getNeighbors(CompressedCoord actualLoc) const {
+    std::vector<CompressedCoord> neighbors{};
+
+    for(int i = 0 ; i < nDirections ; ++i){
+        auto n = movement(actualLoc, i);
+        if(n.has_value()){
+            neighbors.push_back(*n);
+        }
+    }
+
+    return neighbors;
+}

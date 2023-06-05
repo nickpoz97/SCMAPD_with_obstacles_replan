@@ -7,7 +7,7 @@
 
 #include "Coord.hpp"
 #include "NewTypes.hpp"
-#include "Status.hpp"
+#include "MAPD/Status.hpp"
 
 class Node {
 public:

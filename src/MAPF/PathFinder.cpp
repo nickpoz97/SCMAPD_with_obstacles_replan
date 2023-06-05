@@ -32,7 +32,10 @@ using ExploredSet = std::unordered_set<
 >;
 
 std::optional<Path>
-PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const Status &status, int agentId){
+PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const std::vector<Path> &paths,
+        const AmbientMap &ambient) {
+    const auto& dm = ambient.getDistanceMatrix();
+
     if(waypoints.empty()){
         throw std::runtime_error("No waypoints");
     }
@@ -56,7 +59,6 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
     );
 
     Frontier frontier;
-    const auto &dm = status.getDistanceMatrix();
     int lastGoalIndex = std::ssize(goals) - 1;
 
     frontier.emplace(new Node{agentLoc, 0, dm, *goals.cbegin()});
@@ -75,16 +77,30 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
 
         // entire path found
         if (topNode->getTargetIndex() == lastGoalIndex &&
-            topNode->getLocation() == topNode->getTargetPosition() &&
-            !status.dockingConflict(topNode->getGScore(), topNode->getTargetPosition(), agentId)) {
+            topNode->getLocation() == topNode->getTargetPosition()) {
             auto pathList = topNode->getPathList();
             return Path{pathList.cbegin(), pathList.cend()};
         }
 
-        auto neighbors = status.getValidNeighbors(agentId, topNode->getLocation(), topNode->getGScore());
+        auto actualLoc = topNode->getLocation();
+        auto neighbors = ambient.getNeighbors(actualLoc);
 
-        auto nextT = topNode->getGScore() + 1;
-        for (auto loc: neighbors) {
+        auto actualT = topNode->getGScore();
+        auto nextT = actualT + 1;
+        auto target = topNode->getTargetPosition();
+        bool isLastTarget = topNode->getTargetIndex() == lastGoalIndex;
+
+        auto validNeighbors = neighbors |
+            std::views::filter([=, &paths](CompressedCoord cc){
+                return std::ranges::none_of(
+                    paths,
+                    [=](const Path& p){
+                        bool isFinal = (target == cc && isLastTarget);
+                        return p.hasConflict(actualLoc, cc, actualT, isFinal);});
+                    }
+            );
+
+        for (auto loc: validNeighbors) {
             NodeShrPtr neighbor {new Node{loc, nextT, dm, goals[topNode->getNextTargetIndex(lastGoalIndex)], topNode.get()}};
             if (!exploredSet.contains(neighbor)) {
                 frontier.push(neighbor);

@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "NewTypes.hpp"
 #include "DistanceMatrix.hpp"
-#include "Task.hpp"
+#include "MAPD/Task.hpp"
 
 class TaskHandler {
 public:

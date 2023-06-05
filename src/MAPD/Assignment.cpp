@@ -2,7 +2,7 @@
 #include <cassert>
 #include <fstream>
 
-#include "Assignment.hpp"
+#include "MAPD/Assignment.hpp"
 #include "MAPF/PathFinder.hpp"
 
 Assignment::Assignment(const PathWrapper &pW, Status &status) :
@@ -67,7 +67,11 @@ Assignment::addTask(int taskId) {
 
 bool
 Assignment::internalUpdate() {
-    auto resultPath{PathFinder::multiAStar(getWaypoints(), getInitialPos(), status, getAgentId())};
+    auto resultPath{
+        PathFinder::multiAStar(
+            getWaypoints(), getInitialPos(), status.getPaths(getAgentId()), status.getAmbient()
+        )
+    };
     if(!resultPath){
         return false;
     }
@@ -96,7 +100,7 @@ int operator<=>(const Assignment &a, const Assignment &b) {
 TimeStep Assignment::computeIdealCost() const{
     assert(!getWaypoints().empty());
     TimeStep cost = 0;
-    const auto& dm = status.getDistanceMatrix();
+    const auto& dm = status.getAmbient().getDistanceMatrix();
 
     cost += dm.getDistance(getInitialPos(), getWaypoints().cbegin()->getPosition());
     auto prevPos = getInitialPos();
@@ -122,7 +126,7 @@ TimeStep Assignment::computeApproxSpan(WaypointsList::const_iterator startIt) co
 
     for (auto it = startIt ; it->getDemand() != Demand::END ; ++it){
         auto actualPos = startIt->getPosition();
-        span += status.getDistanceMatrix().getDistance(prevPos, actualPos);
+        span += status.getAmbient().getDistanceMatrix().getDistance(prevPos, actualPos);
         prevPos = actualPos;
     }
 
@@ -216,7 +220,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
 
     assert(newPickupWpIt != waypoints.end());
 
-    const auto& dm = status.getDistanceMatrix();
+    const auto& dm = status.getAmbient().getDistanceMatrix();
 
     auto ttd = newPickupWpIt == getWaypoints().cbegin() ? 0 : std::prev(newPickupWpIt)->getCumulatedDelay();
     auto prevWpPos = newPickupWpIt == getWaypoints().cbegin() ? getInitialPos() : std::prev(newPickupWpIt)->getPosition();
@@ -235,7 +239,7 @@ TimeStep Assignment::computeApproxTTD(WaypointsList::const_iterator newPickupWpI
         prevArrivalTime = arrivalTime;
     }
 
-    assert(waypoints.size() >= 3 );
+    assert(!waypoints.empty() );
     return ttd;
 }
 

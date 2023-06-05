@@ -1,5 +1,5 @@
-#include "Waypoint.hpp"
-#include "Task.hpp"
+#include "MAPD/Waypoint.hpp"
+#include "MAPD/Task.hpp"
 
 Waypoint::operator CompressedCoord() const {return position;}
 

@@ -1,6 +1,6 @@
 #include <functional>
 #include <algorithm>
-#include "BigH.hpp"
+#include "MAPD/BigH.hpp"
 
 SmallHComp BigH::getComparator(Heuristic h) {
     switch(h){

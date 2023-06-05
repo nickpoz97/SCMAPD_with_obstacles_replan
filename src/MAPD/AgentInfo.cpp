@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include "DistanceMatrix.hpp"
-#include "AgentInfo.hpp"
+#include "MAPD/AgentInfo.hpp"
 
 std::vector<AgentInfo>
 loadAgents(const std::filesystem::path &agentsFilePath, const DistanceMatrix &dm, char horizontalSep,

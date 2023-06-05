@@ -20,7 +20,6 @@ CPMAddPackage(
 
 add_subdirectory(cnpy)
 add_subdirectory(json)
-add_subdirectory(PBS)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 

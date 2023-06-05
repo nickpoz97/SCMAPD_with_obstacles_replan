@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "SmallH.hpp"
+#include "MAPD/SmallH.hpp"
 
 SmallH::SmallH(int taskId, int v, const Status &status) :
     taskId{taskId},

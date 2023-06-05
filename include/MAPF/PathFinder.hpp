@@ -7,13 +7,14 @@
 
 
 #include <utility>
-#include "Waypoint.hpp"
+#include "MAPD/Waypoint.hpp"
 #include "Coord.hpp"
-#include "Status.hpp"
+#include "MAPD/Status.hpp"
 
 namespace PathFinder{
     [[nodiscard]] std::optional<Path>
-    multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const Status &status, int agentId);
+    multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const std::vector<Path> &paths,
+               const AmbientMap &ambient);
 }
 
 #endif //SIMULTANEOUS_CMAPD_PATHFINDER_HPP

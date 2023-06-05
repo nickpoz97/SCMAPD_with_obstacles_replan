@@ -3,7 +3,7 @@
 //
 
 #include <fstream>
-#include "TaskHandler.hpp"
+#include "MAPD/TaskHandler.hpp"
 
 TaskHandler::TaskHandler(const std::filesystem::path &tasksFilePath, const DistanceMatrix &dm) :
     allTasks{loadTasks(tasksFilePath, dm, false, 0)}

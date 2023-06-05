@@ -11,15 +11,17 @@ endif()
 set(SCMAPD_EXE scmapd)
 set(OBS_EXE obstacle_avoidance)
 
-file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-list(FILTER SOURCES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/src/main/.*\\.cpp$")
+set(CPP_DIR ${PROJECT_SOURCE_DIR}/src)
+
+file(GLOB SCMAPD_SOURCES ${CPP_DIR}/*.cpp ${CPP_DIR}/MAPF/*.cpp ${CPP_DIR}/MAPD/*.cpp ${CPP_DIR}/main/scmapdMain.cpp)
+file(GLOB OBS_SOURCES ${CPP_DIR}/*.cpp ${CPP_DIR}/MAPF/*.cpp ${CPP_DIR}/Simulation/*.cpp ${CPP_DIR}/main/scmapdMain.cpp)
 
 set(INCLUDE_DIRS include)
 
 add_subdirectory(deps)
 
-add_executable(${SCMAPD_EXE} ${SOURCES} src/main/scmapdMain.cpp)
-add_executable(${OBS_EXE} ${SOURCES} src/main/obsAvoid.cpp)
+add_executable(${SCMAPD_EXE} ${SCMAPD_SOURCES})
+add_executable(${OBS_EXE} ${OBS_SOURCES})
 
 target_include_directories(${SCMAPD_EXE} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(${SCMAPD_EXE} PRIVATE ExternalLibs)

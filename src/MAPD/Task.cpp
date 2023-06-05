@@ -1,5 +1,5 @@
 #include <fstream>
-#include <Task.hpp>
+#include "MAPD/Task.hpp"
 
 bool operator==(const Task &t1, const Task &t2) {
         return t1.index == t2.index;

@@ -27,7 +27,7 @@ public:
     [[nodiscard]] bool checkAllConflicts() const;
     [[nodiscard]] bool checkPathWithStatus(const Path &path, int agentId) const;
 
-    [[nodiscard]] const DistanceMatrix &getDistanceMatrix() const;
+    [[nodiscard]] const AmbientMap & getAmbient() const;
 
     [[nodiscard]] bool hasIllegalPositions(const Path &path) const;
 
@@ -58,6 +58,8 @@ public:
     std::vector<int> getTaskIds() const;
 
     std::vector<int> getAvailableAgentIds() const;
+
+    [[nodiscard]] std::vector<Path> getPaths(int outAgentId) const;
 private:
     const AmbientMap ambient;
     std::unordered_map<int, Task> tasks{};
@@ -74,7 +76,6 @@ private:
     static bool checkPathConflicts(const Path &pA, const Path &pB);
 
     [[nodiscard]] bool isDocking(int agentId, TimeStep t) const;
-
 };
 
 inline std::size_t hash_value(const Status& s){

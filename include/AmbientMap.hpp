@@ -38,6 +38,7 @@ public:
     [[nodiscard]] std::optional<CompressedCoord> movement(CompressedCoord coord, int directionIndex) const;
     [[nodiscard]] const std::vector<bool>& getGrid() const;
     [[nodiscard]] std::vector<std::string> getRowsStrings() const;
+    [[nodiscard]] std::vector<CompressedCoord> getNeighbors(CompressedCoord actualLoc) const;
 private:
     const DistanceMatrix distanceMatrix;
     std::vector<bool> grid;

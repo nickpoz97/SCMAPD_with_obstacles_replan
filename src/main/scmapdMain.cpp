@@ -3,9 +3,9 @@
 #include <iostream>
 #include <filesystem>
 
-#include "SCMAPD.hpp"
-#include "utils.hpp"
-#include "TaskHandler.hpp"
+#include "MAPD/SCMAPD.hpp"
+#include "MAPD/utils.hpp"
+#include "MAPD/TaskHandler.hpp"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
