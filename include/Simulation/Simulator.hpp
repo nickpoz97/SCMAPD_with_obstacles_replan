@@ -8,7 +8,6 @@
 
 #include "Coord.hpp"
 #include "RunningAgent.hpp"
-#include "Instance.h"
 #include "AmbientMap.hpp"
 #include "ObstaclesWrapper.hpp"
 
@@ -32,20 +31,14 @@ private:
     std::vector<Path> agentsHistory{};
     Strategy strategy;
 
-    Instance
-    generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const;
     void updatePlannedPaths(const std::vector<Path> &paths);
 
     std::vector<CompressedCoord> getNextPositions() const;
 
-    bool rePlan(const SpawnedObstaclesSet &sOSet, TimeStep t);
-    bool wait(const SpawnedObstaclesSet & spawnedObstacles, TimeStep t, const std::unordered_set<int>& waitingAgents);
+    bool rePlan(const SpawnedObstaclesSet &sOSet);
+    bool wait(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents);
 
-    static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
-
-    bool solveWithPBS(const Instance &pbsInstance);
-
-    vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
+    std::vector<std::vector<CompressedCoord>> extractCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
 
     std::unordered_set<int>
     getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeStep actualT) const;

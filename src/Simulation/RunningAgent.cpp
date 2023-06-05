@@ -63,12 +63,6 @@ void RunningAgent::stepAndUpdate(){
     if(plannedPath.size() > 1) {
         plannedPath.erase(plannedPath.begin());
     }
-
-    // only one position -> last waypoint reached
-    assert(
-        !(plannedPath.size() == 1) ||
-            (plannedPath.front() == plannedCheckpoints.front() && plannedCheckpoints.size() == 1)
-    );
 }
 
 const Path &RunningAgent::getPlannedPath() const {

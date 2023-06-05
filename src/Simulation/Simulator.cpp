@@ -2,9 +2,10 @@
 // Created by nicco on 27/05/2023.
 //
 
+#include <fstream>
 #include <boost/tokenizer.hpp>
 #include "Simulation/Simulator.hpp"
-#include "PBS.h"
+#include "Simulation/PP.hpp"
 
 void Simulator::simulate() {
     using std::ranges::any_of;
@@ -23,13 +24,12 @@ void Simulator::simulate() {
             switch (strategy) {
                 // warning cannot solve if obstacles is on a target
                 case Strategy::RE_PLAN:
-                    rePlan(actualObstacles, t);
+                    rePlan(actualObstacles);
                 break;
                 case Strategy::WAIT:
                     wait(
-                        actualObstacles,
-                        t,
-                        involvedAgents
+                            actualObstacles,
+                            involvedAgents
                     );
                 break;
                 default:
@@ -56,24 +56,12 @@ std::vector<CompressedCoord> Simulator::getNextPositions() const {
     return {nextPositions.begin(), nextPositions.end()};
 }
 
-Instance
-Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const {
-    vector<Path> agentsCheckpoints = extractPBSCheckpoints(waitingAgents);
-
-    return {
-        ambientMap.getGrid(),
-        agentsCheckpoints,
-        ambientMap.getNRows(),
-        ambientMap.getNCols(),
-        sOSet
-    };
-}
-
-vector<Path> Simulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
+std::vector<std::vector<CompressedCoord>> Simulator::extractCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
     auto checkPointsExtractor = [&notAllowedAgents](const RunningAgent& ra) -> std::vector<CompressedCoord>{
         // the first one is the first position
         std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
 
+        // check if not waiting
         if (!notAllowedAgents.contains(ra.getAgentId())){
             std::ranges::copy(
                 ra.getPlannedCheckpoints(),
@@ -84,7 +72,6 @@ vector<Path> Simulator::extractPBSCheckpoints(const std::unordered_set<int> &not
         return checkPoints;
     };
 
-    // take out waiting agents and extract the checkpoints of the remaining ones
     auto agentsCheckpoints = runningAgents |
         std::views::transform(checkPointsExtractor);
     return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
@@ -95,48 +82,13 @@ void Simulator::updatePlannedPaths(const std::vector<Path> &paths) {
 
     for (auto& actualAgent : runningAgents){
         actualAgent.setPlannedPath(paths[actualAgent.getAgentId()]);
-        assert(actualAgent.checkpointChecker());
+        //assert(actualAgent.checkpointChecker());
     }
 }
 
-bool Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
-    auto pbsInstance{generatePBSInstance(sOSet, {})};
-    return solveWithPBS(pbsInstance);
-}
-
-bool Simulator::solveWithPBS(const Instance &pbsInstance) {
-    PBS pbs{pbsInstance, true, 0};
-    if(pbs.solve(7200)){
-        updatePlannedPaths(pbs.getPaths());
-        return true;
-    }
-    return false;
-}
-
-std::list<std::vector<CompressedCoord>> Simulator::getObstaclesFromCsv(std::ifstream obstaclesCsv) {
-    using Tokenizer = boost::tokenizer<boost::escaped_list_separator<char>>;
-
-    std::list<std::vector<CompressedCoord>> obstaclesList{};
-
-    std::string line;
-    std::getline(obstaclesCsv, line);
-
-    Tokenizer tok(line);
-    if(*tok.begin() != "obs_0"){
-        throw std::runtime_error("Wrong csv file");
-    }
-
-    while(std::getline(obstaclesCsv, line)){
-        tok = line;
-
-        auto actualObstacles = tok |
-        std::views::filter([](const std::string& token){return token != "-1";}) |
-        std::views::transform([](const std::string& token){return std::stoi(token);});
-
-        obstaclesList.emplace_back(actualObstacles.begin(), actualObstacles.end());
-    }
-
-    return obstaclesList;
+bool Simulator::rePlan(const SpawnedObstaclesSet &sOSet) {
+    updatePlannedPaths(PathFinder::solveWithPP(sOSet, extractCheckpoints({}), ambientMap));
+    return true;
 }
 
 Simulator::Simulator(std::vector<RunningAgent> runningAgents, ObstaclesWrapper obstaclesWrapper, AmbientMap ambientMap,
@@ -173,11 +125,9 @@ void Simulator::printResults(const std::filesystem::path &out, const nlohmann::j
     file << j.dump();
 }
 
-bool Simulator::wait(const SpawnedObstaclesSet & spawnedObstacles, TimeStep t, const std::unordered_set<int>& waitingAgents) {
-    auto pbsInstance{
-        generatePBSInstance(spawnedObstacles, waitingAgents)
-    };
-    return solveWithPBS(pbsInstance);
+bool Simulator::wait(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) {
+    updatePlannedPaths(PathFinder::solveWithPP(sOSet, extractCheckpoints(waitingAgents), ambientMap));
+    return true;
 }
 
 std::unordered_set<int>

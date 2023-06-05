@@ -11,7 +11,7 @@
 #include "Simulation/RunningAgent.hpp"
 #include "NewTypes.hpp"
 #include "Coord.hpp"
-#include "SpawnedObstacle.hpp"
+#include "MAPF/SpawnedObstacle.hpp"
 
 using ObstaclesMap = std::unordered_map<TimeStep , std::unordered_set<CompressedCoord>>;
 

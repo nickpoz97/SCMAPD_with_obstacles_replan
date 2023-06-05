@@ -32,31 +32,16 @@ using ExploredSet = std::unordered_set<
 >;
 
 std::optional<Path>
-PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const std::vector<Path> &paths,
-        const AmbientMap &ambient) {
+PathFinder::multiAStar(const std::vector<std::pair<int, CompressedCoord>>& goals, CompressedCoord agentLoc, const std::vector<Path> &paths,
+        const AmbientMap &ambient, const SpawnedObstaclesSet& sOset) {
     const auto& dm = ambient.getDistanceMatrix();
 
-    if(waypoints.empty()){
-        throw std::runtime_error("No waypoints");
-    }
+    assert(!goals.empty());
     
-    if(waypoints.size() == 1){
-        assert(waypoints.cbegin()->getDemand() == Demand::END && waypoints.cbegin()->getPosition() == agentLoc);
+    if(goals.size() == 1){
+        assert(goals.front().second == agentLoc);
         return Path{agentLoc};
     }
-
-    assert(waypoints.crbegin()->getDemand() == Demand::END &&
-        (waypoints.crbegin()->getPosition() == agentLoc || waypoints.crbegin()->getPosition() == std::next(waypoints.crbegin())->getPosition()));
-
-    int i = 0;
-    // <order, location>
-    std::vector<std::pair<int, CompressedCoord>> goals;
-    goals.reserve(waypoints.size());
-    std::ranges::transform(
-        waypoints,
-        std::back_inserter(goals),
-        [&i](const Waypoint& wp) -> std::pair<int, CompressedCoord> {return {i++, wp.getPosition()};}
-    );
 
     Frontier frontier;
     int lastGoalIndex = std::ssize(goals) - 1;
@@ -91,13 +76,16 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         bool isLastTarget = topNode->getTargetIndex() == lastGoalIndex;
 
         auto validNeighbors = neighbors |
-            std::views::filter([=, &paths](CompressedCoord cc){
-                return std::ranges::none_of(
-                    paths,
-                    [=](const Path& p){
-                        bool isFinal = (target == cc && isLastTarget);
-                        return p.hasConflict(actualLoc, cc, actualT, isFinal);});
-                    }
+            std::views::filter(
+                [=, &paths, &sOset](CompressedCoord nb){
+                    return std::ranges::none_of(
+                        paths,
+                        [=](const Path& p){
+                            bool isFinal = (target == nb && isLastTarget);
+                            return p.hasConflict(actualLoc, nb, actualT, isFinal);
+                        }
+                    ) && !sOset.contains({nextT, nb});
+                }
             );
 
         for (auto loc: validNeighbors) {
@@ -108,4 +96,10 @@ PathFinder::multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc,
         }
     }
     return std::nullopt;
+}
+
+std::optional<Path>
+PathFinder::multiAStar(const std::vector<std::pair<int, CompressedCoord>>& goals, CompressedCoord agentLoc, const std::vector<Path> &paths,
+           const AmbientMap &ambient){
+    return multiAStar(goals, agentLoc, paths, ambient, {});
 }

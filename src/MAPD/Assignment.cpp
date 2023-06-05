@@ -67,9 +67,19 @@ Assignment::addTask(int taskId) {
 
 bool
 Assignment::internalUpdate() {
+    int i = 0;
+    // <order, location>
+    std::vector<std::pair<int, CompressedCoord>> goals;
+    goals.reserve(waypoints.size());
+    std::ranges::transform(
+        waypoints,
+        std::back_inserter(goals),
+        [&i](const Waypoint& wp) -> std::pair<int, CompressedCoord> {return {i++, wp.getPosition()};}
+    );
+
     auto resultPath{
         PathFinder::multiAStar(
-            getWaypoints(), getInitialPos(), status.getPaths(getAgentId()), status.getAmbient()
+            goals, getInitialPos(), status.getPaths(getAgentId()), status.getAmbient()
         )
     };
     if(!resultPath){

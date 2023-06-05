@@ -14,7 +14,7 @@ set(OBS_EXE obstacle_avoidance)
 set(CPP_DIR ${PROJECT_SOURCE_DIR}/src)
 
 file(GLOB SCMAPD_SOURCES ${CPP_DIR}/*.cpp ${CPP_DIR}/MAPF/*.cpp ${CPP_DIR}/MAPD/*.cpp ${CPP_DIR}/main/scmapdMain.cpp)
-file(GLOB OBS_SOURCES ${CPP_DIR}/*.cpp ${CPP_DIR}/MAPF/*.cpp ${CPP_DIR}/Simulation/*.cpp ${CPP_DIR}/main/scmapdMain.cpp)
+file(GLOB OBS_SOURCES ${CPP_DIR}/*.cpp ${CPP_DIR}/MAPF/*.cpp ${CPP_DIR}/Simulation/*.cpp ${CPP_DIR}/main/obsAvoid.cpp)
 
 set(INCLUDE_DIRS include)
 

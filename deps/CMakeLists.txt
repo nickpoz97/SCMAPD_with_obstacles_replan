@@ -24,7 +24,7 @@ add_subdirectory(json)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 add_library(ExternalLibs INTERFACE)
-target_link_libraries(ExternalLibs INTERFACE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options pbs)
+target_link_libraries(ExternalLibs INTERFACE cnpy fmt::fmt nlohmann_json::nlohmann_json Boost::program_options)
 target_include_directories(
-        ExternalLibs INTERFACE ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/cnpy/include ${CMAKE_CURRENT_SOURCE_DIR}/PBS/inc
+        ExternalLibs INTERFACE ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/cnpy/include
 )

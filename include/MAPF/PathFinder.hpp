@@ -10,10 +10,15 @@
 #include "MAPD/Waypoint.hpp"
 #include "Coord.hpp"
 #include "MAPD/Status.hpp"
+#include "SpawnedObstacle.hpp"
 
 namespace PathFinder{
     [[nodiscard]] std::optional<Path>
-    multiAStar(const WaypointsList &waypoints, CompressedCoord agentLoc, const std::vector<Path> &paths,
+    multiAStar(const std::vector<std::pair<int, CompressedCoord>>& goals, CompressedCoord agentLoc, const std::vector<Path> &paths,
+               const AmbientMap &ambient, const SpawnedObstaclesSet& sOset);
+
+    [[nodiscard]] std::optional<Path>
+    multiAStar(const std::vector<std::pair<int, CompressedCoord>>& goals, CompressedCoord agentLoc, const std::vector<Path> &paths,
                const AmbientMap &ambient);
 }
 
