@@ -38,8 +38,8 @@ private:
 
     std::vector<CompressedCoord> getNextPositions() const;
 
-    bool rePlan(const SpawnedObstaclesSet &sOSet, TimeStep t);
-    bool wait(const SpawnedObstaclesSet & spawnedObstacles, TimeStep t, const std::unordered_set<int>& waitingAgents);
+    void rePlan(const SpawnedObstaclesSet &sOSet, TimeStep t);
+    void wait(const SpawnedObstaclesSet &spawnedObstacles, const std::unordered_set<int> &waitingAgents);
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
 

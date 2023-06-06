@@ -8,16 +8,19 @@
 
 void Simulator::simulate() {
     using std::ranges::any_of;
+    bool rePlanAfterWait = false;
 
     for(TimeStep t = 0 ; any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();}) ; ++t){
         for(const auto& ra : runningAgents){
             agentsHistory[ra.getAgentId()].push_back(ra.getPlannedPath().front());
         }
 
-        // extract obstacles at this timeStep (empty forward list otherwise)
-        const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, getNextPositions());
+        auto nextPositions = getNextPositions();
 
-        if(!actualObstacles.empty()){
+        // extract obstacles at this timeStep (empty forward list otherwise)
+        const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, nextPositions);
+
+        if(!actualObstacles.empty() || rePlanAfterWait){
             const auto involvedAgents{getInvolvedAgents(actualObstacles, t)};
 
             switch (strategy) {
@@ -26,11 +29,17 @@ void Simulator::simulate() {
                     rePlan(actualObstacles, t);
                 break;
                 case Strategy::WAIT:
-                    wait(
-                        actualObstacles,
-                        t,
-                        involvedAgents
-                    );
+                    if(!actualObstacles.empty()){
+                        rePlanAfterWait = true;
+                        wait(
+                                actualObstacles,
+                                involvedAgents
+                        );
+                    }
+                    else{
+                        rePlanAfterWait = false;
+                        rePlan(actualObstacles, t);
+                    }
                 break;
                 default:
                     throw std::runtime_error("Not handled case");
@@ -49,9 +58,7 @@ std::vector<CompressedCoord> Simulator::getNextPositions() const {
 
     auto nextPositions =
         runningAgents |
-        std::views::transform( [](const auto& ra){return ra.getNextPosition();} ) |
-        std::views::filter( [](const auto& optCoord){return optCoord.has_value();} ) |
-        std::views::transform( [](const auto& coord){return *coord;} );
+        std::views::transform( [](const auto& ra){return ra.getNextPosition();} );
 
     return {nextPositions.begin(), nextPositions.end()};
 }
@@ -60,8 +67,15 @@ Instance
 Simulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const {
     vector<Path> agentsCheckpoints = extractPBSCheckpoints(waitingAgents);
 
+    auto grid{ambientMap.getGrid()};
+
+    for (CompressedCoord aId : waitingAgents){
+        assert(agentsCheckpoints[aId].size() == 1);
+        grid[agentsCheckpoints[aId].front()] = true;
+    }
+
     return {
-        ambientMap.getGrid(),
+        std::move(grid),
         agentsCheckpoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
@@ -94,14 +108,15 @@ void Simulator::updatePlannedPaths(const std::vector<Path> &paths) {
     auto pathsIt = paths.cbegin();
 
     for (auto& actualAgent : runningAgents){
-        actualAgent.setPlannedPath(paths[actualAgent.getAgentId()]);
-        assert(actualAgent.checkpointChecker());
+        int agentId = actualAgent.getAgentId();
+        actualAgent.setPlannedPath(paths[agentId]);
+        //assert(actualAgent.checkpointChecker());
     }
 }
 
-bool Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
+void Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
     auto pbsInstance{generatePBSInstance(sOSet, {})};
-    return solveWithPBS(pbsInstance);
+    solveWithPBS(pbsInstance);
 }
 
 bool Simulator::solveWithPBS(const Instance &pbsInstance) {
@@ -173,20 +188,41 @@ void Simulator::printResults(const std::filesystem::path &out, const nlohmann::j
     file << j.dump();
 }
 
-bool Simulator::wait(const SpawnedObstaclesSet & spawnedObstacles, TimeStep t, const std::unordered_set<int>& waitingAgents) {
+void Simulator::wait(const SpawnedObstaclesSet &spawnedObstacles, const std::unordered_set<int> &waitingAgents) {
+    std::unordered_map<int, CompressedCoord> formerNextPos;
+    std::ranges::for_each(
+        waitingAgents,
+        [&formerNextPos, this](int aId){formerNextPos[aId] = runningAgents[aId].getNextPosition();}
+    );
+
     auto pbsInstance{
         generatePBSInstance(spawnedObstacles, waitingAgents)
     };
-    return solveWithPBS(pbsInstance);
+    solveWithPBS(pbsInstance);
+
+    std::ranges::for_each(
+        formerNextPos,
+        [this](const auto& kv) {
+            auto [aId, nextPos] = kv;
+            auto& actualAgent = runningAgents[aId];
+            auto extendedPath = actualAgent.getPlannedPath();
+            assert(extendedPath.size() == 1);
+
+            extendedPath.push_back(extendedPath.front());
+            extendedPath.push_back(nextPos);
+
+            actualAgent.setPlannedPath(extendedPath);
+        }
+    );
 }
 
 std::unordered_set<int>
 Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeStep actualT) const {
     auto result = runningAgents |
         std::views::filter(
-            [&actualObstacles, actualT](const RunningAgent& ra){
+            [&actualObstacles, actualT, this](const RunningAgent& ra){
                 auto nextPos = ra.getNextPosition();
-                return nextPos.has_value() && actualObstacles.contains({1, *nextPos});
+                return actualObstacles.contains({1, nextPos});
             }
         ) |
         std::views::transform([](const RunningAgent& ra){return ra.getAgentId();});

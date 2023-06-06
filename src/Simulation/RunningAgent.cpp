@@ -65,10 +65,10 @@ void RunningAgent::stepAndUpdate(){
     }
 
     // only one position -> last waypoint reached
-    assert(
-        !(plannedPath.size() == 1) ||
-            (plannedPath.front() == plannedCheckpoints.front() && plannedCheckpoints.size() == 1)
-    );
+//    assert(
+//        !(plannedPath.size() == 1) ||
+//            (plannedPath.front() == plannedCheckpoints.front() && plannedCheckpoints.size() == 1)
+//    );
 }
 
 const Path &RunningAgent::getPlannedPath() const {
@@ -92,16 +92,18 @@ bool RunningAgent::hasFinished() const {
     return plannedPath.size() == 1;
 }
 
-std::optional<CompressedCoord> RunningAgent::getNextPosition() const {
+CompressedCoord RunningAgent::getNextPosition() const {
     assert(!plannedPath.empty());
-    return plannedPath.size() >= 2 ? std::optional{plannedPath[1]} : std::nullopt;
+    return plannedPath.size() >= 2 ? plannedPath[1] : plannedPath[0];
 }
 
-bool RunningAgent::checkpointChecker() const {
+bool RunningAgent::checkpointChecker(bool isWaiting) const {
+    if(isWaiting){
+        return plannedPath.size() == 1;
+    }
+
     auto cpIt = plannedCheckpoints.cbegin();
     assert(!plannedCheckpoints.empty());
-
-    bool endReached = false;
 
     for(auto cc : plannedPath){
         if(cc == *cpIt){

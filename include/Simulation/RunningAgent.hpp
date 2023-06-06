@@ -29,9 +29,9 @@ public:
 
     [[nodiscard]] bool hasFinished() const;
 
-    [[nodiscard]] std::optional<CompressedCoord> getNextPosition() const;
+    [[nodiscard]] CompressedCoord getNextPosition() const;
 
-    [[nodiscard]] bool checkpointChecker() const;
+    [[nodiscard]] bool checkpointChecker(bool isWaiting) const;
 private:
     int agentId;
     Path plannedPath;
