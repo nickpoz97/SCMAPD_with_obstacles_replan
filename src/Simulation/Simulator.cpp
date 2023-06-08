@@ -8,7 +8,6 @@
 
 void Simulator::simulate() {
     using std::ranges::any_of;
-    bool rePlanAfterWait = false;
 
     for(TimeStep t = 0 ; any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();}) ; ++t){
         for(const auto& ra : runningAgents){
@@ -21,24 +20,22 @@ void Simulator::simulate() {
         const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, nextPositions);
 
         if(!actualObstacles.empty() || rePlanAfterWait){
-            const auto involvedAgents{getInvolvedAgents(actualObstacles, t)};
+            const auto involvedAgents{getInvolvedAgents(actualObstacles)};
 
             switch (strategy) {
                 // warning cannot solve if obstacles is on a target
                 case Strategy::RE_PLAN:
-                    rePlan(actualObstacles, t);
+                    rePlan(actualObstacles);
                 break;
                 case Strategy::WAIT:
                     if(!actualObstacles.empty()){
-                        rePlanAfterWait = true;
                         wait(
                                 actualObstacles,
                                 involvedAgents
                         );
                     }
                     else{
-                        rePlanAfterWait = false;
-                        rePlan(actualObstacles, t);
+                        rePlan(actualObstacles);
                     }
                 break;
                 default:
@@ -114,7 +111,9 @@ void Simulator::updatePlannedPaths(const std::vector<Path> &paths) {
     }
 }
 
-void Simulator::rePlan(const SpawnedObstaclesSet& sOSet , TimeStep t) {
+void Simulator::rePlan(const SpawnedObstaclesSet &sOSet) {
+    rePlanAfterWait = false;
+
     auto pbsInstance{generatePBSInstance(sOSet, {})};
     solveWithPBS(pbsInstance);
 }
@@ -189,6 +188,8 @@ void Simulator::printResults(const std::filesystem::path &out, const nlohmann::j
 }
 
 void Simulator::wait(const SpawnedObstaclesSet &spawnedObstacles, const std::unordered_set<int> &waitingAgents) {
+    rePlanAfterWait = true;
+
     std::unordered_map<int, CompressedCoord> formerNextPos;
     std::ranges::for_each(
         waitingAgents,
@@ -217,10 +218,10 @@ void Simulator::wait(const SpawnedObstaclesSet &spawnedObstacles, const std::uno
 }
 
 std::unordered_set<int>
-Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeStep actualT) const {
+Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles) const {
     auto result = runningAgents |
         std::views::filter(
-            [&actualObstacles, actualT, this](const RunningAgent& ra){
+            [&actualObstacles](const RunningAgent& ra){
                 auto nextPos = ra.getNextPosition();
                 return actualObstacles.contains({1, nextPos});
             }

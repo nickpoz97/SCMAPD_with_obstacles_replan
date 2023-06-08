@@ -32,13 +32,15 @@ private:
     std::vector<Path> agentsHistory{};
     Strategy strategy;
 
+    bool rePlanAfterWait = false;
+
     Instance
     generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &waitingAgents) const;
     void updatePlannedPaths(const std::vector<Path> &paths);
 
     std::vector<CompressedCoord> getNextPositions() const;
 
-    void rePlan(const SpawnedObstaclesSet &sOSet, TimeStep t);
+    void rePlan(const SpawnedObstaclesSet &sOSet);
     void wait(const SpawnedObstaclesSet &spawnedObstacles, const std::unordered_set<int> &waitingAgents);
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
@@ -48,7 +50,7 @@ private:
     vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
 
     std::unordered_set<int>
-    getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles, TimeStep actualT) const;
+    getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles) const;
 };
 
 
