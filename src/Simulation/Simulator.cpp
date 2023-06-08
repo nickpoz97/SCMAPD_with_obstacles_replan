@@ -17,7 +17,7 @@ void Simulator::simulate() {
         auto nextPositions = getNextPositions();
 
         // extract obstacles at this timeStep (empty forward list otherwise)
-        const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, nextPositions);
+        const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, nextPositions, strategy != Strategy::WAIT);
 
         if(!actualObstacles.empty() || rePlanAfterWait){
             const auto involvedAgents{getInvolvedAgents(actualObstacles)};
@@ -30,8 +30,8 @@ void Simulator::simulate() {
                 case Strategy::WAIT:
                     if(!actualObstacles.empty()){
                         wait(
-                                actualObstacles,
-                                involvedAgents
+                            actualObstacles,
+                            involvedAgents
                         );
                     }
                     else{
@@ -115,16 +115,15 @@ void Simulator::rePlan(const SpawnedObstaclesSet &sOSet) {
     rePlanAfterWait = false;
 
     auto pbsInstance{generatePBSInstance(sOSet, {})};
-    solveWithPBS(pbsInstance);
+    updatePlannedPaths(solveWithPBS(pbsInstance));
 }
 
-bool Simulator::solveWithPBS(const Instance &pbsInstance) {
+std::vector<Path> Simulator::solveWithPBS(const Instance &pbsInstance) {
     PBS pbs{pbsInstance, true, 0};
     if(pbs.solve(7200)){
-        updatePlannedPaths(pbs.getPaths());
-        return true;
+        return pbs.getPaths();
     }
-    return false;
+    throw std::runtime_error("No Path");
 }
 
 std::list<std::vector<CompressedCoord>> Simulator::getObstaclesFromCsv(std::ifstream obstaclesCsv) {
@@ -199,8 +198,9 @@ void Simulator::wait(const SpawnedObstaclesSet &spawnedObstacles, const std::uno
     auto pbsInstance{
         generatePBSInstance(spawnedObstacles, waitingAgents)
     };
-    solveWithPBS(pbsInstance);
+    updatePlannedPaths(solveWithPBS(pbsInstance));
 
+    // extend with waiting pos
     std::ranges::for_each(
         formerNextPos,
         [this](const auto& kv) {

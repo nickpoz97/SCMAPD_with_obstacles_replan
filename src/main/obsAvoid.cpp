@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
 
     Simulator simulator{
         loadPlansFromJson(plansJson, ambient.getDistanceMatrix()),
-        {computeSeed(runningAgents), obsJson, strategy != Strategy::WAIT},
+        {computeSeed(runningAgents), obsJson},
         ambient,
         strategy
     };

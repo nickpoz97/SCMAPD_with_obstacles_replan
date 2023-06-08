@@ -45,7 +45,7 @@ private:
 
     static std::list<std::vector<CompressedCoord>> getObstaclesFromCsv(std::ifstream obstaclesCsv);
 
-    bool solveWithPBS(const Instance &pbsInstance);
+    static std::vector<Path> solveWithPBS(const Instance &pbsInstance);
 
     vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
 

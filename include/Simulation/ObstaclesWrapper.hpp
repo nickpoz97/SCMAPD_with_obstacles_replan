@@ -16,8 +16,23 @@
 using ObstaclesMap = std::unordered_map<TimeStep , std::unordered_set<CompressedCoord>>;
 
 struct NormalInfo{
-    TimeStep mu;
-    TimeStep std;
+    int mu;
+    int std;
+
+    [[nodiscard]] inline auto getProb(int x) const {
+        auto dMu = static_cast<double>(mu);
+        auto dStd = static_cast<double>(std);
+        auto dX = static_cast<double>(x);
+        return (1 / (dStd * std::sqrt(2 * M_PI))) * std::exp(-0.5 * std::pow((dX - dMu) / dStd, 2));
+    }
+
+    [[nodiscard]] inline auto getLow() const{
+        return mu - 3 * std;
+    }
+
+    [[nodiscard]] inline auto getHigh() const{
+        return mu + 3 * std;
+    }
 };
 
 using ProbabilitiesMap = std::unordered_map<CompressedCoord, NormalInfo>;
@@ -29,16 +44,16 @@ struct ObstaclePersistence{
 
 class ObstaclesWrapper {
 public:
-    ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson, bool predict);
-    SpawnedObstaclesSet updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions);
+    ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson);
+    SpawnedObstaclesSet updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions, bool predict);
+
+    std::unordered_map<Interval, double> getProbabilities(CompressedCoord obsPos) const;
 private:
     ProbabilitiesMap probabilitiesMap;
     ObstaclesMap trueObstacles;
     ObstaclesMap predictedObstacles;
 
     std::default_random_engine gen;
-
-    bool predict;
 
     static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);

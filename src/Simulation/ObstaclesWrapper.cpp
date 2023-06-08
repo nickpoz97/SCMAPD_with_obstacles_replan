@@ -5,7 +5,7 @@
 #include "Simulation/ObstaclesWrapper.hpp"
 
 SpawnedObstaclesSet
-ObstaclesWrapper::updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) {
+ObstaclesWrapper::updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions, bool predict) {
     // no more interesting ones removed
     std::erase_if(predictedObstacles, [actualT](const auto& kv){return kv.first <= actualT;});
     std::erase_if(trueObstacles, [actualT](const auto& kv){return kv.first < actualT;});
@@ -76,12 +76,11 @@ ProbabilitiesMap ObstaclesWrapper::getProbabilitiesFromJson(const nlohmann::json
     return probabilitiesMap;
 }
 
-ObstaclesWrapper::ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson, bool predict) :
+ObstaclesWrapper::ObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson) :
     probabilitiesMap{getProbabilitiesFromJson(obstaclesJson)},
     trueObstacles{getObstaclesFromJson(obstaclesJson)},
     predictedObstacles{},
-    gen{seed},
-    predict{predict}
+    gen{seed}
 {}
 
 void ObstaclesWrapper::updateSimple(TimeStep actualT, const std::vector<CompressedCoord> &visibleObstacles) {
@@ -89,4 +88,15 @@ void ObstaclesWrapper::updateSimple(TimeStep actualT, const std::vector<Compress
     for(const auto cc : visibleObstacles){
         predictedObstacles[actualT + 1].insert(cc);
     }
+}
+
+std::unordered_map<Interval, double> ObstaclesWrapper::getProbabilities(CompressedCoord obsPos) const {
+    const auto p = probabilitiesMap.at(obsPos);
+    std::unordered_map<Interval , double> intervalP;
+
+    for (int val = p.getLow() ; val <= p.getHigh() ; ++val){
+        intervalP.emplace(val, p.getProb(val));
+    }
+
+    return intervalP;
 }
