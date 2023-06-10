@@ -230,3 +230,36 @@ Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles) const {
 
     return {result.begin(), result.end()};
 }
+
+Interval Simulator::getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const {
+    double score = 0;
+    for(const auto pos : obstaclesPositions){
+
+        for(const auto [permanence, p] : obstaclesWrapper.getProbabilities(pos)){
+            SpawnedObstaclesSet sOSet;
+            for(Interval i = 0 ; i < permanence ; ++i){
+                sOSet.emplace(i, pos);
+            }
+            // not using waiting agents
+            auto paths = solveWithPBS(generatePBSInstance(sOSet, {}));
+            auto value = getResultPenalty(useMakespan, paths);
+
+            // weighting with p
+            score += static_cast<double>(value) * p;
+        }
+    }
+
+    assert(!obstaclesPositions.empty());
+    // scaling with number of obstacles (obstacles appearance p is constant)
+    score /= static_cast<double>(obstaclesPositions.size());
+
+    auto idealPaths = solveWithPBS(generatePBSInstance({}, {}));
+    return static_cast<Interval>(score) - getResultPenalty(useMakespan, idealPaths);
+}
+
+size_t Simulator::getResultPenalty(bool useMakespan, const vector<Path> &paths) {
+    size_t value = useMakespan ?
+         std::ranges::max_element(paths, [](const Path& a, const Path& b){return a.size() < b.size();})->size() :
+         std::accumulate(paths.cbegin(), paths.cend(), 0, [](size_t sum, const Path& path){return sum + path.size();});
+    return value;
+}

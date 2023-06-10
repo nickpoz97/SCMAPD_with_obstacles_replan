@@ -51,6 +51,10 @@ private:
 
     std::unordered_set<int>
     getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles) const;
+
+    Interval getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const;
+
+    static size_t getResultPenalty(bool useMakespan, const vector<Path> &paths) ;
 };
 
 
