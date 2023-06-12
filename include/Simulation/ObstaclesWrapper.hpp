@@ -19,12 +19,7 @@ struct NormalInfo{
     int mu;
     int std;
 
-    [[nodiscard]] inline auto getProb(int x) const {
-        auto dMu = static_cast<double>(mu);
-        auto dStd = static_cast<double>(std);
-        auto dX = static_cast<double>(x);
-        return (1 / (dStd * std::sqrt(2 * M_PI))) * std::exp(-0.5 * std::pow((dX - dMu) / dStd, 2));
-    }
+    [[nodiscard]] double getProb(int interval) const;
 
     [[nodiscard]] inline auto getLow() const{
         return mu - 3 * std;
@@ -48,6 +43,9 @@ public:
     SpawnedObstaclesSet updateAndGet(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions, bool predict);
 
     std::unordered_map<Interval, double> getProbabilities(CompressedCoord obsPos) const;
+
+    std::vector<CompressedCoord>
+    updateFoundObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t);
 private:
     ProbabilitiesMap probabilitiesMap;
     ObstaclesMap trueObstacles;
@@ -55,11 +53,15 @@ private:
 
     std::default_random_engine gen;
 
+    std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
+
     static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
 
     void updateWithPrediction(TimeStep actualT, const std::vector<CompressedCoord> &visibleObstacles);
     void updateSimple(TimeStep actualT, const std::vector<CompressedCoord> &visibleObstacles);
+
+    bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
 };
 
 

@@ -19,6 +19,13 @@ void Simulator::simulate() {
         // extract obstacles at this timeStep (empty forward list otherwise)
         const auto& actualObstacles = obstaclesWrapper.updateAndGet(t, nextPositions, strategy != Strategy::WAIT);
 
+        auto filteredObs = nextPositions |
+            std::views::filter([&actualObstacles](const CompressedCoord& cc){return actualObstacles.contains({1, cc});});
+
+        auto newFoundObstacles = obstaclesWrapper.updateFoundObstacles({filteredObs.begin(), filteredObs.end()}, t);
+        Interval score = getScore(newFoundObstacles, true);
+
+
         if(!actualObstacles.empty() || rePlanAfterWait){
             const auto involvedAgents{getInvolvedAgents(actualObstacles)};
 
@@ -232,12 +239,16 @@ Simulator::getInvolvedAgents(const SpawnedObstaclesSet &actualObstacles) const {
 }
 
 Interval Simulator::getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const {
+    if(obstaclesPositions.empty()){
+        return 0;
+    }
     double score = 0;
+
     for(const auto pos : obstaclesPositions){
 
         for(const auto [permanence, p] : obstaclesWrapper.getProbabilities(pos)){
             SpawnedObstaclesSet sOSet;
-            for(Interval i = 0 ; i < permanence ; ++i){
+            for(Interval i = 1 ; i <= permanence ; ++i){
                 sOSet.emplace(i, pos);
             }
             // not using waiting agents
@@ -254,7 +265,7 @@ Interval Simulator::getScore(const std::vector<CompressedCoord> &obstaclesPositi
     score /= static_cast<double>(obstaclesPositions.size());
 
     auto idealPaths = solveWithPBS(generatePBSInstance({}, {}));
-    return static_cast<Interval>(score) - getResultPenalty(useMakespan, idealPaths);
+    return static_cast<Interval>(std::ceil(score)) - getResultPenalty(useMakespan, idealPaths);
 }
 
 size_t Simulator::getResultPenalty(bool useMakespan, const vector<Path> &paths) {
