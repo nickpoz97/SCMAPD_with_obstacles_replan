@@ -18,13 +18,13 @@ private:
 
     void doSimulationStep(TimeStep t) override;
 
-    void updatePlannedPaths(const std::vector<Path>& plannedPaths) override;
-
-    std::vector<int> getWaitingAgentsIds() const;
+    std::unordered_set<int> getWaitingAgentsIds() const;
 
     void wait(int waitingAgentIndex, int obstaclePos);
 
     void rePlan(int freeAgentId, int formerObstaclePos);
+
+    void extendWaitingPositions();
 };
 
 

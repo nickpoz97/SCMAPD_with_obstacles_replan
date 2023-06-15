@@ -9,18 +9,18 @@ WaitObstaclesWrapper::WaitObstaclesWrapper(const nlohmann::json &obstaclesJson) 
 {}
 
 ObstaclesMap WaitObstaclesWrapper::get() const{
-    return ObstaclesMap{{1, visibleObstacles}};
+    return ObstaclesMap{{1, savedObstacles}};
 }
 
 void WaitObstaclesWrapper::update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) {
     for(CompressedCoord cc : nextPositions){
         // obstacle is present and visible
         if(obstaclesMap[actualT].contains(cc)){
-            visibleObstacles.insert(cc);
+            savedObstacles.insert(cc);
         }
         // obstacle is not present (erase it if stored)
         else{
-            visibleObstacles.erase(cc);
+            savedObstacles.erase(cc);
         }
     }
 }

@@ -36,9 +36,9 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
         // obstacle de spawned
         else if(obsAgentsMap.contains(nextPos)){
             rePlan(i, nextPos);
-
         }
     }
+    extendWaitingPositions();
 
     // obsAgentsMap.empty() <=> noCrossPositions.empty()
     assert((!obsAgentsMap.empty() || noCrossPositions.empty()) && (!noCrossPositions.empty() || obsAgentsMap.empty()));
@@ -52,7 +52,7 @@ void WaitSimulator::rePlan(int freeAgentId, int formerObstaclePos) {// these pos
     obsAgentsMap[formerObstaclePos].erase(freeAgentId);
 
     // obstacles are considered like walls
-    auto pbsInstance = generatePBSInstance({}, noCrossPositions);
+    auto pbsInstance = generatePBSInstance(noCrossPositions, extractPBSCheckpoints(getWaitingAgentsIds()));
     updatePlannedPaths(solveWithPBS(pbsInstance));
 }
 
@@ -61,35 +61,29 @@ void WaitSimulator::wait(int waitingAgentIndex, int obstaclePos) {
     noCrossPositions.insert(runningAgents[waitingAgentIndex].getActualPosition());
 }
 
-void WaitSimulator::updatePlannedPaths(const vector<Path> &plannedPaths) {
-    AbstractSimulator::updatePlannedPaths(plannedPaths);
-
-    // extend with waiting pos
+void WaitSimulator::extendWaitingPositions() {// extend with waiting pos
     std::ranges::for_each(
-        getWaitingAgentsIds() | std::views::transform([this](int aId){
+            getWaitingAgentsIds() | std::views::transform([this](int aId){
             return std::make_pair(aId, runningAgents[aId].getNextPosition());
         }),
-        [this](const auto& kv) {
+            [this](const auto& kv) {
             auto [aId, nextPos] = kv;
             auto& actualAgent = runningAgents[aId];
-            auto extendedPath = actualAgent.getPlannedPath();
-            assert(extendedPath.size() == 1);
+            auto actualPath = actualAgent.getPlannedPath();
 
-            extendedPath.push_back(extendedPath.front());
-            extendedPath.push_back(nextPos);
-
+            Path extendedPath{actualPath.front(), actualPath.front(), nextPos};
             actualAgent.setPlannedPath(extendedPath);
         }
     );
 }
 
-std::vector<int> WaitSimulator::getWaitingAgentsIds() const {
+std::unordered_set<int> WaitSimulator::getWaitingAgentsIds() const {
     decltype(WaitSimulator::getWaitingAgentsIds()) waitingAgentsIds;
 
     std::ranges::for_each(
         obsAgentsMap | std::views::values,
         [&waitingAgentsIds](const auto& agentIds){
-            std::ranges::copy(agentIds, std::back_inserter(waitingAgentsIds));
+            std::ranges::copy(agentIds, std::inserter(waitingAgentsIds, waitingAgentsIds.end()));
         }
     );
 

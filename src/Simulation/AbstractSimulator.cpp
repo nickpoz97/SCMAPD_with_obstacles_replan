@@ -26,24 +26,22 @@ void AbstractSimulator::updateHistory() {
     }
 }
 
-Instance AbstractSimulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet,
-                                                const std::unordered_set<int> &stoppedAgents) const {
-    vector<Path> agentsCheckpoints = extractPBSCheckpoints(stoppedAgents);
-
+Instance
+AbstractSimulator::generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
+                                       const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
     auto grid{ambientMap.getGrid()};
 
     // waiting agents are like walls
-    for (CompressedCoord aId : stoppedAgents){
-        assert(agentsCheckpoints[aId].size() == 1);
-        grid[runningAgents[aId].getActualPosition()] = true;
+    for (CompressedCoord cc : fixedObstacles){
+        grid[cc] = true;
     }
 
     return {
         std::move(grid),
-        agentsCheckpoints,
+        checkPoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
-        sOSet
+        {}
     };
 }
 
@@ -68,12 +66,20 @@ vector<Path> AbstractSimulator::extractPBSCheckpoints(const std::unordered_set<i
     return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
 }
 
-Instance AbstractSimulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet) const {
-    return generatePBSInstance(sOSet, {});
+Instance AbstractSimulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
+    auto grid{ambientMap.getGrid()};
+
+    return {
+        std::move(grid),
+        checkPoints,
+        ambientMap.getNRows(),
+        ambientMap.getNCols(),
+        sOSet
+    };
 }
 
-Instance AbstractSimulator::generatePBSInstance() const {
-    return generatePBSInstance({}, {});
+Instance AbstractSimulator::generatePBSInstance(const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
+    return generatePBSInstance(SpawnedObstaclesSet{}, checkPoints);
 }
 
 std::vector<Path> AbstractSimulator::solveWithPBS(const Instance &pbsInstance) {
@@ -154,7 +160,7 @@ Interval AbstractSimulator::getScore(const std::vector<CompressedCoord> &obstacl
                 sOSet.emplace(i, pos);
             }
             // not using waiting agents
-            auto paths = solveWithPBS(generatePBSInstance(sOSet, {}));
+            auto paths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints({})));
             auto value = getResultPenalty(useMakespan, paths);
 
             // weighting with p
@@ -166,6 +172,10 @@ Interval AbstractSimulator::getScore(const std::vector<CompressedCoord> &obstacl
     // scaling with number of obstacles (obstacles appearance p is constant)
     score /= static_cast<double>(obstaclesPositions.size());
 
-    auto idealPaths = solveWithPBS(generatePBSInstance({}, {}));
+    auto idealPaths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints()));
     return static_cast<Interval>(std::ceil(score)) - getResultPenalty(useMakespan, idealPaths);
+}
+
+vector<Path> AbstractSimulator::extractPBSCheckpoints() const {
+    return extractPBSCheckpoints({});
 }

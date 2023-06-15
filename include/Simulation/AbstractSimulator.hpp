@@ -37,13 +37,14 @@ protected:
     virtual void doSimulationStep(TimeStep t) = 0;
 
     [[nodiscard]] Instance
-    generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::unordered_set<int> &stoppedAgents) const;
+    generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
+                        const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
 
     [[nodiscard]] Instance
-    generatePBSInstance(const SpawnedObstaclesSet &sOSet) const;
+    generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
 
     [[nodiscard]] Instance
-    generatePBSInstance() const;
+    generatePBSInstance(const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
 
     static std::vector<Path> solveWithPBS(const Instance &pbsInstance);
 
@@ -53,9 +54,11 @@ protected:
 
     [[nodiscard]] Interval getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const;
     static size_t getResultPenalty(bool useMakespan, const vector<Path> &paths) ;
+
+    [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
+    [[nodiscard]] vector<Path> extractPBSCheckpoints() const;
 private:
     void updateHistory();
-    [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
 };
 
 
