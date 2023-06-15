@@ -35,25 +35,43 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
         }
         // obstacle de spawned
         else if(obsAgentsMap.contains(nextPos)){
-            rePlan(i, nextPos);
+            setRePlan(nextPos);
         }
     }
-    extendWaitingPositions();
+    if(rePlan){
+        auto nextPosRange = getWaitingAgentsIds() | std::views::transform([this](int aId){
+            return std::make_pair(aId, runningAgents[aId].getNextPosition());
+        });
+        std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
+
+        // obstacles are considered like walls
+        auto pbsInstance = generatePBSInstance(noCrossPositions, extractPBSCheckpoints(getWaitingAgentsIds()));
+        updatePlannedPaths(solveWithPBS(pbsInstance));
+
+        extendWaitingPositions(nextPosMap);
+        rePlan = false;
+    }
+    else{
+        extendWaitingPositions();
+    }
 
     // obsAgentsMap.empty() <=> noCrossPositions.empty()
     assert((!obsAgentsMap.empty() || noCrossPositions.empty()) && (!noCrossPositions.empty() || obsAgentsMap.empty()));
 }
 
-void WaitSimulator::rePlan(int freeAgentId, int formerObstaclePos) {// these positions are now free
-    std::erase_if(noCrossPositions, [this, formerObstaclePos](CompressedCoord cc){
-        return obsAgentsMap[formerObstaclePos].contains(cc);}
+void WaitSimulator::setRePlan(int formerObstaclePos) {
+    assert(obsAgentsMap.contains(formerObstaclePos));
+
+    // these positions are now free
+    std::ranges::for_each(
+        obsAgentsMap[formerObstaclePos],
+        [this](int raId){noCrossPositions.erase(runningAgents[raId].getActualPosition());}
     );
     // erase waiting agents
-    obsAgentsMap[formerObstaclePos].erase(freeAgentId);
-
-    // obstacles are considered like walls
-    auto pbsInstance = generatePBSInstance(noCrossPositions, extractPBSCheckpoints(getWaitingAgentsIds()));
-    updatePlannedPaths(solveWithPBS(pbsInstance));
+    obsAgentsMap.erase(formerObstaclePos);
+    // erase obstacle
+    noCrossPositions.erase(formerObstaclePos);
+    rePlan = true;
 }
 
 void WaitSimulator::wait(int waitingAgentIndex, int obstaclePos) {
@@ -61,17 +79,23 @@ void WaitSimulator::wait(int waitingAgentIndex, int obstaclePos) {
     noCrossPositions.insert(runningAgents[waitingAgentIndex].getActualPosition());
 }
 
-void WaitSimulator::extendWaitingPositions() {// extend with waiting pos
+void WaitSimulator::extendWaitingPositions() {
+
+    auto nextPosMap = getWaitingAgentsIds() | std::views::transform([this](int aId){
+        return std::make_pair(aId, runningAgents[aId].getNextPosition());
+    });
+
+    extendWaitingPositions({nextPosMap.begin(), nextPosMap.end()});
+}
+
+void WaitSimulator::extendWaitingPositions(const std::unordered_map<int, CompressedCoord>& wAgentsNextPos) {
     std::ranges::for_each(
-            getWaitingAgentsIds() | std::views::transform([this](int aId){
-            return std::make_pair(aId, runningAgents[aId].getNextPosition());
-        }),
-            [this](const auto& kv) {
-            auto [aId, nextPos] = kv;
+        getWaitingAgentsIds(),
+        [this, &wAgentsNextPos](int aId) {
             auto& actualAgent = runningAgents[aId];
             auto actualPath = actualAgent.getPlannedPath();
 
-            Path extendedPath{actualPath.front(), actualPath.front(), nextPos};
+            Path extendedPath{actualPath.front(), actualPath.front(), wAgentsNextPos.at(aId)};
             actualAgent.setPlannedPath(extendedPath);
         }
     );

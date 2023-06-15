@@ -11,6 +11,8 @@ class WaitSimulator : public AbstractSimulator{
 public:
     WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
 private:
+    bool rePlan = false;
+
     // obstacles
     using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
     ObsAgentsMap obsAgentsMap{};
@@ -22,9 +24,11 @@ private:
 
     void wait(int waitingAgentIndex, int obstaclePos);
 
-    void rePlan(int freeAgentId, int formerObstaclePos);
+    void setRePlan(int formerObstaclePos);
 
     void extendWaitingPositions();
+
+    void extendWaitingPositions(const std::unordered_map<int, CompressedCoord> &wAgentsNextPos);
 };
 
 
