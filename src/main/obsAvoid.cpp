@@ -6,7 +6,9 @@
 #include "nlohmann/json.hpp"
 #include "Simulation/RunningAgent.hpp"
 #include "AmbientMap.hpp"
-#include "Simulation/Simulator.hpp"
+#include "Simulation/AbstractSimulator.hpp"
+#include "Simulation/WaitSimulator.hpp"
+#include "Simulation/RePlanSimulator.hpp"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -65,15 +67,22 @@ int main(int argc, char* argv[]){
     AmbientMap ambient{vm["m"].as<std::string>(), vm["dm"].as<std::string>()};
     const auto runningAgents = loadPlansFromJson(plansJson, ambient.getDistanceMatrix());
 
-    Simulator simulator{
-        loadPlansFromJson(plansJson, ambient.getDistanceMatrix()),
-        {computeSeed(runningAgents), obsJson},
-        ambient,
-        strategy
+    std::unique_ptr<AbstractSimulator> simulator;
+
+    switch (strategy) {
+        case Strategy::WAIT:
+            simulator = std::make_unique<WaitSimulator>(runningAgents, ambient, obsJson);
+        break;
+        case Strategy::RE_PLAN:
+            simulator = std::make_unique<RePlanSimulator>(runningAgents, ambient, obsJson);
+        break;
+        default:
+            throw std::runtime_error("Not handled case");
+        break;
     };
 
-    simulator.simulate();
-    simulator.printResults(vm["out"].as<std::string>(), plansJson);
+    simulator->simulate();
+    simulator->printResults(vm["out"].as<std::string>(), plansJson);
 
     return 0;
 }

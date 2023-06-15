@@ -9,7 +9,7 @@
 #include <boost/functional/hash.hpp>
 
 struct SpawnedObstacle{
-    int t;
+    int relativeT;
     int position;
 
     bool operator==(const SpawnedObstacle& other) const = default;
@@ -19,7 +19,7 @@ template<>
 struct std::hash<SpawnedObstacle>{
     inline size_t operator()(const SpawnedObstacle& so) const{
         std::size_t seed = 0;
-        boost::hash_combine(seed, so.t);
+        boost::hash_combine(seed, so.relativeT);
         boost::hash_combine(seed, so.position);
         return seed;
     }
