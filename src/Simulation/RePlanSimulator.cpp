@@ -41,4 +41,13 @@ RePlanSimulator::RePlanSimulator(std::vector<RunningAgent> runningAgents, Ambien
     obsWrapper = std::make_unique<RePlanObstaclesWrapper>(computeSeed(this->runningAgents), obstaclesJson);
 }
 
-
+RePlanSimulator::RePlanSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+                                 ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap) :
+        AbstractSimulator{std::move(runningAgents), std::move(ambientMap)}
+{
+    obsWrapper = std::make_unique<RePlanObstaclesWrapper>(
+        computeSeed(this->runningAgents),
+        std::move(obstaclesMap),
+        std::move(probabilitiesMap)
+    );
+}

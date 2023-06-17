@@ -10,6 +10,7 @@
 class WaitSimulator : public AbstractSimulator{
 public:
     WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
+    WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, ObstaclesMap obstaclesMap);
 private:
     bool rePlan = false;
 

@@ -139,43 +139,8 @@ void AbstractSimulator::printResults(const std::filesystem::path &out, const nlo
     file << j.dump();
 }
 
-size_t AbstractSimulator::getResultPenalty(bool useMakespan, const vector<Path> &paths) {
-    size_t value = useMakespan ?
-                   std::ranges::max_element(paths, [](const Path& a, const Path& b){return a.size() < b.size();})->size() :
-                   std::accumulate(paths.cbegin(), paths.cend(), 0, [](size_t sum, const Path& path){return sum + path.size();});
-    return value;
-}
-
-Interval AbstractSimulator::getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const {
-    if(obstaclesPositions.empty()){
-        return 0;
-    }
-    double score = 0;
-
-    for(const auto pos : obstaclesPositions){
-
-        for(const auto [permanence, p] : obsWrapper->getProbabilities(pos)){
-            SpawnedObstaclesSet sOSet;
-            for(Interval i = 1 ; i <= permanence ; ++i){
-                sOSet.emplace(i, pos);
-            }
-            // not using waiting agents
-            auto paths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints({})));
-            auto value = getResultPenalty(useMakespan, paths);
-
-            // weighting with p
-            score += static_cast<double>(value) * p;
-        }
-    }
-
-    assert(!obstaclesPositions.empty());
-    // scaling with number of obstacles (obstacles appearance p is constant)
-    score /= static_cast<double>(obstaclesPositions.size());
-
-    auto idealPaths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints()));
-    return static_cast<Interval>(std::ceil(score)) - getResultPenalty(useMakespan, idealPaths);
-}
-
 vector<Path> AbstractSimulator::extractPBSCheckpoints() const {
     return extractPBSCheckpoints({});
 }
+
+AbstractSimulator::~AbstractSimulator() {}

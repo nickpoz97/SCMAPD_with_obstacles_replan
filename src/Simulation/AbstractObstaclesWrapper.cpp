@@ -11,9 +11,9 @@ double NormalInfo::getProb(int interval) const{
     return (1 / (dStd * std::sqrt(2 * M_PI))) * std::exp(-0.5 * std::pow((dX - dMu) / dStd, 2));
 }
 
-AbstractObstaclesWrapper::AbstractObstaclesWrapper(const nlohmann::json &obstaclesJson) :
-        probabilitiesMap{getProbabilitiesFromJson(obstaclesJson)},
-        obstaclesMap{getObstaclesFromJson(obstaclesJson)}
+AbstractObstaclesWrapper::AbstractObstaclesWrapper(ProbabilitiesMap probabilitiesMap, ObstaclesMap obstaclesMap) :
+    probabilitiesMap{std::move(probabilitiesMap)},
+    obstaclesMap{std::move(obstaclesMap)}
 {}
 
 std::unordered_map<Interval, double> AbstractObstaclesWrapper::getProbabilities(CompressedCoord obsPos) const {
@@ -55,24 +55,4 @@ ProbabilitiesMap AbstractObstaclesWrapper::getProbabilitiesFromJson(const nlohma
     return probabilitiesMap;
 }
 
-bool AbstractObstaclesWrapper::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{
-    const auto& gauss = probabilitiesMap.at(pos);
-    auto interval = actualSpawnTime - firstSpawnTime;
-
-    return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
-}
-
-std::vector<CompressedCoord>
-AbstractObstaclesWrapper::updateFoundObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t) {
-    std::vector<CompressedCoord> newObstaclesPos;
-
-    for(auto pos : obstaclesPositions){
-        // update if necessary
-        if(!foundObstacles.contains(pos) || newAppearance(pos, foundObstacles[pos], t)){
-            foundObstacles[pos] = t;
-            newObstaclesPos.push_back(pos);
-        }
-    }
-
-    return newObstaclesPos;
-}
+AbstractObstaclesWrapper::~AbstractObstaclesWrapper() {}

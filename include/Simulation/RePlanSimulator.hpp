@@ -11,10 +11,13 @@ class RePlanSimulator : public AbstractSimulator {
 public:
     RePlanSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
 
+    RePlanSimulator(vector<RunningAgent> runningAgents, AmbientMap ambientMap, ObstaclesMap obstaclesMap,
+                    ProbabilitiesMap probabilitiesMap);
 private:
+
     void doSimulationStep(TimeStep t) override;
 
-    SpawnedObstaclesSet getPredictedObstacles(TimeStep actualT) const;
+    [[nodiscard]] SpawnedObstaclesSet getPredictedObstacles(TimeStep actualT) const;
 };
 
 

@@ -9,7 +9,10 @@
 
 class RePlanObstaclesWrapper : public AbstractObstaclesWrapper{
 public:
-    explicit RePlanObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson);
+    RePlanObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson);
+
+    RePlanObstaclesWrapper(size_t seed, ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap);
+
     void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) override;
     ObstaclesMap get() const override;
 private:

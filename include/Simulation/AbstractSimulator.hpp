@@ -24,8 +24,12 @@ public:
         std::vector<RunningAgent> runningAgents,
         AmbientMap ambientMap
     );
+
+
     void simulate();
     void printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson);
+
+    virtual ~AbstractSimulator();
 protected:
     std::vector<Path> agentsHistory{};
 
@@ -50,10 +54,7 @@ protected:
 
     [[nodiscard]] std::vector<CompressedCoord> getNextPositions() const;
 
-    virtual void updatePlannedPaths(const std::vector<Path> &plannedPaths);
-
-    [[nodiscard]] Interval getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const;
-    static size_t getResultPenalty(bool useMakespan, const vector<Path> &paths) ;
+    void updatePlannedPaths(const std::vector<Path> &plannedPaths);
 
     [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
     [[nodiscard]] vector<Path> extractPBSCheckpoints() const;

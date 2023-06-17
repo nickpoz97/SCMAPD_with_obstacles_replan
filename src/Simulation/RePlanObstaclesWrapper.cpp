@@ -5,7 +5,12 @@
 #include "Simulation/RePlanObstaclesWrapper.hpp"
 
 RePlanObstaclesWrapper::RePlanObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson) :
-    AbstractObstaclesWrapper{obstaclesJson},
+    AbstractObstaclesWrapper(getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)),
+    gen{seed}
+{}
+
+RePlanObstaclesWrapper::RePlanObstaclesWrapper(size_t seed, ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap) :
+    AbstractObstaclesWrapper(std::move(probabilitiesMap), std::move(obstaclesMap)),
     gen{seed}
 {}
 

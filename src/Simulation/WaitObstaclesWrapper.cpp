@@ -5,7 +5,11 @@
 #include "Simulation/WaitObstaclesWrapper.hpp"
 
 WaitObstaclesWrapper::WaitObstaclesWrapper(const nlohmann::json &obstaclesJson) :
-    AbstractObstaclesWrapper(obstaclesJson)
+    AbstractObstaclesWrapper({}, getObstaclesFromJson(obstaclesJson))
+{}
+
+WaitObstaclesWrapper::WaitObstaclesWrapper(ObstaclesMap obstaclesMap) :
+    AbstractObstaclesWrapper({}, {std::move(obstaclesMap)})
 {}
 
 ObstaclesMap WaitObstaclesWrapper::get() const{

@@ -13,6 +13,13 @@ WaitSimulator::WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap
     obsWrapper = std::make_unique<WaitObstaclesWrapper>(obstaclesJson);
 }
 
+WaitSimulator::WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+                             ObstaclesMap obstaclesMap) :
+    AbstractSimulator{std::move(runningAgents), std::move(ambientMap)}
+{
+    obsWrapper = std::make_unique<WaitObstaclesWrapper>(std::move(obstaclesMap));
+}
+
 void WaitSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
 
@@ -113,4 +120,3 @@ std::unordered_set<int> WaitSimulator::getWaitingAgentsIds() const {
 
     return waitingAgentsIds;
 }
-

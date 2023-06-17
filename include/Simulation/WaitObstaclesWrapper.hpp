@@ -10,6 +10,9 @@
 class WaitObstaclesWrapper : public AbstractObstaclesWrapper{
 public:
     explicit WaitObstaclesWrapper(const nlohmann::json &obstaclesJson);
+
+    WaitObstaclesWrapper(ObstaclesMap obstaclesMap);
+
     void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) override;
     ObstaclesMap get() const override;
 private:

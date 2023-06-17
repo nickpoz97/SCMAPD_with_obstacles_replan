@@ -39,22 +39,16 @@ struct ObstacleWithPersistence{
 
 class AbstractObstaclesWrapper {
 public:
-    explicit AbstractObstaclesWrapper(const nlohmann::json &obstaclesJson);
+    explicit AbstractObstaclesWrapper(ProbabilitiesMap probabilitiesMap, ObstaclesMap obstaclesMap);
     virtual void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) = 0;
     virtual ObstaclesMap get() const = 0;
 
     std::unordered_map<Interval, double> getProbabilities(CompressedCoord obsPos) const;
 
+    virtual ~AbstractObstaclesWrapper();
 protected:
     ProbabilitiesMap probabilitiesMap;
     ObstaclesMap obstaclesMap;
-
-    std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
-
-    bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
-
-    std::vector<CompressedCoord>
-    updateFoundObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t);
 
     static ObstaclesMap getObstaclesFromJson(const nlohmann::json &obstaclesJson);
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
