@@ -29,7 +29,11 @@ public:
     void simulate();
     void printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson);
 
-    virtual ~AbstractSimulator();
+    [[nodiscard]] vector<Path> getPaths() const;
+
+    static std::vector<CompressedCoord> agentCPExtractor(const RunningAgent& ra, bool stopped);
+
+    virtual ~AbstractSimulator() = default;
 protected:
     std::vector<Path> agentsHistory{};
 
@@ -42,13 +46,9 @@ protected:
 
     [[nodiscard]] Instance
     generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
-                        const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
-
-    [[nodiscard]] Instance
-    generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
-
-    [[nodiscard]] Instance
-    generatePBSInstance(const std::vector<std::vector<CompressedCoord>> &checkPoints) const;
+        const SpawnedObstaclesSet &sOSet,
+        const std::vector<std::vector<CompressedCoord>> &checkPoints
+    ) const;
 
     static std::vector<Path> solveWithPBS(const Instance &pbsInstance);
 
@@ -58,6 +58,7 @@ protected:
 
     [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
     [[nodiscard]] vector<Path> extractPBSCheckpoints() const;
+
 private:
     void updateHistory();
 };

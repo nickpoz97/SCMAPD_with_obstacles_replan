@@ -30,6 +30,11 @@ private:
     void extendWaitingPositions();
 
     void extendWaitingPositions(const std::unordered_map<int, CompressedCoord> &wAgentsNextPos);
+
+    [[nodiscard]] Instance
+    generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
+        const std::vector<std::vector<CompressedCoord>> &checkPoints
+    ) const;
 };
 
 

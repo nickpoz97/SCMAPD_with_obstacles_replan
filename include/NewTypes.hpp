@@ -5,7 +5,6 @@
 #include <list>
 
 using TimeStep = int;
-using Interval = TimeStep;
 
 enum class Demand : int{
     PICKUP = 1,

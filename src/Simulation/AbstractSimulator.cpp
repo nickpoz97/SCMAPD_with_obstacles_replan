@@ -26,12 +26,38 @@ void AbstractSimulator::updateHistory() {
     }
 }
 
-Instance
-AbstractSimulator::generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
-                                       const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
+std::vector<CompressedCoord> AbstractSimulator::agentCPExtractor(const RunningAgent& ra, bool stopped){
+    std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
+
+    // blocked in starting position
+    if (stopped){
+        return checkPoints;
+    }
+
+    std::ranges::copy(
+        ra.getPlannedCheckpoints(),
+        std::back_inserter(checkPoints)
+    );
+
+    return checkPoints;
+}
+
+vector<Path> AbstractSimulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
+
+    // take out waiting agents and extract the checkpoints of the remaining ones
+    auto agentsCheckpoints = runningAgents | std::views::transform([&notAllowedAgents](const auto& ra) {
+        return agentCPExtractor(ra, notAllowedAgents.contains(ra.getAgentId()));
+    });
+    return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
+}
+
+Instance AbstractSimulator::generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
+    const SpawnedObstaclesSet &sOSet,
+    const vector<std::vector<CompressedCoord>> &checkPoints) const
+{
     auto grid{ambientMap.getGrid()};
 
-    // waiting agents are like walls
+    // fixed obstacles are like walls
     for (CompressedCoord cc : fixedObstacles){
         grid[cc] = true;
     }
@@ -41,45 +67,8 @@ AbstractSimulator::generatePBSInstance(const std::unordered_set<CompressedCoord>
         checkPoints,
         ambientMap.getNRows(),
         ambientMap.getNCols(),
-        {}
-    };
-}
-
-vector<Path> AbstractSimulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
-    auto checkPointsExtractor = [&notAllowedAgents](const RunningAgent& ra) -> std::vector<CompressedCoord>{
-        // the first one is the first position
-        std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
-
-        // not moving
-        if (!notAllowedAgents.contains(ra.getAgentId())){
-            std::ranges::copy(
-                    ra.getPlannedCheckpoints(),
-                    std::back_inserter(checkPoints)
-            );
-        }
-
-        return checkPoints;
-    };
-
-    // take out waiting agents and extract the checkpoints of the remaining ones
-    auto agentsCheckpoints = runningAgents | std::views::transform(checkPointsExtractor);
-    return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
-}
-
-Instance AbstractSimulator::generatePBSInstance(const SpawnedObstaclesSet &sOSet, const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
-    auto grid{ambientMap.getGrid()};
-
-    return {
-        std::move(grid),
-        checkPoints,
-        ambientMap.getNRows(),
-        ambientMap.getNCols(),
         sOSet
     };
-}
-
-Instance AbstractSimulator::generatePBSInstance(const std::vector<std::vector<CompressedCoord>> &checkPoints) const {
-    return generatePBSInstance(SpawnedObstaclesSet{}, checkPoints);
 }
 
 std::vector<Path> AbstractSimulator::solveWithPBS(const Instance &pbsInstance) {
@@ -143,4 +132,14 @@ vector<Path> AbstractSimulator::extractPBSCheckpoints() const {
     return extractPBSCheckpoints({});
 }
 
-AbstractSimulator::~AbstractSimulator() {}
+vector<Path> AbstractSimulator::getPaths() const {
+    decltype(AbstractSimulator::getPaths()) ret{};
+
+    std::ranges::transform(
+        runningAgents,
+        std::back_inserter(ret),
+        [](const RunningAgent& ra){return ra.getPlannedPath();}
+    );
+
+    return ret;
+}

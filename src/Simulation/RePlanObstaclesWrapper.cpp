@@ -29,7 +29,7 @@ void RePlanObstaclesWrapper::update(TimeStep actualT, const std::vector<Compress
         std::views::transform([&](CompressedCoord cc) -> ObstacleWithPersistence{
             auto [mu, std] = probabilitiesMap[cc];
             std::normal_distribution<float> d(static_cast<float>(mu), static_cast<float>(std));
-            return {cc, static_cast<Interval>(d(gen))};
+            return {cc, static_cast<TimeStep>(d(gen))};
         });
 
     // erase not interesting obstacles

@@ -14,16 +14,17 @@ struct PlanningResults{
 
 class SmartSimulator : public AbstractSimulator{
 public:
-    SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson,
-        bool useMakeSpan);
+    SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+                   const nlohmann::json &obstaclesJson);
 private:
-    bool useMakeSpan;
 
-    [[nodiscard]] int getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const;
-    size_t getResultPenalty(const vector<Path> &paths) const;
+    // <raId, wait>
+    [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
 
-    PlanningResults simulateWithWait(const ObstaclesMap& obstaclesMap) const;
-    PlanningResults simulateWithRePlan(const ObstaclesMap& obstaclesMap) const;
+    [[nodiscard]] int computeNoObsScore(int raId) const;
+    [[nodiscard]] int computeObsScore(CompressedCoord obsPos, int raId) const;
+
+    int getScore(int raId, const vector<bool> &grid) const;
 };
 
 

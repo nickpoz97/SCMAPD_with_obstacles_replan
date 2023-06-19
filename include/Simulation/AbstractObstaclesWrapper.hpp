@@ -34,7 +34,7 @@ using ProbabilitiesMap = std::unordered_map<CompressedCoord, NormalInfo>;
 
 struct ObstacleWithPersistence{
     CompressedCoord loc;
-    Interval duration;
+    TimeStep duration;
 };
 
 class AbstractObstaclesWrapper {
@@ -43,9 +43,9 @@ public:
     virtual void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) = 0;
     virtual ObstaclesMap get() const = 0;
 
-    std::unordered_map<Interval, double> getProbabilities(CompressedCoord obsPos) const;
+    std::unordered_map<TimeStep , double> getProbabilities(CompressedCoord obsPos) const;
 
-    virtual ~AbstractObstaclesWrapper();
+    virtual ~AbstractObstaclesWrapper() = default;
 protected:
     ProbabilitiesMap probabilitiesMap;
     ObstaclesMap obstaclesMap;

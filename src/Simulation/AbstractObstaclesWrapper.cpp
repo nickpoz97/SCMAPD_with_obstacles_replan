@@ -16,11 +16,11 @@ AbstractObstaclesWrapper::AbstractObstaclesWrapper(ProbabilitiesMap probabilitie
     obstaclesMap{std::move(obstaclesMap)}
 {}
 
-std::unordered_map<Interval, double> AbstractObstaclesWrapper::getProbabilities(CompressedCoord obsPos) const {
+std::unordered_map<TimeStep , double> AbstractObstaclesWrapper::getProbabilities(CompressedCoord obsPos) const {
     const auto p = probabilitiesMap.at(obsPos);
-    std::unordered_map<Interval , double> intervalP;
+    std::unordered_map<TimeStep  , double> intervalP;
 
-    for (int val = p.getLow() ; val <= p.getHigh() ; ++val){
+    for (int val = p.getLow() ; val <= p.getHigh() ; val += p.std){
         intervalP.emplace(val, p.getProb(val));
     }
 
@@ -32,7 +32,7 @@ ObstaclesMap AbstractObstaclesWrapper::getObstaclesFromJson(const nlohmann::json
 
     for(const auto& obsObj : obstaclesJson["obstacles"]){
         TimeStep from = obsObj["t"];
-        TimeStep to = from + static_cast<Interval>(obsObj["interval"]);
+        TimeStep to = from + static_cast<TimeStep>(obsObj["interval"]);
 
         for(auto t = from ; t < to ; ++t){
             obstacles[t].insert(static_cast<CompressedCoord>(obsObj["pos"]));
@@ -54,5 +54,3 @@ ProbabilitiesMap AbstractObstaclesWrapper::getProbabilitiesFromJson(const nlohma
 
     return probabilitiesMap;
 }
-
-AbstractObstaclesWrapper::~AbstractObstaclesWrapper() {}

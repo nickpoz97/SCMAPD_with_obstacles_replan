@@ -51,3 +51,8 @@ RePlanSimulator::RePlanSimulator(std::vector<RunningAgent> runningAgents, Ambien
         std::move(probabilitiesMap)
     );
 }
+
+Instance
+RePlanSimulator::generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const{
+    return AbstractSimulator::generatePBSInstance({}, sOSet, checkpoints);
+}

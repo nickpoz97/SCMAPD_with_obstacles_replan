@@ -13,7 +13,10 @@ public:
 
     RePlanSimulator(vector<RunningAgent> runningAgents, AmbientMap ambientMap, ObstaclesMap obstaclesMap,
                     ProbabilitiesMap probabilitiesMap);
+
+
 private:
+    [[nodiscard]] Instance generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const;
 
     void doSimulationStep(TimeStep t) override;
 

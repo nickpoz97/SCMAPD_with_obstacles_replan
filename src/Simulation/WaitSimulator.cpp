@@ -120,3 +120,8 @@ std::unordered_set<int> WaitSimulator::getWaitingAgentsIds() const {
 
     return waitingAgentsIds;
 }
+
+Instance WaitSimulator::generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
+                                            const vector<std::vector<CompressedCoord>> &checkPoints) const {
+    return AbstractSimulator::generatePBSInstance(fixedObstacles, {}, checkPoints);
+}

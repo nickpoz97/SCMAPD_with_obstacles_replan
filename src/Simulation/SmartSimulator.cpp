@@ -4,55 +4,74 @@
 
 #include "Simulation/SmartSimulator.hpp"
 #include "Simulation/SmartObstaclesWrapper.hpp"
-#include "Simulation/WaitSimulator.hpp"
+#include "SIPP.h"
+#include "SingleAgentSolver.h"
 
 SmartSimulator::SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
-                               const nlohmann::json &obstaclesJson,
-                               bool useMakeSpan) :
-        AbstractSimulator(std::move(runningAgents), std::move(ambientMap)),
-        useMakeSpan{useMakeSpan}
+                               const nlohmann::json &obstaclesJson) :
+        AbstractSimulator(std::move(runningAgents), std::move(ambientMap))
 {
     obsWrapper = std::make_unique<SmartObstaclesWrapper>(obstaclesJson);
 }
 
-size_t SmartSimulator::getResultPenalty(const vector<Path> &paths) const{
-    size_t value = useMakeSpan ?
-        std::ranges::max_element(paths, [](const Path& a, const Path& b){return a.size() < b.size();})->size() :
-        std::accumulate(paths.cbegin(), paths.cend(), 0, [](size_t sum, const Path& path){return sum + path.size();});
-    return value;
+int SmartSimulator::computeNoObsScore(int raId) const {
+    return getScore(raId, ambientMap.getGrid());
 }
 
-int SmartSimulator::getScore(const std::vector<CompressedCoord> &obstaclesPositions, bool useMakespan) const {
-    if(obstaclesPositions.empty()){
-        return 0;
-    }
-    double score = 0;
+int SmartSimulator::computeObsScore(CompressedCoord obsPos, int raId) const {
+    auto modGrid = ambientMap.getGrid();
+    // obstacle fixed
+    modGrid[obsPos] = true;
 
-    for(const auto pos : obstaclesPositions){
+    return getScore(raId, modGrid);
+}
 
-        for(const auto [permanence, p] : obsWrapper->getProbabilities(pos)){
-            SpawnedObstaclesSet sOSet;
-            for(Interval i = 1 ; i <= permanence ; ++i){
-                sOSet.emplace(i, pos);
+int SmartSimulator::getScore(int raId, const vector<bool> &grid) const {
+    const auto& ra = runningAgents[raId];
+
+    Instance waitInstance{
+        grid,
+        {agentCPExtractor(ra, false)},
+        ambientMap.getNRows(),
+        ambientMap.getNCols(),
+        {}
+    };
+
+    auto h = SIPP{waitInstance, ra.getActualPosition()}.my_heuristic;
+
+    assert(!ra.getPlannedCheckpoints().empty());
+
+    // heuristic between actual pos and first checkpoint
+    return h[ra.getActualPosition()][ra.getPlannedCheckpoints().front()];
+}
+
+std::unordered_map<int, bool> SmartSimulator::getBestChoices(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+    std::unordered_map<int, bool> bestChoicesMap;
+
+    for(const auto& ra : runningAgents){
+        auto nextPos = ra.getNextPosition();
+        auto raId = ra.getAgentId();
+
+        if(visibleObstacles.contains(nextPos)){
+            double waitPenalty = 0;
+            double rePlanPenalty = 0;
+
+            // take into account the obstacle
+            auto noObsScore = computeNoObsScore(raId);
+
+            // ignore the obstacle
+            auto obsScore = computeObsScore(nextPos, raId);
+
+            const auto& p = obsWrapper->getProbabilities(nextPos);
+
+            for(auto [interval, prob] : p){
+                waitPenalty += prob * (noObsScore + interval);
+                rePlanPenalty += prob * (obsScore);
             }
-            // not using waiting agents
-            auto paths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints({})));
-            auto value = getResultPenalty(paths);
 
-            // weighting with p
-            score += static_cast<double>(value) * p;
+            bestChoicesMap[raId] = waitPenalty < rePlanPenalty;
         }
     }
 
-    assert(!obstaclesPositions.empty());
-    // scaling with number of obstacles (obstacles appearance p is constant)
-    score /= static_cast<double>(obstaclesPositions.size());
-
-    auto idealPaths = solveWithPBS(generatePBSInstance(extractPBSCheckpoints()));
-    return static_cast<Interval>(std::ceil(score)) - getResultPenalty(idealPaths);
-}
-
-PlanningResults SmartSimulator::simulateWithWait(const ObstaclesMap &obstaclesMap) const {
-    // todo make this
-    //WaitSimulator ws{};
+    return bestChoicesMap;
 }
