@@ -16,6 +16,8 @@ class SmartSimulator : public AbstractSimulator{
 public:
     SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
                    const nlohmann::json &obstaclesJson);
+
+    void doSimulationStep(TimeStep t) override;
 private:
 
     // <raId, wait>
@@ -24,7 +26,7 @@ private:
     [[nodiscard]] int computeNoObsScore(int raId) const;
     [[nodiscard]] int computeObsScore(CompressedCoord obsPos, int raId) const;
 
-    int getScore(int raId, const vector<bool> &grid) const;
+    [[nodiscard]] int getScore(int raId, const vector<bool> &grid) const;
 };
 
 

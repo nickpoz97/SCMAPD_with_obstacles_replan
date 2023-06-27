@@ -10,8 +10,8 @@
 class WaitSimulator : public AbstractSimulator{
 public:
     WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
-    WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, ObstaclesMap obstaclesMap);
 private:
+    void doSimulationStep(TimeStep t) override;
     bool rePlan = false;
 
     // obstacles
@@ -19,22 +19,23 @@ private:
     ObsAgentsMap obsAgentsMap{};
     std::unordered_set<CompressedCoord> noCrossPositions;
 
-    void doSimulationStep(TimeStep t) override;
-
-    std::unordered_set<int> getWaitingAgentsIds() const;
-
-    void wait(int waitingAgentIndex, int obstaclePos);
-
     void setRePlan(int formerObstaclePos);
-
-    void extendWaitingPositions();
 
     void extendWaitingPositions(const std::unordered_map<int, CompressedCoord> &wAgentsNextPos);
 
     [[nodiscard]] Instance
     generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
-        const std::vector<std::vector<CompressedCoord>> &checkPoints
+                        const std::vector<std::vector<CompressedCoord>> &checkPoints
     ) const;
+
+    void extendWaitingPositions();
+    void wait(int waitingAgentIndex, int obstaclePos);
+    std::unordered_set<int> getWaitingAgentsIds() const;
+
+    void rePlanFreeAgents();
+
+    void chooseStatusForAgents(const vector<CompressedCoord> &nextPositions,
+                               const std::unordered_set<CompressedCoord> &actualObstacles);
 };
 
 

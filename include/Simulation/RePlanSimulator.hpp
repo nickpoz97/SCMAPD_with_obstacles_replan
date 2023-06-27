@@ -11,9 +11,6 @@ class RePlanSimulator : public AbstractSimulator {
 public:
     RePlanSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
 
-    RePlanSimulator(vector<RunningAgent> runningAgents, AmbientMap ambientMap, ObstaclesMap obstaclesMap,
-                    ProbabilitiesMap probabilitiesMap);
-
 
 private:
     [[nodiscard]] Instance generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const;
