@@ -5,12 +5,12 @@
 #include "Simulation/WaitSimulator.hpp"
 
 #include <memory>
-#include "Simulation/WaitObstaclesWrapper.hpp"
+#include "Simulation/SimpleObstaclesWrapper.hpp"
 
 WaitSimulator::WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson) :
     AbstractSimulator{std::move(runningAgents), std::move(ambientMap)}
 {
-    obsWrapper = std::make_unique<WaitObstaclesWrapper>(obstaclesJson);
+    obsWrapper = std::make_unique<SimpleObstaclesWrapper>(obstaclesJson);
 }
 
 void WaitSimulator::doSimulationStep(TimeStep t) {
@@ -20,11 +20,12 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
     obsWrapper->update(t, nextPositions);
 
     // only obstacles present in the next time step are interesting
-    const auto actualObstacles = (obsWrapper->get()).at(1);
+    const auto actualObstacles = obsWrapper->get();
+
 
     chooseStatusForAgents(nextPositions, actualObstacles);
 
-    if(rePlan){
+    if(needRePlan){
         rePlanFreeAgents();
     }
     else{
@@ -61,7 +62,7 @@ void WaitSimulator::setRePlan(int formerObstaclePos) {
     obsAgentsMap.erase(formerObstaclePos);
     // erase obstacle
     noCrossPositions.erase(formerObstaclePos);
-    rePlan = true;
+    needRePlan = true;
 }
 
 void WaitSimulator::extendWaitingPositions(const std::unordered_map<int, CompressedCoord>& wAgentsNextPos) {
@@ -96,15 +97,15 @@ Instance WaitSimulator::generatePBSInstance(const std::unordered_set<CompressedC
 }
 
 void WaitSimulator::chooseStatusForAgents(const vector<CompressedCoord> &nextPositions,
-                                                  const std::unordered_set<CompressedCoord> &actualObstacles) {// forbidden places
-    for(CompressedCoord pos : actualObstacles){
-        noCrossPositions.insert(pos);
+                                          const SpawnedObstaclesSet &visibleObstacles) {// forbidden places
+    for(const auto& obs : visibleObstacles){
+        noCrossPositions.insert(obs.position);
     }
 
     for(int i = 0 ; i < nextPositions.size() ; ++i){
         auto nextPos = nextPositions[i];
         // obstacle present -> agent becomes an obstacle and will need replanning
-        if(actualObstacles.contains(nextPos)){
+        if(visibleObstacles.contains({1, nextPos})){
             wait(i, nextPos);
         }
             // obstacle de spawned
@@ -125,5 +126,5 @@ void WaitSimulator::rePlanFreeAgents() {
     updatePlannedPaths(solveWithPBS(pbsInstance));
 
     extendWaitingPositions(nextPosMap);
-    rePlan = false;
+    needRePlan = false;
 }

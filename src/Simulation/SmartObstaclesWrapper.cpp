@@ -44,6 +44,17 @@ void SmartObstaclesWrapper::update(TimeStep actualT, const std::vector<Compresse
     newObstacles = updateFoundObstacles({visibleObstaclesPos.begin(), visibleObstaclesPos.end()}, actualT);
 }
 
-ObstaclesMap SmartObstaclesWrapper::get() const {
-    return ObstaclesMap{{1, newObstacles}};
+SpawnedObstaclesSet SmartObstaclesWrapper::get() const {
+    SpawnedObstaclesSet sOSet;
+
+    // todo implement this
+//    for(const auto& kv : newObstacles){
+//        auto relativeT = kv.first - newObstacles;
+//
+//        for(const auto& v : kv.second){
+//            sOSet.emplace(relativeT, v);
+//        }
+//    }
+
+    return sOSet;
 }

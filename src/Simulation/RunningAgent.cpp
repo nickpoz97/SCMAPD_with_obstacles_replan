@@ -98,8 +98,10 @@ CompressedCoord RunningAgent::getNextPosition() const {
 }
 
 bool RunningAgent::checkpointChecker(bool isWaiting) const {
+
+    // next pos equal to actual one
     if(isWaiting){
-        return plannedPath.size() == 1;
+        return plannedPath.size() == 3 && plannedPath[0] == plannedPath[1];
     }
 
     auto cpIt = plannedCheckpoints.cbegin();
@@ -123,7 +125,6 @@ std::size_t hash_value(const RunningAgent& s){
     auto hashCombiner = [&seed](CompressedCoord cc) {boost::hash_combine(seed, cc);};
 
     std::ranges::for_each(s.getPlannedPath(), hashCombiner);
-    //std::ranges::for_each(s.getPlannedCheckpoints(), hashCombiner);
 
     return seed;
 }

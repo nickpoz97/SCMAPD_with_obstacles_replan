@@ -2,23 +2,36 @@
 // Created by nicco on 13/06/2023.
 //
 
-#include "Simulation/RePlanObstaclesWrapper.hpp"
+#include "Simulation/PredictedObstaclesWrapper.hpp"
 
-RePlanObstaclesWrapper::RePlanObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson) :
+PredictedObstaclesWrapper::PredictedObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson) :
     AbstractObstaclesWrapper(getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)),
     gen{seed}
 {}
 
-RePlanObstaclesWrapper::RePlanObstaclesWrapper(size_t seed, ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap) :
+PredictedObstaclesWrapper::PredictedObstaclesWrapper(size_t seed, ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap) :
     AbstractObstaclesWrapper(std::move(probabilitiesMap), std::move(obstaclesMap)),
     gen{seed}
 {}
 
-ObstaclesMap RePlanObstaclesWrapper::get() const{
-    return predictedObstacles;
+SpawnedObstaclesSet PredictedObstaclesWrapper::get() const{
+    SpawnedObstaclesSet sOSet;
+
+    for(const auto& kv : predictedObstacles){
+        auto relativeT = kv.first - actualTimeStep;
+
+        for(const auto& v : kv.second){
+            sOSet.emplace(relativeT, v);
+        }
+    }
+
+    return sOSet;
 }
 
-void RePlanObstaclesWrapper::update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions){
+void PredictedObstaclesWrapper::update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions){
+    assert(actualTimeStep <= actualT);
+    actualTimeStep = actualT;
+
     auto obstaclesWithPermanence =
         nextPositions |
         // not predict again if present

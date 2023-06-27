@@ -80,11 +80,11 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
 
     obsWrapper->update(t, nextPositions);
-    auto visibleObstacles = obsWrapper->get()[1];
+    auto visibleObstacles = obsWrapper->get();
 
-    auto bestChoices = getBestChoices(visibleObstacles);
-
-    for(const auto& [raId, wait] : bestChoices){
-
-    }
+//    auto bestChoices = getBestChoices(visibleObstacles);
+//
+//    for(const auto& [raId, wait] : bestChoices){
+//
+//    }
 }

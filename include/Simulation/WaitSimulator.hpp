@@ -12,7 +12,7 @@ public:
     WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
 private:
     void doSimulationStep(TimeStep t) override;
-    bool rePlan = false;
+    bool needRePlan = false;
 
     // obstacles
     using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
@@ -35,7 +35,7 @@ private:
     void rePlanFreeAgents();
 
     void chooseStatusForAgents(const vector<CompressedCoord> &nextPositions,
-                               const std::unordered_set<CompressedCoord> &actualObstacles);
+                               const SpawnedObstaclesSet &visibleObstacles);
 };
 
 

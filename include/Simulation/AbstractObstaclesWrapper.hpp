@@ -41,7 +41,7 @@ class AbstractObstaclesWrapper {
 public:
     explicit AbstractObstaclesWrapper(ProbabilitiesMap probabilitiesMap, ObstaclesMap obstaclesMap);
     virtual void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) = 0;
-    virtual ObstaclesMap get() const = 0;
+    virtual SpawnedObstaclesSet get() const = 0;
 
     std::unordered_map<TimeStep , double> getProbabilities(CompressedCoord obsPos) const;
 

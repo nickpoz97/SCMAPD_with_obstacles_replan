@@ -16,8 +16,6 @@ private:
     [[nodiscard]] Instance generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const;
 
     void doSimulationStep(TimeStep t) override;
-
-    [[nodiscard]] SpawnedObstaclesSet getPredictedObstacles(TimeStep actualT) const;
 };
 
 
