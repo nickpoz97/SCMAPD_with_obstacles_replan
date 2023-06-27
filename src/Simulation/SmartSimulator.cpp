@@ -62,7 +62,7 @@ std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstac
             // ignore the obstacle
             auto obsScore = computeObsScore(nextPos, raId);
 
-            const auto& p = obsWrapper->getProbabilities(nextPos);
+            const auto& p = static_cast<SmartObstaclesWrapper*>(obsWrapper.get())->getProbabilities(nextPos);
 
             for(auto [interval, prob] : p){
                 waitPenalty += prob * (noObsScore + interval);

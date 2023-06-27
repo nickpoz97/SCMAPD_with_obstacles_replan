@@ -5,9 +5,9 @@
 #ifndef SIMULTANEOUS_CMAPD_PREDICTEDOBSTACLESWRAPPER_HPP
 #define SIMULTANEOUS_CMAPD_PREDICTEDOBSTACLESWRAPPER_HPP
 
-#include "Simulation/AbstractObstaclesWrapper.hpp"
+#include "Simulation/AbstractPredictObstaclesWrapper.hpp"
 
-class PredictedObstaclesWrapper : public AbstractObstaclesWrapper{
+class PredictedObstaclesWrapper : public AbstractPredictObstaclesWrapper{
 public:
     PredictedObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson);
 

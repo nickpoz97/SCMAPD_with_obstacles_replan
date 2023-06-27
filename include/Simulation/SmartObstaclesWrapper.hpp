@@ -5,9 +5,9 @@
 #ifndef SIMULTANEOUS_CMAPD_SMARTOBSTACLESWRAPPER_HPP
 #define SIMULTANEOUS_CMAPD_SMARTOBSTACLESWRAPPER_HPP
 
-#include "AbstractObstaclesWrapper.hpp"
+#include "AbstractPredictObstaclesWrapper.hpp"
 
-class SmartObstaclesWrapper : public AbstractObstaclesWrapper{
+class SmartObstaclesWrapper : public AbstractPredictObstaclesWrapper{
 public:
     explicit SmartObstaclesWrapper(const nlohmann::json &obstaclesJson);
     void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) override;

@@ -5,12 +5,12 @@
 #include "Simulation/PredictedObstaclesWrapper.hpp"
 
 PredictedObstaclesWrapper::PredictedObstaclesWrapper(size_t seed, const nlohmann::json &obstaclesJson) :
-    AbstractObstaclesWrapper(getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)),
+    AbstractPredictObstaclesWrapper(getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)),
     gen{seed}
 {}
 
 PredictedObstaclesWrapper::PredictedObstaclesWrapper(size_t seed, ObstaclesMap obstaclesMap, ProbabilitiesMap probabilitiesMap) :
-    AbstractObstaclesWrapper(std::move(probabilitiesMap), std::move(obstaclesMap)),
+    AbstractPredictObstaclesWrapper(std::move(probabilitiesMap), std::move(obstaclesMap)),
     gen{seed}
 {}
 

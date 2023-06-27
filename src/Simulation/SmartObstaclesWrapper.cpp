@@ -5,7 +5,7 @@
 #include "Simulation/SmartObstaclesWrapper.hpp"
 
 SmartObstaclesWrapper::SmartObstaclesWrapper(const nlohmann::json &obstaclesJson) :
-    AbstractObstaclesWrapper{getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)}
+    AbstractPredictObstaclesWrapper{getProbabilitiesFromJson(obstaclesJson), getObstaclesFromJson(obstaclesJson)}
 {}
 
 bool SmartObstaclesWrapper::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{

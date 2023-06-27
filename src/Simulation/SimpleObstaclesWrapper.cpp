@@ -5,11 +5,11 @@
 #include "Simulation/SimpleObstaclesWrapper.hpp"
 
 SimpleObstaclesWrapper::SimpleObstaclesWrapper(const nlohmann::json &obstaclesJson) :
-    AbstractObstaclesWrapper({}, getObstaclesFromJson(obstaclesJson))
+    AbstractObstaclesWrapper(getObstaclesFromJson(obstaclesJson))
 {}
 
 SimpleObstaclesWrapper::SimpleObstaclesWrapper(ObstaclesMap obstaclesMap) :
-    AbstractObstaclesWrapper({}, {std::move(obstaclesMap)})
+    AbstractObstaclesWrapper({std::move(obstaclesMap)})
 {}
 
 SpawnedObstaclesSet SimpleObstaclesWrapper::get() const{
