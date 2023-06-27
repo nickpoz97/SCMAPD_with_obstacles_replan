@@ -21,7 +21,7 @@ public:
 private:
 
     // <raId, wait>
-    [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
+    [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const;
 
     [[nodiscard]] int computeNoObsScore(int raId) const;
     [[nodiscard]] int computeObsScore(CompressedCoord obsPos, int raId) const;

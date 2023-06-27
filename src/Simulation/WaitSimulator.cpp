@@ -22,7 +22,6 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
     // only obstacles present in the next time step are interesting
     const auto actualObstacles = obsWrapper->get();
 
-
     chooseStatusForAgents(nextPositions, actualObstacles);
 
     if(needRePlan){
@@ -105,7 +104,7 @@ void WaitSimulator::chooseStatusForAgents(const vector<CompressedCoord> &nextPos
     for(int i = 0 ; i < nextPositions.size() ; ++i){
         auto nextPos = nextPositions[i];
         // obstacle present -> agent becomes an obstacle and will need replanning
-        if(visibleObstacles.contains({1, nextPos})){
+        if(visibleObstacles.contains({0, nextPos})){
             wait(i, nextPos);
         }
             // obstacle de spawned

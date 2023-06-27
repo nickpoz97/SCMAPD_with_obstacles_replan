@@ -12,7 +12,6 @@ public:
     explicit SmartObstaclesWrapper(const nlohmann::json &obstaclesJson);
     void update(TimeStep actualT, const std::vector<CompressedCoord> &nextPositions) override;
     SpawnedObstaclesSet get() const override;
-
 private:
     std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
     std::unordered_set<CompressedCoord> newObstacles{};

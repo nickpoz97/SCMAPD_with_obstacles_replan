@@ -45,14 +45,14 @@ int SmartSimulator::getScore(int raId, const vector<bool> &grid) const {
     return h[ra.getActualPosition()][ra.getPlannedCheckpoints().front()];
 }
 
-std::unordered_map<int, bool> SmartSimulator::getBestChoices(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const {
     std::unordered_map<int, bool> bestChoicesMap;
 
     for(const auto& ra : runningAgents){
         auto nextPos = ra.getNextPosition();
         auto raId = ra.getAgentId();
 
-        if(visibleObstacles.contains(nextPos)){
+        if(visibleObstacles.contains({0, nextPos})){
             double waitPenalty = 0;
             double rePlanPenalty = 0;
 
@@ -82,9 +82,9 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     obsWrapper->update(t, nextPositions);
     auto visibleObstacles = obsWrapper->get();
 
-//    auto bestChoices = getBestChoices(visibleObstacles);
-//
-//    for(const auto& [raId, wait] : bestChoices){
-//
-//    }
+    auto bestChoices = getBestChoices(visibleObstacles);
+
+    for(const auto& [raId, wait] : bestChoices){
+
+    }
 }

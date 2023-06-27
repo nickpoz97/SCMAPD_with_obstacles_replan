@@ -14,7 +14,7 @@ SimpleObstaclesWrapper::SimpleObstaclesWrapper(ObstaclesMap obstaclesMap) :
 
 SpawnedObstaclesSet SimpleObstaclesWrapper::get() const{
     auto obstacles = savedObstacles | std::views::transform([](CompressedCoord pos) -> SpawnedObstacle{
-        return{1, pos};
+        return{0, pos};
     });
     return {obstacles.begin(), obstacles.end()};
 }
