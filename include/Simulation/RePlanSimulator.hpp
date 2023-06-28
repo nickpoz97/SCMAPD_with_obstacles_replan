@@ -8,10 +8,10 @@
 #include "AbstractSimulator.hpp"
 #include "Predictor.hpp"
 
-class RePlanSimulator : public AbstractSimulator {
+class RePlanSimulator : virtual public AbstractSimulator {
 public:
     RePlanSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
-private:
+protected:
     [[nodiscard]] Instance generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const;
     Predictor predictor;
 

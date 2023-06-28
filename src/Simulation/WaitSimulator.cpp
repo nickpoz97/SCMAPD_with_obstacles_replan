@@ -106,8 +106,8 @@ void WaitSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &
     std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
 
     auto waitingAgentsIds = getWaitingAgentsIds();
-    auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
 
+    auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 
     extendWaitingPositions(nextPosMap);

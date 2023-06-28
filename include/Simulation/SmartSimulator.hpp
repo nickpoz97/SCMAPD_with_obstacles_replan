@@ -5,22 +5,18 @@
 #ifndef SIMULTANEOUS_CMAPD_SMARTSIMULATOR_HPP
 #define SIMULTANEOUS_CMAPD_SMARTSIMULATOR_HPP
 
-#include "AbstractSimulator.hpp"
+#include "RePlanSimulator.hpp"
+#include "WaitSimulator.hpp"
 #include "Predictor.hpp"
 
-struct PlanningResults{
-    int score;
-    std::vector<CompressedCoord> nextSteps;
-};
-
-class SmartSimulator : public AbstractSimulator{
+class SmartSimulator : public RePlanSimulator, WaitSimulator{
 public:
-    SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+    SmartSimulator(const std::vector<RunningAgent>& runningAgents, const AmbientMap& ambientMap,
                    const nlohmann::json &obstaclesJson);
 
     void doSimulationStep(TimeStep t) override;
 private:
-    Predictor predictor;
+    using AbstractSimulator::ambientMap;
 
     // obstacles
     using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
@@ -28,8 +24,7 @@ private:
     ObsAgentsMap obsAgentsMap{};
     std::unordered_set<CompressedCoord> waitingAgentsPos;
 
-    // <raId, wait>
-    [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const;
+    void applySmartChoice(const std::unordered_set<CompressedCoord> &allVisibleObstacles, TimeStep t);
 
     [[nodiscard]] int computeNoObsScore(int raId) const;
     [[nodiscard]] int computeObsScore(CompressedCoord obsPos, int raId) const;
@@ -40,6 +35,8 @@ private:
     updateAndGetNewObstacles(const std::unordered_set<CompressedCoord> &obstaclesPositions, TimeStep t);
 
     bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
+
+    void applyRePlan(const std::unordered_set<CompressedCoord>& visibleObstacles);
 };
 
 

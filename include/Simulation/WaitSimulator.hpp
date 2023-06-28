@@ -7,10 +7,10 @@
 
 #include "AbstractSimulator.hpp"
 
-class WaitSimulator : public AbstractSimulator{
+class WaitSimulator : virtual public AbstractSimulator{
 public:
     WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
-private:
+protected:
     void doSimulationStep(TimeStep t) override;
     bool needRePlan = false;
 
@@ -32,10 +32,11 @@ private:
     void wait(int waitingAgentIndex, int obstaclePos);
     std::unordered_set<int> getWaitingAgentsIds() const;
 
-    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles);
-
     void chooseStatusForAgents(const std::vector<CompressedCoord> &nextPositions,
                                const std::unordered_set<CompressedCoord> &visibleObstacles);
+
+private:
+    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles);
 };
 
 

@@ -6,10 +6,11 @@
 #include "SIPP.h"
 #include "SingleAgentSolver.h"
 
-SmartSimulator::SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+SmartSimulator::SmartSimulator(const std::vector<RunningAgent>& runningAgents, const AmbientMap& ambientMap,
                                const nlohmann::json &obstaclesJson) :
-        AbstractSimulator(std::move(runningAgents), std::move(ambientMap), obstaclesJson),
-        predictor{obstaclesJson, computeSeed(runningAgents)}
+        AbstractSimulator(runningAgents, ambientMap, obstaclesJson),
+        WaitSimulator(runningAgents, ambientMap, obstaclesJson),
+        RePlanSimulator(runningAgents, ambientMap, obstaclesJson)
 {}
 
 int SmartSimulator::computeNoObsScore(int raId) const {
@@ -43,35 +44,47 @@ int SmartSimulator::getScore(int raId, const vector<bool> &grid) const {
     return h[ra.getActualPosition()][ra.getPlannedCheckpoints().front()];
 }
 
-std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const {
-    std::unordered_map<int, bool> bestChoicesMap;
+void SmartSimulator::applySmartChoice(const std::unordered_set<CompressedCoord> &allVisibleObstacles, TimeStep t) {
+    const auto newVisibleObstacles = updateAndGetNewObstacles(allVisibleObstacles, t);
 
-    for(const auto& ra : runningAgents){
-        auto nextPos = ra.getNextPosition();
-        auto raId = ra.getAgentId();
+    for(const auto& raId : getWaitingAgentsIds()){
+        auto nextPos = runningAgents[raId].getNextPosition();
 
-        if(visibleObstacles.contains({0, nextPos})){
-            double waitPenalty = 0;
-            double rePlanPenalty = 0;
+        // old obstacle already handled
+        if(!newVisibleObstacles.contains(nextPos)){
+            continue;
+        }
 
-            // take into account the obstacle
-            auto noObsScore = computeNoObsScore(raId);
+        double waitPenalty = 0;
+        double rePlanPenalty = 0;
 
-            // ignore the obstacle
-            auto obsScore = computeObsScore(nextPos, raId);
+        // take into account the obstacle
+        auto noObsScore = computeNoObsScore(raId);
 
-            const auto& p = predictor.getIntervalProbabilities(nextPos);
+        // ignore the obstacle
+        auto obsScore = computeObsScore(nextPos, raId);
 
-            for(auto [interval, prob] : p){
-                waitPenalty += prob * (noObsScore + interval);
-                rePlanPenalty += prob * (obsScore);
+        const auto& p = predictor.getIntervalProbabilities(nextPos);
+
+        // compute penalties
+        for(auto [interval, prob] : p){
+            waitPenalty += prob * (noObsScore + interval);
+            rePlanPenalty += prob * (obsScore);
+        }
+
+        // remove from wait if replan is better
+        if(rePlanPenalty < waitPenalty){
+            needRePlan = true;
+
+            if(obsAgentsMap.contains(nextPos)){
+                auto& nextPosAgentsMap = obsAgentsMap.at(nextPos);
+                nextPosAgentsMap.erase(raId);
+                if(nextPosAgentsMap.empty()){
+                    obsAgentsMap.erase(nextPos);
+                }
             }
-
-            bestChoicesMap[raId] = waitPenalty < rePlanPenalty;
         }
     }
-
-    return bestChoicesMap;
 }
 
 bool SmartSimulator::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{
@@ -106,8 +119,17 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
 
     const auto allVisibleObstacles = obsWrapper.get(nextPositions, t);
-    const auto newVisibleObstacles = updateAndGetNewObstacles(allVisibleObstacles, t);
 
+    // all in wait (replan only if obstacle disappeared)
+    chooseStatusForAgents(nextPositions, allVisibleObstacles);
+
+    extendWaitingPositions();
+
+    applySmartChoice(allVisibleObstacles, t);
+
+    if(needRePlan){
+        applyRePlan(allVisibleObstacles);
+    }
 
 //    auto visibleObstacles = obsWrapper->get();
 //
@@ -116,4 +138,15 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
 //    for(const auto& [raId, wait] : bestChoices){
 //
 //    }
+}
+
+void SmartSimulator::applyRePlan(const std::unordered_set<CompressedCoord> &visibleObstacles) {
+    auto waitingAgentsIds = getWaitingAgentsIds();
+
+    const auto pbsInstance = RePlanSimulator::generatePBSInstance(
+        predictor.predict(visibleObstacles),
+        extractPBSCheckpoints(waitingAgentsIds)
+    );
+
+    updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 }
