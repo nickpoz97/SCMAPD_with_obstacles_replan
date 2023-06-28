@@ -12,8 +12,6 @@ WaitSimulator::WaitSimulator(std::vector<RunningAgent> runningAgents, AmbientMap
 
 void WaitSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
-
-    // only obstacles present in the next time step are interesting
     const auto visibleObstacles = obsWrapper.get(nextPositions, t);
 
     chooseStatusForAgents(nextPositions, visibleObstacles);

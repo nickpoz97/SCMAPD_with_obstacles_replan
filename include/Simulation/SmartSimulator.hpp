@@ -22,8 +22,11 @@ public:
 private:
     Predictor predictor;
 
+    // obstacles
+    using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
     std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
-    std::unordered_set<CompressedCoord> newObstacles{};
+    ObsAgentsMap obsAgentsMap{};
+    std::unordered_set<CompressedCoord> waitingAgentsPos;
 
     // <raId, wait>
     [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const;
@@ -34,7 +37,7 @@ private:
     [[nodiscard]] int getScore(int raId, const vector<bool> &grid) const;
 
     std::unordered_set<CompressedCoord>
-    getNewObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t);
+    updateAndGetNewObstacles(const std::unordered_set<CompressedCoord> &obstaclesPositions, TimeStep t);
 
     bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
 };

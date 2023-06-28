@@ -75,21 +75,25 @@ std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstac
 }
 
 bool SmartSimulator::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{
-    const auto& gauss = predictor.getDistribution(pos);
-    auto interval = actualSpawnTime - firstSpawnTime;
+    auto newObsOldPos = [=, this](){
+        const auto& gauss = predictor.getDistribution(pos);
+        auto interval = actualSpawnTime - firstSpawnTime;
 
-    return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
+        return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
+    };
+
+    return !foundObstacles.contains(pos) || newObsOldPos();
 }
 
 std::unordered_set<CompressedCoord>
-SmartSimulator::getNewObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t) {
-    using RetType = decltype(SmartSimulator::getNewObstacles(obstaclesPositions, t));
+SmartSimulator::updateAndGetNewObstacles(const std::unordered_set<CompressedCoord> &obstaclesPositions, TimeStep t) {
+    using RetType = decltype(SmartSimulator::updateAndGetNewObstacles(obstaclesPositions, t));
 
     RetType newObstaclesPos;
 
     for(auto pos : obstaclesPositions){
         // update if necessary
-        if(!foundObstacles.contains(pos) || newAppearance(pos, foundObstacles[pos], t)){
+        if(newAppearance(pos, foundObstacles[pos], t)){
             foundObstacles[pos] = t;
             newObstaclesPos.insert(pos);
         }
@@ -98,9 +102,12 @@ SmartSimulator::getNewObstacles(const std::vector<CompressedCoord> &obstaclesPos
     return newObstaclesPos;
 }
 
-
 void SmartSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
+
+    const auto allVisibleObstacles = obsWrapper.get(nextPositions, t);
+    const auto newVisibleObstacles = updateAndGetNewObstacles(allVisibleObstacles, t);
+
 
 //    auto visibleObstacles = obsWrapper->get();
 //
