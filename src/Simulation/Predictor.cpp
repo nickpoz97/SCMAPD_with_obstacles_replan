@@ -28,12 +28,13 @@ TimeStep Predictor::predict(CompressedCoord obsPos) const {
     return static_cast<TimeStep>(d(gen));
 }
 
-SpawnedObstaclesSet Predictor::predict(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+SpawnedObstaclesSet Predictor::predictSimple(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
     SpawnedObstaclesSet sOSet;
 
     for(auto cc : visibleObstacles){
-        for(int t = 1 ; t <= predict(cc) ; ++t)
+        for(int t = 1 ; t <= predict(cc) ; ++t){
             sOSet.emplace(t, cc);
+        }
     }
 
     return sOSet;
@@ -53,14 +54,20 @@ const GaussInfo & Predictor::getDistribution(CompressedCoord cc) const {
     return probabilitiesMap.at(cc);
 }
 
-SpawnedObstaclesSet Predictor::predictWithMemory(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
-    static SpawnedObstaclesSet cachedSOSet;
+SpawnedObstaclesSet
+Predictor::predictWithMemory(const std::unordered_set<CompressedCoord> &visibleObstacles, TimeStep actualT) const {
+    // relativeT is absolute in this case
+    std::erase_if(cachedSOSet, [actualT](const SpawnedObstacle& sO){return sO.relativeT <= actualT;});
 
-    for(auto sO : predict(visibleObstacles)){
-        cachedSOSet.emplace(sO);
+    for(auto sO : predictSimple(visibleObstacles)){
+        cachedSOSet.emplace(sO.relativeT + actualT, sO.position);
     }
 
-    return cachedSOSet;
+    auto normalizedSOSet = cachedSOSet | std::views::transform([actualT](const SpawnedObstacle& sO) -> SpawnedObstacle{
+        return {sO.relativeT - actualT, sO.position};
+    });
+
+    return {normalizedSOSet.begin(), normalizedSOSet.end()};
 }
 
 double GaussInfo::getProb(int interval) const {

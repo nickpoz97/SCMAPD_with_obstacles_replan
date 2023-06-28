@@ -125,16 +125,16 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     applySmartChoice(allVisibleObstacles, t);
 
     if(needRePlan){
-        rePlanFreeAgents(allVisibleObstacles);
+        rePlanFreeAgents(allVisibleObstacles, t);
     }
 }
 
-void SmartSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles) {
+void SmartSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles, TimeStep actualT) {
     auto waitingAgentsIds = getWaitingAgentsIds();
 
     auto pbsInstance = AbstractSimulator::generatePBSInstance(
         getWaitingAgentsPositions(),
-        predictor.predictWithMemory(visibleObstacles),
+        predictor.predictSimple(visibleObstacles),
         extractPBSCheckpoints(waitingAgentsIds)
     );
 
