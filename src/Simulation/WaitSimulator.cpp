@@ -107,14 +107,10 @@ void WaitSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &
     });
     std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
 
-    auto extendedObstacles = visibleObstacles;
-    // obstacles are considered like walls
-    for(auto cc : waitingAgentsPos){
-        extendedObstacles.insert(cc);
-    }
+    auto waitingAgentsIds = getWaitingAgentsIds();
+    auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
 
-    auto pbsInstance = generatePBSInstance(extendedObstacles, extractPBSCheckpoints(getWaitingAgentsIds()));
-    updatePlannedPaths(solveWithPBS(pbsInstance));
+    updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 
     extendWaitingPositions(nextPosMap);
     needRePlan = false;

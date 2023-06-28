@@ -29,7 +29,7 @@ int SmartSimulator::getScore(int raId, const vector<bool> &grid) const {
 
     Instance waitInstance{
         grid,
-        {agentCPExtractor(ra, false)},
+        {getExtendedCheckpoints(ra)},
         ambientMap.getNRows(),
         ambientMap.getNCols(),
         {}

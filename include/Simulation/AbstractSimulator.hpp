@@ -28,8 +28,6 @@ public:
 
     [[nodiscard]] vector<Path> getPaths() const;
 
-    static std::vector<CompressedCoord> agentCPExtractor(const RunningAgent& ra, bool stopped);
-
     virtual ~AbstractSimulator() = default;
 protected:
     std::vector<Path> agentsHistory{};
@@ -47,7 +45,8 @@ protected:
         const std::vector<std::vector<CompressedCoord>> &checkPoints
     ) const;
 
-    static std::vector<Path> solveWithPBS(const Instance &pbsInstance);
+    std::vector<Path> solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &excludedAgentsIds) const;
+    std::vector<Path> solveWithPBS(const Instance &pbsInstance) const;
 
     [[nodiscard]] std::vector<CompressedCoord> getNextPositions() const;
 
@@ -56,6 +55,7 @@ protected:
     [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
     [[nodiscard]] vector<Path> extractPBSCheckpoints() const;
 
+    static vector<CompressedCoord> getExtendedCheckpoints(const RunningAgent &ra);
 private:
     void updateHistory();
 };

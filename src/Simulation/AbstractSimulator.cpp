@@ -26,13 +26,8 @@ void AbstractSimulator::updateHistory() {
     }
 }
 
-std::vector<CompressedCoord> AbstractSimulator::agentCPExtractor(const RunningAgent& ra, bool stopped){
+std::vector<CompressedCoord> AbstractSimulator::getExtendedCheckpoints(const RunningAgent &ra) {
     std::vector<CompressedCoord> checkPoints{ra.getActualPosition()};
-
-    // blocked in starting position
-    if (stopped){
-        return checkPoints;
-    }
 
     std::ranges::copy(
         ra.getPlannedCheckpoints(),
@@ -40,14 +35,13 @@ std::vector<CompressedCoord> AbstractSimulator::agentCPExtractor(const RunningAg
     );
 
     return checkPoints;
-}
+};
 
-vector<Path> AbstractSimulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
-
+std::vector<Path> AbstractSimulator::extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const {
     // take out waiting agents and extract the checkpoints of the remaining ones
-    auto agentsCheckpoints = runningAgents | std::views::transform([&notAllowedAgents](const auto& ra) {
-        return agentCPExtractor(ra, notAllowedAgents.contains(ra.getAgentId()));
-    });
+    auto agentsCheckpoints = runningAgents |
+        std::views::filter([&notAllowedAgents](const RunningAgent& ra){return !notAllowedAgents.contains(ra.getAgentId());}) |
+        std::views::transform([](const auto& ra) {return getExtendedCheckpoints(ra);});
     return {agentsCheckpoints.begin(), agentsCheckpoints.end()};
 }
 
@@ -71,12 +65,33 @@ Instance AbstractSimulator::generatePBSInstance(const std::unordered_set<Compres
     };
 }
 
-std::vector<Path> AbstractSimulator::solveWithPBS(const Instance &pbsInstance) {
+std::vector<Path>
+AbstractSimulator::solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &excludedAgentsIds) const{
     PBS pbs{pbsInstance, true, 0};
-    if(pbs.solve(7200)){
-        return pbs.getPaths();
+    if(!pbs.solve(7200)) {
+        throw std::runtime_error("No Path");
     }
-    throw std::runtime_error("No Path");
+
+    auto computedPaths = pbs.getPaths();
+    decltype(computedPaths) extendedPaths{};
+    auto nAgents = runningAgents.size();
+    extendedPaths.reserve(nAgents);
+
+    assert(nAgents == computedPaths.size() + excludedAgentsIds.size());
+
+    auto cPIt = computedPaths.cbegin();
+    for(int raId = 0 ; raId < nAgents ; ++raId){
+        excludedAgentsIds.contains(raId) ?
+            extendedPaths.push_back({runningAgents[raId].getActualPosition()}) :
+            extendedPaths.push_back(*(cPIt++));
+    }
+
+    return extendedPaths;
+}
+
+std::vector<Path>
+AbstractSimulator::solveWithPBS(const Instance &pbsInstance) const{
+    return solveWithPBS(pbsInstance, {});
 }
 
 AbstractSimulator::AbstractSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
