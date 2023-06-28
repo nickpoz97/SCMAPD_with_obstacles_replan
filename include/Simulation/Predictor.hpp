@@ -44,7 +44,7 @@ private:
     mutable SpawnedObstaclesSet cachedSOSet{};
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
 
-    SpawnedObstaclesSet predictSimple(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
+    SpawnedObstaclesSet predictSimple(const std::unordered_set<CompressedCoord> &visibleObstacles, TimeStep actualT) const;
 };
 
 

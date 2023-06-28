@@ -28,10 +28,15 @@ TimeStep Predictor::predict(CompressedCoord obsPos) const {
     return static_cast<TimeStep>(d(gen));
 }
 
-SpawnedObstaclesSet Predictor::predictSimple(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+SpawnedObstaclesSet
+Predictor::predictSimple(const std::unordered_set<CompressedCoord> &visibleObstacles, TimeStep actualT) const {
     SpawnedObstaclesSet sOSet;
 
     for(auto cc : visibleObstacles){
+        if(cachedSOSet.contains({actualT, cc})){
+            continue;
+        }
+
         for(int t = 1 ; t <= predict(cc) ; ++t){
             sOSet.emplace(t, cc);
         }
@@ -59,7 +64,7 @@ Predictor::predictWithMemory(const std::unordered_set<CompressedCoord> &visibleO
     // relativeT is absolute in this case
     std::erase_if(cachedSOSet, [actualT](const SpawnedObstacle& sO){return sO.relativeT <= actualT;});
 
-    for(auto sO : predictSimple(visibleObstacles)){
+    for(auto sO : predictSimple(visibleObstacles, actualT)){
         cachedSOSet.emplace(sO.relativeT + actualT, sO.position);
     }
 
