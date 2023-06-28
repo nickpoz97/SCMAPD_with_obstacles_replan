@@ -30,7 +30,8 @@ class Predictor {
 public:
     Predictor(const nlohmann::json &obstaclesJson, size_t seed);
     TimeStep predict(CompressedCoord obsPos) const;
-    SpawnedObstaclesSet predict(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
+
+    SpawnedObstaclesSet predictWithMemory(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
     std::vector<std::pair<TimeStep, double>> getIntervalProbabilities(CompressedCoord pos) const;
 
     const GaussInfo & getDistribution(CompressedCoord cc) const;
@@ -38,7 +39,10 @@ public:
 private:
     ProbabilitiesMap probabilitiesMap;
     mutable std::default_random_engine gen;
+
     static ProbabilitiesMap getProbabilitiesFromJson(const nlohmann::json &obstaclesJson);
+
+    SpawnedObstaclesSet predict(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
 };
 
 

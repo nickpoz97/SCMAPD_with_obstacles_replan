@@ -144,7 +144,7 @@ void SmartSimulator::applyRePlan(const std::unordered_set<CompressedCoord> &visi
     auto waitingAgentsIds = getWaitingAgentsIds();
 
     const auto pbsInstance = RePlanSimulator::generatePBSInstance(
-        predictor.predict(visibleObstacles),
+            predictor.predictWithMemory(visibleObstacles),
         extractPBSCheckpoints(waitingAgentsIds)
     );
 

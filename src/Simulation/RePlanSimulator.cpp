@@ -11,7 +11,7 @@ void RePlanSimulator::doSimulationStep(TimeStep t) {
 
     // check if there are predicted obstacles along the path
     if(!visibleObstacles.empty()){
-        auto pbsInstance = generatePBSInstance(predictor.predict(visibleObstacles), extractPBSCheckpoints());
+        auto pbsInstance = generatePBSInstance(predictor.predictWithMemory(visibleObstacles), extractPBSCheckpoints());
         auto paths = solveWithPBS(pbsInstance);
         updatePlannedPaths(paths);
     }

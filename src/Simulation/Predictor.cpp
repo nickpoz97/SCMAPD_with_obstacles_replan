@@ -53,6 +53,16 @@ const GaussInfo & Predictor::getDistribution(CompressedCoord cc) const {
     return probabilitiesMap.at(cc);
 }
 
+SpawnedObstaclesSet Predictor::predictWithMemory(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+    static SpawnedObstaclesSet cachedSOSet;
+
+    for(auto sO : predict(visibleObstacles)){
+        cachedSOSet.emplace(sO);
+    }
+
+    return cachedSOSet;
+}
+
 double GaussInfo::getProb(int interval) const {
     auto dMu = static_cast<double>(mu);
     auto dStd = static_cast<double>(std);
