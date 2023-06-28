@@ -16,13 +16,7 @@ public:
 
     void doSimulationStep(TimeStep t) override;
 private:
-    using AbstractSimulator::ambientMap;
-
-    // obstacles
-    using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
     std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
-    ObsAgentsMap obsAgentsMap{};
-    std::unordered_set<CompressedCoord> waitingAgentsPos;
 
     void applySmartChoice(const std::unordered_set<CompressedCoord> &allVisibleObstacles, TimeStep t);
 

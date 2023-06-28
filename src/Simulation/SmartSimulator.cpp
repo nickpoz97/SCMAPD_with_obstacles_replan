@@ -36,9 +36,10 @@ int SmartSimulator::getScore(int raId, const vector<bool> &grid) const {
         {}
     };
 
-    auto h = SIPP{waitInstance, ra.getActualPosition()}.my_heuristic;
-
     assert(!ra.getPlannedCheckpoints().empty());
+
+    auto solver = SIPP{waitInstance, 0};
+    auto h = solver.my_heuristic;
 
     // heuristic between actual pos and first checkpoint
     return h[ra.getActualPosition()][ra.getPlannedCheckpoints().front()];
@@ -50,7 +51,7 @@ void SmartSimulator::applySmartChoice(const std::unordered_set<CompressedCoord> 
     for(const auto& raId : getWaitingAgentsIds()){
         auto nextPos = runningAgents[raId].getNextPosition();
 
-        // old obstacle already handled
+        // no obstacle or old one obstacle already handled
         if(!newVisibleObstacles.contains(nextPos)){
             continue;
         }
@@ -79,6 +80,7 @@ void SmartSimulator::applySmartChoice(const std::unordered_set<CompressedCoord> 
             if(obsAgentsMap.contains(nextPos)){
                 auto& nextPosAgentsMap = obsAgentsMap.at(nextPos);
                 nextPosAgentsMap.erase(raId);
+                waitingAgentsPos.erase(runningAgents[raId].getActualPosition());
                 if(nextPosAgentsMap.empty()){
                     obsAgentsMap.erase(nextPos);
                 }
@@ -88,14 +90,10 @@ void SmartSimulator::applySmartChoice(const std::unordered_set<CompressedCoord> 
 }
 
 bool SmartSimulator::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{
-    auto newObsOldPos = [=, this](){
-        const auto& gauss = predictor.getDistribution(pos);
-        auto interval = actualSpawnTime - firstSpawnTime;
+    const auto& gauss = predictor.getDistribution(pos);
+    auto interval = actualSpawnTime - firstSpawnTime;
 
-        return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
-    };
-
-    return !foundObstacles.contains(pos) || newObsOldPos();
+    return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
 }
 
 std::unordered_set<CompressedCoord>
@@ -106,7 +104,7 @@ SmartSimulator::updateAndGetNewObstacles(const std::unordered_set<CompressedCoor
 
     for(auto pos : obstaclesPositions){
         // update if necessary
-        if(newAppearance(pos, foundObstacles[pos], t)){
+        if(!foundObstacles.contains(pos) || newAppearance(pos, foundObstacles[pos], t)){
             foundObstacles[pos] = t;
             newObstaclesPos.insert(pos);
         }
@@ -123,25 +121,23 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     // all in wait (replan only if obstacle disappeared)
     chooseStatusForAgents(nextPositions, allVisibleObstacles);
 
-    extendWaitingPositions();
-
+    // replan the ones for which is more convenient
     applySmartChoice(allVisibleObstacles, t);
+
+    extendWaitingPositions();
 
     if(needRePlan){
         applyRePlan(allVisibleObstacles);
     }
-
-//    auto visibleObstacles = obsWrapper->get();
-//
-//    auto bestChoices = getBestChoices(visibleObstacles);
-
-//    for(const auto& [raId, wait] : bestChoices){
-//
-//    }
 }
 
 void SmartSimulator::applyRePlan(const std::unordered_set<CompressedCoord> &visibleObstacles) {
     auto waitingAgentsIds = getWaitingAgentsIds();
+
+    auto nextPosRange = getWaitingAgentsIds() | std::views::transform([this](int aId){
+        return std::make_pair(aId, runningAgents[aId].getNextPosition());
+    });
+    std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
 
     const auto pbsInstance = RePlanSimulator::generatePBSInstance(
             predictor.predictWithMemory(visibleObstacles),
@@ -149,4 +145,7 @@ void SmartSimulator::applyRePlan(const std::unordered_set<CompressedCoord> &visi
     );
 
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
+
+    extendWaitingPositions(nextPosMap);
+    needRePlan = false;
 }

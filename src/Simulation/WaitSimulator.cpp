@@ -100,12 +100,12 @@ void WaitSimulator::chooseStatusForAgents(const std::vector<CompressedCoord> &ne
 }
 
 void WaitSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles) {
-    auto nextPosRange = getWaitingAgentsIds() | std::views::transform([this](int aId){
+    auto waitingAgentsIds = getWaitingAgentsIds();
+
+    auto nextPosRange = waitingAgentsIds | std::views::transform([this](int aId){
         return std::make_pair(aId, runningAgents[aId].getNextPosition());
     });
     std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
-
-    auto waitingAgentsIds = getWaitingAgentsIds();
 
     auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));

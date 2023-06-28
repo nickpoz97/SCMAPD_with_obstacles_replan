@@ -9,6 +9,7 @@
 #include "Simulation/AbstractSimulator.hpp"
 #include "Simulation/WaitSimulator.hpp"
 #include "Simulation/RePlanSimulator.hpp"
+#include "Simulation/SmartSimulator.hpp"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -22,6 +23,8 @@ std::istream& operator>> (std::istream& in, Strategy& strategy)
         strategy = Strategy::RE_PLAN;
     else if (token == "WAIT")
         strategy = Strategy::WAIT;
+    else if(token == "SMART")
+        strategy = Strategy::SMART;
     else
         in.setstate(std::ios_base::failbit);
     return in;
@@ -75,6 +78,9 @@ int main(int argc, char* argv[]){
         break;
         case Strategy::RE_PLAN:
             simulator = std::make_unique<RePlanSimulator>(runningAgents, ambient, obsJson);
+        break;
+        case Strategy::SMART:
+            simulator = std::make_unique<SmartSimulator>(runningAgents, ambient, obsJson);
         break;
         default:
             throw std::runtime_error("Not handled case");
