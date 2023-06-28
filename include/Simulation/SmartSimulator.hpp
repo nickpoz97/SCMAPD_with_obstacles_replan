@@ -30,7 +30,8 @@ private:
 
     bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
 
-    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles, TimeStep actualT);
+    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles,
+                          const std::unordered_set<CompressedCoord> &nextPositionsSet, TimeStep actualT);
 };
 
 
