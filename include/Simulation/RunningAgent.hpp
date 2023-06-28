@@ -32,10 +32,14 @@ public:
     [[nodiscard]] CompressedCoord getNextPosition() const;
 
     [[nodiscard]] bool checkpointChecker(bool isWaiting) const;
+
+    void forceWait();
 private:
     int agentId;
     Path plannedPath;
     CheckPoints plannedCheckpoints;
+
+    std::optional<CompressedCoord> cachedNextPosition;
 };
 
 std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const DistanceMatrix &dm);

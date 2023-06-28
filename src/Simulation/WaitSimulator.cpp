@@ -19,50 +19,20 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
     if(needRePlan){
         rePlanFreeAgents(visibleObstacles);
     }
-    else{
-        extendWaitingPositions();
-    }
 }
 
 void WaitSimulator::wait(int waitingAgentIndex, int obstaclePos) {
     obsAgentsMap[obstaclePos].insert(waitingAgentIndex);
-    waitingAgentsPos.insert(runningAgents[waitingAgentIndex].getActualPosition());
-}
-
-void WaitSimulator::extendWaitingPositions() {
-
-    auto nextPosMap = getWaitingAgentsIds() | std::views::transform([this](int aId){
-        return std::make_pair(aId, runningAgents[aId].getNextPosition());
-    });
-
-    extendWaitingPositions({nextPosMap.begin(), nextPosMap.end()});
+    runningAgents[waitingAgentIndex].forceWait();
 }
 
 void WaitSimulator::setRePlan(int formerObstaclePos) {
     assert(obsAgentsMap.contains(formerObstaclePos));
 
     // these positions are now free
-    std::ranges::for_each(
-        obsAgentsMap[formerObstaclePos],
-        [this](int raId){waitingAgentsPos.erase(runningAgents[raId].getActualPosition());}
-    );
-    // erase waiting agents
     obsAgentsMap.erase(formerObstaclePos);
 
     needRePlan = true;
-}
-
-void WaitSimulator::extendWaitingPositions(const std::unordered_map<int, CompressedCoord>& wAgentsNextPos) {
-    std::ranges::for_each(
-            getWaitingAgentsIds(),
-            [this, &wAgentsNextPos](int aId) {
-                auto& actualAgent = runningAgents[aId];
-                auto actualPath = actualAgent.getPlannedPath();
-
-                Path extendedPath{actualPath.front(), actualPath.front(), wAgentsNextPos.at(aId)};
-                actualAgent.setPlannedPath(extendedPath);
-            }
-    );
 }
 
 std::unordered_set<int> WaitSimulator::getWaitingAgentsIds() const {
@@ -89,7 +59,7 @@ void WaitSimulator::chooseStatusForAgents(const std::vector<CompressedCoord> &ne
     for(int i = 0 ; i < nextPositions.size() ; ++i){
         auto nextPos = nextPositions[i];
         // obstacle present -> agent becomes an obstacle and will need replanning
-        if(visibleObstacles.contains(nextPos) || waitingAgentsPos.contains(nextPos)){
+        if(getExtendedObstacles(visibleObstacles).contains(nextPos)){
             wait(i, nextPos);
         }
         // obstacle de spawned
@@ -102,15 +72,34 @@ void WaitSimulator::chooseStatusForAgents(const std::vector<CompressedCoord> &ne
 void WaitSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles) {
     auto waitingAgentsIds = getWaitingAgentsIds();
 
-    auto nextPosRange = waitingAgentsIds | std::views::transform([this](int aId){
-        return std::make_pair(aId, runningAgents[aId].getNextPosition());
-    });
-    std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
-
     auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 
-    extendWaitingPositions(nextPosMap);
     needRePlan = false;
 }
 
+std::unordered_set<CompressedCoord>
+WaitSimulator::getExtendedObstacles(const std::unordered_set<CompressedCoord> &visibleObstacles) const {
+    auto extendedObstacles = visibleObstacles;
+
+    std::ranges::copy(getWaitingAgentsPositions(), std::inserter(extendedObstacles, extendedObstacles.end()));
+    return extendedObstacles;
+}
+
+std::unordered_set<CompressedCoord>
+WaitSimulator::getWaitingAgentsPositions() const{
+    std::unordered_set<CompressedCoord> waitingAgentsPositions{};
+
+    std::ranges::for_each(
+        obsAgentsMap | std::views::values,
+        [&, this](const auto& waitingAgentIds){
+            std::ranges::transform(
+                waitingAgentIds,
+                std::inserter(waitingAgentsPositions, waitingAgentsPositions.end()),
+                [this](int waId){return runningAgents[waId].getActualPosition();}
+            );
+        }
+    );
+
+    return waitingAgentsPositions;
+}

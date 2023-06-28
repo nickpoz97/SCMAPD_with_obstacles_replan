@@ -124,28 +124,22 @@ void SmartSimulator::doSimulationStep(TimeStep t) {
     // replan the ones for which is more convenient
     applySmartChoice(allVisibleObstacles, t);
 
-    extendWaitingPositions();
-
     if(needRePlan){
-        applyRePlan(allVisibleObstacles);
+        rePlanFreeAgents(allVisibleObstacles);
     }
 }
 
-void SmartSimulator::applyRePlan(const std::unordered_set<CompressedCoord> &visibleObstacles) {
+void SmartSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles) {
     auto waitingAgentsIds = getWaitingAgentsIds();
 
-    auto nextPosRange = getWaitingAgentsIds() | std::views::transform([this](int aId){
-        return std::make_pair(aId, runningAgents[aId].getNextPosition());
-    });
-    std::unordered_map nextPosMap{nextPosRange.begin(), nextPosRange.end()};
-
-    const auto pbsInstance = RePlanSimulator::generatePBSInstance(
-            predictor.predictWithMemory(visibleObstacles),
+    auto pbsInstance = AbstractSimulator::generatePBSInstance(
+        getWaitingAgentsPositions(),
+        predictor.predictWithMemory(visibleObstacles),
         extractPBSCheckpoints(waitingAgentsIds)
     );
 
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 
-    extendWaitingPositions(nextPosMap);
     needRePlan = false;
 }
+

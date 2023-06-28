@@ -45,12 +45,12 @@ protected:
         const std::vector<std::vector<CompressedCoord>> &checkPoints
     ) const;
 
-    std::vector<Path> solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &excludedAgentsIds) const;
-    std::vector<Path> solveWithPBS(const Instance &pbsInstance) const;
+    std::unordered_map<int, Path> solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &excludedAgentsIds) const;
+    std::unordered_map<int, Path> solveWithPBS(const Instance &pbsInstance) const;
 
     [[nodiscard]] std::vector<CompressedCoord> getNextPositions() const;
 
-    void updatePlannedPaths(const std::vector<Path> &plannedPaths);
+    void updatePlannedPaths(const std::unordered_map<int, Path> &plannedPaths);
 
     [[nodiscard]] vector<Path> extractPBSCheckpoints(const std::unordered_set<int> &notAllowedAgents) const;
     [[nodiscard]] vector<Path> extractPBSCheckpoints() const;

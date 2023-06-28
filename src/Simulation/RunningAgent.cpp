@@ -77,6 +77,7 @@ const Path &RunningAgent::getPlannedPath() const {
 
 void RunningAgent::setPlannedPath(Path newPlannedPath) {
     RunningAgent::plannedPath = std::move(newPlannedPath);
+    cachedNextPosition.reset();
 }
 
 int RunningAgent::getAgentId() const {
@@ -89,11 +90,17 @@ const CheckPoints &RunningAgent::getPlannedCheckpoints() const {
 
 bool RunningAgent::hasFinished() const {
     assert(!plannedPath.empty());
-    return plannedPath.size() == 1;
+    return plannedPath.size() == 1 && plannedCheckpoints.size() == 1;
 }
 
 CompressedCoord RunningAgent::getNextPosition() const {
     assert(!plannedPath.empty());
+
+    // waiting agent
+    if(cachedNextPosition.has_value()){
+        return *cachedNextPosition;
+    }
+
     return plannedPath.size() >= 2 ? plannedPath[1] : plannedPath[0];
 }
 
@@ -117,6 +124,15 @@ bool RunningAgent::checkpointChecker(bool isWaiting) const {
     }
 
     return false;
+}
+
+void RunningAgent::forceWait() {
+    if(!cachedNextPosition.has_value()){
+        assert(plannedPath.size() >= 2);
+
+        cachedNextPosition = plannedPath[1];
+        plannedPath = {plannedPath.front()};
+    }
 }
 
 std::size_t hash_value(const RunningAgent& s){

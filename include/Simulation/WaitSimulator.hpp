@@ -21,21 +21,23 @@ protected:
 
     void setRePlan(int formerObstaclePos);
 
-    void extendWaitingPositions(const std::unordered_map<int, CompressedCoord> &wAgentsNextPos);
-
     [[nodiscard]] Instance
     generatePBSInstance(const std::unordered_set<CompressedCoord> &fixedObstacles,
                         const std::vector<std::vector<CompressedCoord>> &checkPoints
     ) const;
 
-    void extendWaitingPositions();
     void wait(int waitingAgentIndex, int obstaclePos);
     std::unordered_set<int> getWaitingAgentsIds() const;
 
     void chooseStatusForAgents(const std::vector<CompressedCoord> &nextPositions,
                                const std::unordered_set<CompressedCoord> &visibleObstacles);
 
+    std::unordered_set<CompressedCoord>
+    getExtendedObstacles(const std::unordered_set<CompressedCoord> &visibleObstacles) const;
+
+    std::unordered_set<CompressedCoord> getWaitingAgentsPositions() const;
 private:
+
     void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles);
 };
 

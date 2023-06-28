@@ -65,31 +65,30 @@ Instance AbstractSimulator::generatePBSInstance(const std::unordered_set<Compres
     };
 }
 
-std::vector<Path>
+std::unordered_map<int, Path>
 AbstractSimulator::solveWithPBS(const Instance &pbsInstance, const std::unordered_set<int> &excludedAgentsIds) const{
     PBS pbs{pbsInstance, true, 0};
     if(!pbs.solve(7200)) {
         throw std::runtime_error("No Path");
     }
 
-    auto computedPaths = pbs.getPaths();
-    decltype(computedPaths) extendedPaths{};
     auto nAgents = runningAgents.size();
-    extendedPaths.reserve(nAgents);
+    auto computedPaths = pbs.getPaths();
+    std::unordered_map<int, Path> indexedPaths;
 
     assert(nAgents == computedPaths.size() + excludedAgentsIds.size());
 
     auto cPIt = computedPaths.cbegin();
     for(int raId = 0 ; raId < nAgents ; ++raId){
-        excludedAgentsIds.contains(raId) ?
-            extendedPaths.push_back({runningAgents[raId].getActualPosition()}) :
-            extendedPaths.push_back(*(cPIt++));
+        if(!excludedAgentsIds.contains(raId)){
+            indexedPaths[raId] = *cPIt++;
+        }
     }
 
-    return extendedPaths;
+    return indexedPaths;
 }
 
-std::vector<Path>
+std::unordered_map<int, Path>
 AbstractSimulator::solveWithPBS(const Instance &pbsInstance) const{
     return solveWithPBS(pbsInstance, {});
 }
@@ -110,13 +109,9 @@ std::vector<CompressedCoord> AbstractSimulator::getNextPositions() const {
     return {nextPositions.begin(), nextPositions.end()};
 }
 
-void AbstractSimulator::updatePlannedPaths(const std::vector<Path> &plannedPaths) {
-    auto pathsIt = plannedPaths.cbegin();
-
-    for (auto& actualAgent : runningAgents){
-        int agentId = actualAgent.getAgentId();
-        actualAgent.setPlannedPath(plannedPaths[agentId]);
-        //assert(actualAgent.checkpointChecker());
+void AbstractSimulator::updatePlannedPaths(const std::unordered_map<int, Path> &plannedPaths) {
+    for (auto& [raId, newPath] : plannedPaths){
+        runningAgents[raId].setPlannedPath(newPath);
     }
 }
 
