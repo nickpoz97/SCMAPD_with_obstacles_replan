@@ -6,6 +6,7 @@
 #define SIMULTANEOUS_CMAPD_SMARTSIMULATOR_HPP
 
 #include "AbstractSimulator.hpp"
+#include "Predictor.hpp"
 
 struct PlanningResults{
     int score;
@@ -19,6 +20,10 @@ public:
 
     void doSimulationStep(TimeStep t) override;
 private:
+    Predictor predictor;
+
+    std::unordered_map<CompressedCoord, TimeStep> foundObstacles{};
+    std::unordered_set<CompressedCoord> newObstacles{};
 
     // <raId, wait>
     [[nodiscard]] std::unordered_map<int, bool> getBestChoices(const SpawnedObstaclesSet &visibleObstacles) const;
@@ -27,6 +32,11 @@ private:
     [[nodiscard]] int computeObsScore(CompressedCoord obsPos, int raId) const;
 
     [[nodiscard]] int getScore(int raId, const vector<bool> &grid) const;
+
+    std::unordered_set<CompressedCoord>
+    getNewObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t);
+
+    bool newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const;
 };
 
 

@@ -17,7 +17,7 @@ private:
     // obstacles
     using ObsAgentsMap = std::unordered_map<CompressedCoord, std::unordered_set<int>>;
     ObsAgentsMap obsAgentsMap{};
-    std::unordered_set<CompressedCoord> noCrossPositions;
+    std::unordered_set<CompressedCoord> waitingAgentsPos;
 
     void setRePlan(int formerObstaclePos);
 
@@ -32,10 +32,10 @@ private:
     void wait(int waitingAgentIndex, int obstaclePos);
     std::unordered_set<int> getWaitingAgentsIds() const;
 
-    void rePlanFreeAgents();
+    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles);
 
-    void chooseStatusForAgents(const vector<CompressedCoord> &nextPositions,
-                               const SpawnedObstaclesSet &visibleObstacles);
+    void chooseStatusForAgents(const std::vector<CompressedCoord> &nextPositions,
+                               const std::unordered_set<CompressedCoord> &visibleObstacles);
 };
 
 

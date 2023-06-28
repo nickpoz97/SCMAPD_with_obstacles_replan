@@ -6,14 +6,14 @@
 #define SIMULTANEOUS_CMAPD_REPLANSIMULATOR_HPP
 
 #include "AbstractSimulator.hpp"
+#include "Predictor.hpp"
 
 class RePlanSimulator : public AbstractSimulator {
 public:
     RePlanSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap, const nlohmann::json &obstaclesJson);
-
-
 private:
     [[nodiscard]] Instance generatePBSInstance(const SpawnedObstaclesSet& sOSet, const vector<std::vector<CompressedCoord>>& checkpoints) const;
+    Predictor predictor;
 
     void doSimulationStep(TimeStep t) override;
 };

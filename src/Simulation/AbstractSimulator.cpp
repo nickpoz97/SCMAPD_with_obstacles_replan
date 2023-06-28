@@ -79,10 +79,12 @@ std::vector<Path> AbstractSimulator::solveWithPBS(const Instance &pbsInstance) {
     throw std::runtime_error("No Path");
 }
 
-AbstractSimulator::AbstractSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap) :
+AbstractSimulator::AbstractSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+                                     const nlohmann::json& obstaclesJson) :
     agentsHistory{runningAgents.size(), Path{}},
     runningAgents{std::move(runningAgents)},
-    ambientMap{std::move(ambientMap)}
+    ambientMap{std::move(ambientMap)},
+    obsWrapper{obstaclesJson}
 {}
 
 std::vector<CompressedCoord> AbstractSimulator::getNextPositions() const {

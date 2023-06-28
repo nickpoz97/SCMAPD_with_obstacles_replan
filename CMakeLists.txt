@@ -30,9 +30,10 @@ target_link_libraries(${OBS_EXE} PRIVATE ExternalLibs)
 get_target_property(external_libs_include_dirs ExternalLibs INTERFACE_INCLUDE_DIRECTORIES)
 message("ExternalLibs include directories: ${external_libs_include_dirs}")
 
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" )
 set(CMAKE_CXX_FLAGS_SANIT "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,leak,undefined -fno-omit-frame-pointer" )
 
-message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG} -O0 -DNDEBUG")
+message("Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message("Sanitizer flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message("Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 message("RelWithDebInfo flags: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")

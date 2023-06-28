@@ -3,16 +3,14 @@
 //
 
 #include "Simulation/SmartSimulator.hpp"
-#include "Simulation/SmartObstaclesWrapper.hpp"
 #include "SIPP.h"
 #include "SingleAgentSolver.h"
 
 SmartSimulator::SmartSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
                                const nlohmann::json &obstaclesJson) :
-        AbstractSimulator(std::move(runningAgents), std::move(ambientMap))
-{
-    obsWrapper = std::make_unique<SmartObstaclesWrapper>(obstaclesJson);
-}
+        AbstractSimulator(std::move(runningAgents), std::move(ambientMap), obstaclesJson),
+        predictor{obstaclesJson, computeSeed(runningAgents)}
+{}
 
 int SmartSimulator::computeNoObsScore(int raId) const {
     return getScore(raId, ambientMap.getGrid());
@@ -62,7 +60,7 @@ std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstac
             // ignore the obstacle
             auto obsScore = computeObsScore(nextPos, raId);
 
-            const auto& p = static_cast<SmartObstaclesWrapper*>(obsWrapper.get())->getProbabilities(nextPos);
+            const auto& p = predictor.getIntervalProbabilities(nextPos);
 
             for(auto [interval, prob] : p){
                 waitPenalty += prob * (noObsScore + interval);
@@ -76,15 +74,39 @@ std::unordered_map<int, bool> SmartSimulator::getBestChoices(const SpawnedObstac
     return bestChoicesMap;
 }
 
+bool SmartSimulator::newAppearance(CompressedCoord pos, TimeStep firstSpawnTime, TimeStep actualSpawnTime) const{
+    const auto& gauss = predictor.getDistribution(pos);
+    auto interval = actualSpawnTime - firstSpawnTime;
+
+    return interval > gauss.mu && gauss.getProb(interval) <= 0.01;
+}
+
+std::unordered_set<CompressedCoord>
+SmartSimulator::getNewObstacles(const std::vector<CompressedCoord> &obstaclesPositions, TimeStep t) {
+    using RetType = decltype(SmartSimulator::getNewObstacles(obstaclesPositions, t));
+
+    RetType newObstaclesPos;
+
+    for(auto pos : obstaclesPositions){
+        // update if necessary
+        if(!foundObstacles.contains(pos) || newAppearance(pos, foundObstacles[pos], t)){
+            foundObstacles[pos] = t;
+            newObstaclesPos.insert(pos);
+        }
+    }
+
+    return newObstaclesPos;
+}
+
+
 void SmartSimulator::doSimulationStep(TimeStep t) {
     auto nextPositions = getNextPositions();
 
-    obsWrapper->update(t, nextPositions);
-    auto visibleObstacles = obsWrapper->get();
+//    auto visibleObstacles = obsWrapper->get();
+//
+//    auto bestChoices = getBestChoices(visibleObstacles);
 
-    auto bestChoices = getBestChoices(visibleObstacles);
-
-    for(const auto& [raId, wait] : bestChoices){
-
-    }
+//    for(const auto& [raId, wait] : bestChoices){
+//
+//    }
 }

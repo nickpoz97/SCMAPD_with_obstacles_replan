@@ -10,7 +10,7 @@
 #include "SpawnedObstacle.hpp"
 #include "RunningAgent.hpp"
 #include "AmbientMap.hpp"
-#include "AbstractObstaclesWrapper.hpp"
+#include "ObstaclesWrapper.hpp"
 
 enum class Strategy{
     RE_PLAN,
@@ -20,11 +20,8 @@ enum class Strategy{
 
 class AbstractSimulator {
 public:
-    AbstractSimulator(
-        std::vector<RunningAgent> runningAgents,
-        AmbientMap ambientMap
-    );
-
+    AbstractSimulator(std::vector<RunningAgent> runningAgents, AmbientMap ambientMap,
+        const nlohmann::json& obstaclesJson);
 
     void simulate();
     void printResults(const std::filesystem::path &out, const nlohmann::json &sourceJson);
@@ -40,7 +37,7 @@ protected:
     AmbientMap ambientMap;
     std::vector<RunningAgent> runningAgents;
 
-    std::unique_ptr<AbstractObstaclesWrapper> obsWrapper{};
+    ObstaclesWrapper obsWrapper;
 
     virtual void doSimulationStep(TimeStep t) = 0;
 
