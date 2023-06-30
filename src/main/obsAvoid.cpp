@@ -31,6 +31,11 @@ std::istream& operator>> (std::istream& in, Strategy& strategy)
 }
 
 int main(int argc, char* argv[]){
+    fs::path exeCommand = fs::path(argv[0]);
+    fs::path exeDir = (exeCommand.is_absolute() ? exeCommand : fs::current_path() / exeCommand).remove_filename();
+
+    auto defaultGridPath = exeDir / "data" / "grid.txt";
+    auto defaultDMPath = exeDir / "data" / "distance_matrix.npy";
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -40,8 +45,8 @@ int main(int argc, char* argv[]){
         ("help", "produce help message")
 
         // params for the input instance && experiment settings
-        ("m", po::value<std::string>()->required(), "input file for map")
-        ("dm", po::value<std::string>()->required(), "distance matrix file")
+        ("m", po::value<std::string>()->default_value(defaultGridPath.string()), "input file for map")
+        ("dm", po::value<std::string>()->default_value(defaultDMPath.string()), "distance matrix file")
         ("plans", po::value<std::string>()->required(), "plans json file")
         ("obstacles", po::value<std::string>()->required(), "obstacles json file")
         ("strategy", po::value<Strategy>(&strategy)->required(), "obstacles json file")

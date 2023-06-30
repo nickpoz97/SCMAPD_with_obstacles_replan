@@ -58,6 +58,12 @@ protected:
     static vector<CompressedCoord> getExtendedCheckpoints(const RunningAgent &ra);
 private:
     void updateHistory();
+
+    TimeStep compute_ttd() const;
+    TimeStep compute_ttt() const;
+    TimeStep compute_makespan() const;
+
+    static TimeStep compute_cumulated_distance(const Path& path) ;
 };
 
 

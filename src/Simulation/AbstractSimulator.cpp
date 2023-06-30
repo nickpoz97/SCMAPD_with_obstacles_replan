@@ -126,15 +126,20 @@ void AbstractSimulator::printResults(const std::filesystem::path &out, const nlo
         auto waypoints = json::array();
         for(const auto& wp : sourceJson["agents"][i++]["waypoints"]){
             waypoints.push_back({
-                                        {"coords", wp["coords"]},
-                                        {"demand", wp["demand"]}
-                                });
+                {"coords", wp["coords"]},
+                {"demand", wp["demand"]}
+            });
         }
         j["agents"].push_back({
-                                      {"path", static_cast<json>(getVerbosePath(ah, ambientMap.getNCols()))},
-                                      {"waypoints", waypoints}
-                              });
+            {"path", static_cast<json>(getVerbosePath(ah, ambientMap.getNCols()))},
+            {"waypoints", waypoints}
+        });
     }
+    j["stats"] = {
+        {"makespan", compute_makespan()},
+        {"total_travel_distance", compute_ttd()},
+        {"total_travel_time", compute_ttt()}
+    };
 
     std::ofstream file(out);
     file << j.dump();
@@ -154,4 +159,45 @@ vector<Path> AbstractSimulator::getPaths() const {
     );
 
     return ret;
+}
+
+TimeStep AbstractSimulator::compute_ttd() const {
+    return std::accumulate(
+        agentsHistory.cbegin(),
+        agentsHistory.cend(),
+        0,
+        [](TimeStep acc, const Path& p){return acc + compute_cumulated_distance(p);}
+    );
+}
+
+TimeStep AbstractSimulator::compute_cumulated_distance(const Path& path) {
+    std::optional<CompressedCoord> former{std::nullopt};
+    TimeStep cumulatedDistance = 0;
+
+    for (auto pos: path) {
+        // agent not moving
+        if (former.has_value() && former.value() == pos) {
+            continue;
+        }
+        ++cumulatedDistance;
+        former = pos;
+    }
+
+    return cumulatedDistance;
+}
+
+TimeStep AbstractSimulator::compute_ttt() const {
+    return std::accumulate(
+        agentsHistory.cbegin(),
+        agentsHistory.cend(),
+        0,
+        [](TimeStep acc, const Path& p){return acc + std::ssize(p);}
+    );
+}
+
+TimeStep AbstractSimulator::compute_makespan() const {
+    return static_cast<TimeStep>(std::ranges::max_element(
+        agentsHistory,
+        [](const Path& p1, const Path& p2){return p1.size() < p2.size();}
+    )->size());
 }

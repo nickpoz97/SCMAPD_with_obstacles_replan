@@ -2,7 +2,7 @@ import subprocess
 import os
 import json
 
-def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str, heur: str, obj: str, metric: str, nt: int, method: str, cutoff: int):
+def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str, heur: str, obj: str, metric: str, nt: int, method: str, cutoff: int, out_path: str):
     if method == 'NO_LS':
         method = 'WORST_TASKS' # placeholder
         cutoff = 0
@@ -16,7 +16,9 @@ def execute_instance(exe_path: str, agents_file_path: str, tasks_file_path: str,
         '--metric', metric,
         '--cutoff', str(cutoff),
         '--nt', str(nt),
-        '--mtd', method
+        '--mtd', method,
+        '--agents_info',
+        '--out_path', out_path
     ]
     print(*command, sep=' ')
 
