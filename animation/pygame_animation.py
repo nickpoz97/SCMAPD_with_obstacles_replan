@@ -15,27 +15,16 @@ root = tk.Tk()
 root.withdraw()
 
 # Open a file dialog and get the selected data directory path
-data_dir_path = filedialog.askdirectory(initialdir=os.path.abspath(__file__), title='select folder containing data', mustexist=True)
+result_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='select result file')
+grid_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='select grid file')
 obstacles_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='if you want, select obstacles dir')
 
-result_file_pattern = 'results*.json'
-grid_file_pattern = 'grid*.txt'
-
-result_files_paths = list()
-grid_files_paths = list()
-
-for filename in os.listdir(data_dir_path):
-    if fnmatch.fnmatch(filename, result_file_pattern):
-        result_files_paths.append(os.path.join(data_dir_path, filename))
-    if fnmatch.fnmatch(filename, grid_file_pattern):
-        grid_files_paths.append(os.path.join(data_dir_path, filename))
-
-if not (len(result_files_paths) == 1 and len(grid_files_paths) == 1):
-    print("You must have 1 result file, 1 grid file and at most 1 obstacle file in the folder")
+if not (result_file_path and grid_file_path):
+    print("Results or grid path not selected")
     exit(1)
 
 # Load the JSON data from the selected file
-with open(result_files_paths[0], 'r') as f:
+with open(result_file_path, 'r') as f:
     data = json.load(f)
 
 # Extract the agent paths from the JSON data
@@ -60,7 +49,7 @@ for aI, agentWps in enumerate(waypoints):
     agentWps.append((agent[0], 'H', len(agent) - 1))
 
 # Load the grid data from a file
-with open(grid_files_paths[0], 'r') as f:
+with open(grid_file_path, 'r') as f:
     grid_data = f.readlines()
 
 # Set up the grid dimensions
