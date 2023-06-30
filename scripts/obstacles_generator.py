@@ -1,115 +1,70 @@
-from itertools import product
-import random
+import json
 import os
+from random import gauss
+from tkinter import Tk, Label, Entry, Button, filedialog
 
-grid_path = os.path.normpath('data/grid.txt')
-#agents_path = os.path.normpath('instances/20_500_paper/0.agents')
+def generate_obstacles(distributions, nRows, nCols):
+    obs_short = []
+    obs_long = []
+    obs_smart = []
+    choices = []
 
-#subdir_name, file_name = agents_path.split(os.sep)[-2:]
+    def add_choice():
+        row = int(row_entry.get())
+        col = int(col_entry.get())
+        t = int(t_entry.get())
+        hole = bool(int(hole_entry.get()))
+        choices.append({"row": row, "col": col, "t": t, "hole": hole})
+        row_entry.delete(0, 'end')
+        col_entry.delete(0, 'end')
+        t_entry.delete(0, 'end')
+        hole_entry.delete(0, 'end')
 
-#instance_id = file_name.split('.')[0]
+    def generate():
+        for choice in choices:
+            row, col, t, hole = choice["row"], choice["col"], choice["t"], choice["hole"]
+            pos = row * nCols + col
+            if hole:
+                interval = int(gauss(*distributions["short"]))
+                obs_smart.append({"t": t, "pos": pos, "interval": interval})
+            else:
+                interval = int(gauss(*distributions["long"]))
+                obs_smart.append({"t": t, "pos": pos, "interval": interval})
+            obs_short.append({"t": t, "pos": pos, "interval": int(gauss(*distributions["short"]))})
+            obs_long.append({"t": t, "pos": pos, "interval": int(gauss(*distributions["long"]))})
+        save_dir = filedialog.askdirectory(title="Select directory to save JSON files")
 
-# saving obstacles here
-obstacles_dir = 'obstacles'
-if not os.path.exists(obstacles_dir):
-    os.makedirs(obstacles_dir)
+        indent_depth = 4
 
-# saving obstacles probs here
-probs_dir = 'probs'
-if not os.path.exists(probs_dir):
-    os.makedirs(probs_dir)
+        with open(os.path.join(save_dir, "obs_short.json"), "w") as f:
+            json.dump({"obstacles": obs_short}, f, indent=indent_depth)
+        with open(os.path.join(save_dir, "obs_long.json"), "w") as f:
+            json.dump({"obstacles": obs_long}, f, indent=indent_depth)
+        with open(os.path.join(save_dir, "obs_smart.json"), "w") as f:
+            json.dump({"obstacles": obs_smart}, f, indent=indent_depth)
+        root.destroy()
 
-occupation_types = {'quick': (6, 2), 'med': (10, 3), 'slow': (50, 15)}
-configs = {
-    'quick-only' : (1.0, 0.0, 0.0),
-    'med-only' : (0.0, 1.0, 0.0), 
-    'slow-only' : (0.0, 0.0, 1.0), 
-    'all-balanced' : (0.33, 0.34, 0.33),
-    'quick-skewed' : (0.6, 0.2, 0.2),
-    'slow-skewed' : (0.2, 0.2, 0.6)
-}
-n_types = len(occupation_types)
-n_obstacles_list = [n_types, n_types + 2, n_types + 4]
+    root = Tk()
+    root.title("Generate Obstacles")
+    Label(root, text="Row:").grid(row=0, column=0)
+    row_entry = Entry(root)
+    row_entry.grid(row=0,column=1)
+    Label(root,text="Column:").grid(row=1,column=0)
+    col_entry = Entry(root)
+    col_entry.grid(row=1,column=1)
+    Label(root,text="T:").grid(row=2,column=0)
+    t_entry = Entry(root)
+    t_entry.grid(row=2,column=1)
+    Label(root,text="Hole (0 or 1):").grid(row=3,column=0)
+    hole_entry = Entry(root)
+    hole_entry.grid(row=3,column=1)
+    Button(root,text="Add Choice",command=add_choice).grid(row=4,column=0,columnspan=2)
+    Button(root,text="Generate",command=generate).grid(row=5,column=0,columnspan=2)
 
-spawn_time_limit = 50
+    root.mainloop()
 
-# get possible obstacle positions and number of rows and cols
-candidates = set()
-
-with open(grid_path, 'r') as grid_file:
-    n_rows, n_cols = 0, 0
-
-    rows = grid_file.readlines()
-    n_rows, n_cols = len(rows), len(rows[0].strip())
-
-    for rowi, row in enumerate(rows):
-        for coli, cell in enumerate(row.strip()):
-            if cell == '.' or cell == 'G':
-                candidates.add(rowi * n_cols + coli)
-
-# # get agents positions
-# agents_pos = set()
-# with open(agents_path, 'r') as agents_file:
-#     n_agents = int(agents_file.readline().strip())
-#     for val in agents_file.readlines():
-#         row_str, col_str = val.strip().split(',')
-#         agents_pos.add((int(row_str), int(col_str)))
-#     assert(n_agents == len(agents_pos))
-
-# # obstacles cannot spawn on agents
-# candidates.difference_update(agents_pos)
-
-candidates = list(candidates)
-
-quick_positions = list()
-med_positions = list()
-slow_positions = list()
-
-obstacles = list()
-
-for c, n in product(configs.items(), n_obstacles_list):
-    random.shuffle(candidates)
-
-    c_name, c_probs = c
-
-    quick_threshold = len(candidates) * c_probs[0]
-    med_threshold = quick_threshold + len(candidates) * c_probs[1]
-
-    i = 0
-
-    candidates_with_probs = list()
-    while i < quick_threshold:
-        candidates_with_probs.append((candidates[i], occupation_types['quick']))
-        i += 1
-    while i < med_threshold:
-        candidates_with_probs.append((candidates[i], occupation_types['med']))
-        i += 1
-    while i < len(candidates):
-        candidates_with_probs.append((candidates[i], occupation_types['slow']))
-        i += 1
-
-
-    chosen_candidates = random.sample(candidates_with_probs, n)
-    obstacles = [(pos, random.randint(1, spawn_time_limit), round(random.gauss(*prob))) for pos, prob in chosen_candidates]
-
-    upper_bound = spawn_time_limit + occupation_types['slow'][0] + occupation_types['slow'][1] * 4
-
-    obstacles_to_print = [[-1 for _ in range(n)] for _ in range(upper_bound)]
-    for i, (pos, spawn_time, duration) in enumerate(obstacles):
-        for t in range(spawn_time, spawn_time + duration):
-            obstacles_to_print[t][i] = pos
-
-    while obstacles_to_print[-1] == [-1 for _ in range(n)]:
-        obstacles_to_print.pop()
-
-    with open(os.path.join(obstacles_dir, '_'.join([c_name, str(n)]) + '.csv'), 'w') as out_file:
-        print(*['obs_' + str(i) for i in range(n)], sep=',', end='\n', file=out_file)
-        
-        for row in obstacles_to_print:
-            print(*row, sep=',', end='\n', file=out_file)
-
-    with open(os.path.join(probs_dir, '_'.join([c_name, str(n)]) + '.csv'), 'w') as out_file:
-        print(*['pos', 'mu', 'std'], sep=',', end='\n', file=out_file)
-
-        for pos, (mu, std) in candidates_with_probs:
-            print(*[pos, mu, std], sep=',', end='\n', file=out_file)
+# Example usage
+distributions = {"short": (4, 1), "long": (50, 5)}
+nRows = 10
+nCols = 10
+generate_obstacles(distributions,nRows,nCols)

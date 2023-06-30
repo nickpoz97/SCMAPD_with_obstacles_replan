@@ -16,24 +16,21 @@ root.withdraw()
 
 # Open a file dialog and get the selected data directory path
 data_dir_path = filedialog.askdirectory(initialdir=os.path.abspath(__file__), title='select folder containing data', mustexist=True)
+obstacles_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='if you want, select obstacles dir')
 
 result_file_pattern = 'results*.json'
 grid_file_pattern = 'grid*.txt'
-obstacles_file_pattern = 'obs_*.json'
 
 result_files_paths = list()
 grid_files_paths = list()
-obstacles_files_paths = list()
 
 for filename in os.listdir(data_dir_path):
     if fnmatch.fnmatch(filename, result_file_pattern):
         result_files_paths.append(os.path.join(data_dir_path, filename))
     if fnmatch.fnmatch(filename, grid_file_pattern):
         grid_files_paths.append(os.path.join(data_dir_path, filename))
-    if fnmatch.fnmatch(filename, obstacles_file_pattern):
-        obstacles_files_paths.append(os.path.join(data_dir_path, filename))
 
-if not (len(result_files_paths) == 1 and len(grid_files_paths) == 1 and len(obstacles_files_paths) < 2):
+if not (len(result_files_paths) == 1 and len(grid_files_paths) == 1):
     print("You must have 1 result file, 1 grid file and at most 1 obstacle file in the folder")
     exit(1)
 
@@ -79,9 +76,9 @@ for row in range(n_rows):
 
 # Extract obstacles positions from the grid data
 obstacles = list()
-if len(obstacles_files_paths) == 1:
+if obstacles_path:
     # Load the JSON data from the selected file
-    with open(obstacles_files_paths[0], 'r') as f:
+    with open(obstacles_path, 'r') as f:
         obs_data = json.load(f)
 
         for obs_info in obs_data['obstacles']:
