@@ -25,7 +25,7 @@ Predictor::Predictor(const nlohmann::json &obstaclesJson, size_t seed) :
 TimeStep Predictor::predict(CompressedCoord obsPos) const {
     auto gauss = probabilitiesMap.at(obsPos);
     std::normal_distribution<float> d(static_cast<float>(gauss.mu), static_cast<float>(gauss.std));
-    return static_cast<TimeStep>(d(gen));
+    return std::max(static_cast<TimeStep>(d(gen)), 1);
 }
 
 SpawnedObstaclesSet
