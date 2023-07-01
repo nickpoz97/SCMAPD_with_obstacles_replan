@@ -5,8 +5,14 @@ from tkinter import Tk, Label, Entry, Button, filedialog
 
 def generate_obstacles(distributions, nRows, nCols):
     obs_short = []
+    probs_short = []
+
     obs_long = []
+    probs_long = []
+
     obs_smart = []
+    probs_smart = []
+
     choices = []
 
     def add_choice():
@@ -24,24 +30,28 @@ def generate_obstacles(distributions, nRows, nCols):
         for choice in choices:
             row, col, t, hole = choice["row"], choice["col"], choice["t"], choice["hole"]
             pos = row * nCols + col
-            if hole:
-                interval = int(gauss(*distributions["short"]))
-                obs_smart.append({"t": t, "pos": pos, "interval": interval})
-            else:
-                interval = int(gauss(*distributions["long"]))
-                obs_smart.append({"t": t, "pos": pos, "interval": interval})
+            
+            smart_dist = distributions["long"] if hole else distributions["short"]
+            interval = int(gauss(*smart_dist))
+            obs_smart.append({"t": t, "pos": pos, "interval": interval})
+            probs_smart.append({"pos":pos, "mu":smart_dist[0],"sigma": smart_dist[1]})
+
             obs_short.append({"t": t, "pos": pos, "interval": int(gauss(*distributions["short"]))})
+            probs_short.append({"pos":pos, "mu":distributions["short"][0], "sigma": distributions["short"][1]})
+
             obs_long.append({"t": t, "pos": pos, "interval": int(gauss(*distributions["long"]))})
+            probs_long.append({"pos":pos, "mu":distributions["long"][0], "sigma": distributions["long"][1]})
+
         save_dir = filedialog.askdirectory(title="Select directory to save JSON files")
 
         indent_depth = 4
 
         with open(os.path.join(save_dir, "obs_short.json"), "w") as f:
-            json.dump({"obstacles": obs_short}, f, indent=indent_depth)
+            json.dump({"obstacles": obs_short, "probability":probs_short}, f, indent=indent_depth)
         with open(os.path.join(save_dir, "obs_long.json"), "w") as f:
-            json.dump({"obstacles": obs_long}, f, indent=indent_depth)
+            json.dump({"obstacles": obs_long, "probability":probs_long}, f, indent=indent_depth)
         with open(os.path.join(save_dir, "obs_smart.json"), "w") as f:
-            json.dump({"obstacles": obs_smart}, f, indent=indent_depth)
+            json.dump({"obstacles": obs_smart, "probability":probs_smart}, f, indent=indent_depth)
         root.destroy()
 
     root = Tk()
@@ -65,6 +75,6 @@ def generate_obstacles(distributions, nRows, nCols):
 
 # Example usage
 distributions = {"short": (4, 1), "long": (50, 5)}
-nRows = 10
-nCols = 10
+nRows = 21
+nCols = 35
 generate_obstacles(distributions,nRows,nCols)

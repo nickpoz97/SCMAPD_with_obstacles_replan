@@ -4,7 +4,11 @@ import json
 import tkinter as tk
 from tkinter import filedialog
 import os
-import fnmatch
+from sys import argv
+
+if(len(argv) < 2):
+    print("you forgot to add grid path")
+    exit(1)
 
 # Set up the grid dimensions
 n_rows = 21
@@ -15,9 +19,9 @@ root = tk.Tk()
 root.withdraw()
 
 # Open a file dialog and get the selected data directory path
-result_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='select result file')
-grid_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='select grid file')
-obstacles_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='if you want, select obstacles dir')
+result_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='select result file', filetypes=[('JSON', '*.json')])
+grid_file_path = os.path.normpath(argv[1])
+obstacles_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='if you want, select obstacles path', filetypes=[('JSON', '*.json')])
 
 if not (result_file_path and grid_file_path):
     print("Results or grid path not selected")

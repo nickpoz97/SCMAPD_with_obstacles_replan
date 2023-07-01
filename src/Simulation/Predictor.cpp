@@ -8,10 +8,10 @@ ProbabilitiesMap Predictor::getProbabilitiesFromJson(const nlohmann::json &obsta
     ProbabilitiesMap probabilitiesMap{};
 
     // one distribution for each obstacle
-    const auto& pObj = obstaclesJson["probability"];
+    const auto& probabilities = obstaclesJson["probability"];
 
-    for(const auto& obsObj : obstaclesJson["obstacles"]){
-        probabilitiesMap[obsObj["pos"]] = GaussInfo{pObj["mu"], pObj["sigma"]};
+    for(const auto& pInfo : probabilities){
+        probabilitiesMap[pInfo["pos"]] = GaussInfo{pInfo["mu"], pInfo["sigma"]};
     }
 
     return probabilitiesMap;
