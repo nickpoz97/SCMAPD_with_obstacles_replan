@@ -31,7 +31,7 @@ def generate_obstacles(distributions, nRows, nCols):
             row, col, t, hole = choice["row"], choice["col"], choice["t"], choice["hole"]
             pos = row * nCols + col
             
-            smart_dist = distributions["long"] if hole else distributions["short"]
+            smart_dist = distributions["short"] if hole else distributions["long"]
             interval = int(gauss(*smart_dist))
             obs_smart.append({"t": t, "pos": pos, "interval": interval})
             probs_smart.append({"pos":pos, "mu":smart_dist[0],"sigma": smart_dist[1]})
