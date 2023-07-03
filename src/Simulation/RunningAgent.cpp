@@ -90,7 +90,7 @@ const CheckPoints &RunningAgent::getPlannedCheckpoints() const {
 
 bool RunningAgent::hasFinished() const {
     assert(!plannedPath.empty());
-    return plannedPath.size() == 1 && plannedPath.front() == plannedCheckpoints.back();
+    return plannedPath.size() == 1 && plannedPath.front() == plannedCheckpoints.back() && !cachedNextPosition.has_value();
 }
 
 CompressedCoord RunningAgent::getNextPosition() const {

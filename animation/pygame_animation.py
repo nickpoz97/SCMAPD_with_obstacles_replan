@@ -23,30 +23,33 @@ result_file_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file_
 grid_file_path = os.path.normpath(argv[1])
 obstacles_path = filedialog.askopenfilename(initialdir=os.path.abspath(__file__), title='if you want, select obstacles path', filetypes=[('JSON', '*.json')])
 
-if not (result_file_path and grid_file_path):
+if not grid_file_path:
     print("Results or grid path not selected")
     exit(1)
 
-# Load the JSON data from the selected file
-with open(result_file_path, 'r') as f:
-    data = json.load(f)
-
 # Extract the agent paths from the JSON data
 
-agentsJson = data['agents']
-agents = [agent['path'] for agent in agentsJson]
+agents = []
+waypoints = []
 
-waypoints = [agent['waypoints'] for agent in agentsJson]
-waypoints = [
-    [
-        (
-            wp['coords'],
-            'P' if wp['demand'] == 'PICKUP' else 'D',
-            agents[aI].index(wp['coords'])
-        )            
-        for wp in agentWps
-    ] for aI, agentWps in enumerate(waypoints)
-]
+if result_file_path:
+    # Load the JSON data from the selected file
+    with open(result_file_path, 'r') as f:
+        data = json.load(f)
+        agentsJson = data['agents']
+        agents = [agent['path'] for agent in agentsJson]
+
+        waypoints = [agent['waypoints'] for agent in agentsJson]
+        waypoints = [
+            [
+                (
+                    wp['coords'],
+                    'P' if wp['demand'] == 'PICKUP' else 'D',
+                    agents[aI].index(wp['coords'])
+                )            
+                for wp in agentWps
+            ] for aI, agentWps in enumerate(waypoints)
+        ]
 
 for aI, agentWps in enumerate(waypoints):
     agent = agents[aI]
@@ -117,7 +120,7 @@ slider_height = 20
 timestep = 0
 
 # find longest path value
-max_timestep = len(max(agents, key=len))
+max_timestep = len(max(agents, key=len)) if not len(agents) == 0 else 0
 
 def draw_grid():
     # Draw the grid
