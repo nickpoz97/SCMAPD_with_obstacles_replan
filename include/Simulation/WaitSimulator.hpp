@@ -38,7 +38,7 @@ protected:
     std::unordered_set<CompressedCoord> getWaitingAgentsPositions() const;
 private:
 
-    void rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles);
+    void rePlanFreeAgents();
 };
 
 

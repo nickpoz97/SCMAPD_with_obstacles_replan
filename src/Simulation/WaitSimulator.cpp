@@ -17,7 +17,7 @@ void WaitSimulator::doSimulationStep(TimeStep t) {
     chooseStatusForAgents(nextPositions, visibleObstacles);
 
     if(needRePlan){
-        rePlanFreeAgents(visibleObstacles);
+        rePlanFreeAgents();
     }
 }
 
@@ -69,10 +69,10 @@ void WaitSimulator::chooseStatusForAgents(const std::vector<CompressedCoord> &ne
     }
 }
 
-void WaitSimulator::rePlanFreeAgents(const std::unordered_set<CompressedCoord> &visibleObstacles) {
+void WaitSimulator::rePlanFreeAgents() {
     auto waitingAgentsIds = getWaitingAgentsIds();
 
-    auto pbsInstance = generatePBSInstance(visibleObstacles, extractPBSCheckpoints(waitingAgentsIds));
+    auto pbsInstance = generatePBSInstance({}, extractPBSCheckpoints(waitingAgentsIds));
     updatePlannedPaths(solveWithPBS(pbsInstance, waitingAgentsIds));
 
     needRePlan = false;
