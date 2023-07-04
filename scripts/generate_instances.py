@@ -117,4 +117,4 @@ if __name__ == "__main__":
     out_dir = args.out
     overlap = args.overlap
 
-    gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap)
+    gen_instances(grid_path, n_agents, n_tasks, n_instances, out_dir, overlap, False)

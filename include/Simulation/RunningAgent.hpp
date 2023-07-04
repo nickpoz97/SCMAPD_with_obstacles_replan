@@ -17,7 +17,7 @@ public:
     RunningAgent(int agentId, Path plannedPath, CheckPoints plannedCheckpoints);
 
     [[nodiscard]] CompressedCoord getActualPosition() const;
-    void stepAndUpdate();
+    void stepAndUpdate(TimeStep t);
 
     [[nodiscard]] const Path &getPlannedPath() const;
 
@@ -34,12 +34,16 @@ public:
     [[nodiscard]] bool checkpointChecker(bool isWaiting) const;
 
     void forceWait();
+
+    TimeStep getArrivalTimeStep() const;
 private:
     int agentId;
     Path plannedPath;
     CheckPoints plannedCheckpoints;
 
     std::optional<CompressedCoord> cachedNextPosition;
+
+    std::optional<TimeStep> arrivalTimeStep;
 };
 
 std::vector<RunningAgent> loadPlansFromJson(const nlohmann::json &j, const DistanceMatrix &dm);

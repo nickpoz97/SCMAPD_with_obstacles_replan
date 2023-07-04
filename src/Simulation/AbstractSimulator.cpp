@@ -14,7 +14,7 @@ void AbstractSimulator::simulate(){
         doSimulationStep(t);
 
         //update agents
-        std::ranges::for_each(runningAgents, [](RunningAgent& ra){ra.stepAndUpdate();});
+        std::ranges::for_each(runningAgents, [t](RunningAgent& ra){ ra.stepAndUpdate(t);});
     }
     // last position
     updateHistory();
@@ -188,10 +188,10 @@ TimeStep AbstractSimulator::compute_cumulated_distance(const Path& path) {
 
 TimeStep AbstractSimulator::compute_ttt() const {
     return std::accumulate(
-        agentsHistory.cbegin(),
-        agentsHistory.cend(),
+        runningAgents.cbegin(),
+        runningAgents.cend(),
         0,
-        [](TimeStep acc, const Path& p){return acc + std::ssize(p);}
+        [](TimeStep acc, const RunningAgent& ra){return acc + ra.getArrivalTimeStep();}
     );
 }
 

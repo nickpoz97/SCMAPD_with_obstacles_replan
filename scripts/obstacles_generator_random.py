@@ -30,14 +30,14 @@ def generate_obstacles(base_path):
                     if obs_type == "long":
                         mu, sigma = 50, 5
                         for o in obs_data["obstacles"]:
-                            o["interval"] = int(gauss(mu, sigma))
+                            o["interval"] = max(1, int(gauss(mu, sigma)))
                         for p in obs_data["probability"]:
                             p["mu"] = mu
                             p["sigma"] = sigma
                     elif obs_type == "short":
                         mu, sigma = 4, 1
                         for o in obs_data["obstacles"]:
-                            o["interval"] = int(gauss(mu, sigma))
+                            o["interval"] = max(1, int(gauss(mu, sigma)))
                         for p in obs_data["probability"]:
                             p["mu"] = mu
                             p["sigma"] = sigma
@@ -49,7 +49,7 @@ def generate_obstacles(base_path):
                                 mu, sigma = 50, 5
                             else:
                                 mu, sigma = 4, 1
-                            o["interval"] = int(gauss(mu, sigma))
+                            o["interval"] = max(1, int(gauss(mu, sigma)))
                             p = next(p for p in obs_data["probability"] if p["pos"] == o["pos"])
                             p["mu"] = mu
                             p["sigma"] = sigma

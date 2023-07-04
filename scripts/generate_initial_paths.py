@@ -34,4 +34,4 @@ for i in sorted(indices):
         result_path = os.path.join(output_folder_path, f'{i}_base.json')
         
         # process the data
-        execute_instance(exe_path, agents_file_path, tasks_file_path, 'MCA', 'TTD', 'DELAY', 1, 'RANDOM_TASKS', 10, result_path)
+        execute_instance(exe_path, agents_file_path, tasks_file_path, 'MCA', 'TTD', 'DELAY', 1, 'RANDOM_TASKS', 2, result_path)

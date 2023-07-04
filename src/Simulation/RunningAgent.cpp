@@ -52,7 +52,7 @@ CompressedCoord RunningAgent::getActualPosition() const {
     return plannedPath.front();
 }
 
-void RunningAgent::stepAndUpdate(){
+void RunningAgent::stepAndUpdate(TimeStep t) {
     assert(!plannedPath.empty() && !plannedCheckpoints.empty());
 
     if(plannedCheckpoints.size() > 1 && plannedPath.front() == plannedCheckpoints.front()){
@@ -62,6 +62,10 @@ void RunningAgent::stepAndUpdate(){
     // do a step
     if(plannedPath.size() > 1) {
         plannedPath.erase(plannedPath.begin());
+    }
+
+    if(hasFinished() && !arrivalTimeStep.has_value()){
+        arrivalTimeStep = t;
     }
 
     // only one position -> last waypoint reached
@@ -133,6 +137,10 @@ void RunningAgent::forceWait() {
         cachedNextPosition = plannedPath[1];
         plannedPath = {plannedPath.front()};
     }
+}
+
+TimeStep RunningAgent::getArrivalTimeStep() const {
+    return arrivalTimeStep.value();
 }
 
 std::size_t hash_value(const RunningAgent& s){
