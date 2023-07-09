@@ -8,6 +8,7 @@
 void AbstractSimulator::simulate(){
     using std::ranges::any_of;
 
+    auto startT = std::chrono::steady_clock::now();
     for(TimeStep t = 0 ; any_of(runningAgents, [](const RunningAgent& ra){return !ra.hasFinished();}) ; ++t) {
         updateHistory();
 
@@ -18,6 +19,8 @@ void AbstractSimulator::simulate(){
     }
     // last position
     updateHistory();
+    executionTime =
+        std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - startT).count();
 }
 
 void AbstractSimulator::updateHistory() {
@@ -138,7 +141,8 @@ void AbstractSimulator::printResults(const std::filesystem::path &out, const nlo
     j["stats"] = {
         {"makespan", compute_makespan()},
         {"total_travel_distance", compute_ttd()},
-        {"total_travel_time", compute_ttt()}
+        {"total_travel_time", compute_ttt()},
+        {"time", executionTime}
     };
 
     std::ofstream file(out);

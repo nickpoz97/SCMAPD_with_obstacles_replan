@@ -63,6 +63,8 @@ private:
     TimeStep compute_ttt() const;
     TimeStep compute_makespan() const;
 
+    double executionTime{};
+
     static TimeStep compute_cumulated_distance(const Path& path) ;
 };
 

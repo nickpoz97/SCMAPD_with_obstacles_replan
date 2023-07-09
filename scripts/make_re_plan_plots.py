@@ -4,13 +4,18 @@ import sys
 import matplotlib.pyplot as plt
 from itertools import product
 
-stats = ["makespan", "total_travel_time", "total_travel_distance"]
 obs_types = ["obs_long", "obs_short", "obs_smart"]
 
 folder_path = sys.argv[1]
 target_dir = os.path.normpath(sys.argv[2])
+stat = sys.argv[3]
 
-for (stat, obs_type) in product(stats, obs_types):
+fig, axs = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
+
+ymin = float('inf')
+ymax = float('-inf')
+
+for i, obs_type in enumerate(obs_types):
     # Group files by obs_type
     files_by_obs_type = {}
     for file_name in os.listdir(folder_path):
@@ -26,13 +31,11 @@ for (stat, obs_type) in product(stats, obs_types):
     obs_map = {
         "obs_long": "Long interval obstacles",
         "obs_short": "Short interval obstacles",
-        "obs_smart": "Variable interval obstacles"
+        "obs_smart": "Balanced interval obstacles"
     }
 
     # Create boxplot for specified obs_type
     if obs_type in files_by_obs_type:
-        fig, ax = plt.subplots()
-        fig.suptitle(f"{obs_map[obs_type]}: {stat.replace('_', ' ')}")
         data_by_strategy = {}
         for file_name in files_by_obs_type[obs_type]:
             strategy = file_name.split('-')[2].split('.')[0]
@@ -50,8 +53,20 @@ for (stat, obs_type) in product(stats, obs_types):
                 strategies.append(strategy)
             else:
                 boxplot_data.append([])
-        ax.boxplot(boxplot_data)
-        ax.set_xticklabels(strategies)
-        plt.savefig(os.path.join(target_dir, f'{obs_type}-{stat}.png'))
+        axs[i].boxplot(boxplot_data)
+        axs[i].set_xticks(range(1, len(strategies) + 1))
+        axs[i].set_xticklabels(strategies)
+        axs[i].set_title(obs_map[obs_type])
+
+        # Update ymin and ymax values
+        ymin = min(ymin, min([min(data) for data in boxplot_data if len(data) > 0]))
+        ymax = max(ymax, max([max(data) for data in boxplot_data if len(data) > 0]))
     else:
         print(f"No data found for obs_type '{obs_type}'")
+
+# Set y-axis range to be the same for all three boxplots
+padding = (ymax - ymin) * 0.1
+for ax in axs:
+    ax.set_ylim(ymin - padding, ymax + padding)
+
+plt.savefig(os.path.join(target_dir, f'{stat}.png'))
